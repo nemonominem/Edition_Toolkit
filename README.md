@@ -220,6 +220,18 @@ Edition/
 
 ---
 
+## Planned Utilities (Future)
+
+The `.github/docs/` folder contains writing style guides, peer-review protocols, and fact-checking templates that may support new utilities:
+
+- **Style review / conversion utility** — Validate Markdown against `Demaneuf_Medium` style or convert between style profiles
+- **Fact-check utility** — Validate claims, cross-reference footnotes, flag unsourced assertions
+- **Batch processing pipeline** — Extract multiple Medium articles into single Markdown or booklet structure
+
+See [.github/workflow/todos.md](.github/workflow/todos.md) for implementation status.
+
+---
+
 ## Troubleshooting
 
 **Medium article not extracted**

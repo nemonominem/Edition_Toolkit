@@ -50,25 +50,40 @@ Creates:
 - `the-emi-fix-8be2313448b4.md` with image references
 - `the-emi-fix-8be2313448b4_images/` folder with image files
 
-### Debug mode
-
-```bash
-python medium-to-md.py https://gillesdemaneuf.medium.com/the-emi-fix-8be2313448b4 --debug
-```
-
-Prints extraction details: block counts, block types, and diagnostic information.
-
 ### Specify output directory
 
 ```bash
-# Embed images (default)
-python medium-to-md.py https://medium.com/path/to/article /path/to/output
+python medium-to-md.py https://medium.com/path/to/article --dir output/
+```
 
-# Save images to disk
-python medium-to-md.py https://medium.com/path/to/article --disk /path/to/output
+### Debug mode
 
-# Debug with custom output
-python medium-to-md.py https://medium.com/path/to/article --debug /path/to/output
+Debug output is **on by default** — you'll see progress messages like "Waiting for article element", "Waiting Xs for Medium page to fully load", etc.
+
+To disable debug output:
+
+```bash
+python medium-to-md.py https://gillesdemaneuf.medium.com/the-emi-fix-8be2313448b4 --nodebug
+```
+
+### Adjust page render wait time
+
+If extraction fails the first time (gets 0 blocks), increase the wait time:
+
+```bash
+python medium-to-md.py https://medium.com/path/to/article --wait 6
+```
+
+Default is 4 seconds. Use higher values (5-8) for slower connections or complex articles.
+
+### Combine options
+
+```bash
+# Save to output/ with disk images and extra wait time
+python medium-to-md.py https://medium.com/path/to/article --dir output/ --disk --wait 5
+
+# Debug output with custom directory
+python medium-to-md.py https://medium.com/path/to/article --dir tmp/ --debug
 ```
 
 ## How It Works
@@ -118,11 +133,34 @@ python medium-to-md.py https://medium.com/path/to/article --debug /path/to/outpu
 
 Currently handles:
 - Headings (h1–h6)
-- Paragraphs
+- Paragraphs with formatting (**bold**, *italic*, `code`)
+- Hyperlinks (converted to Markdown footnotes `[^1]`)
 - Blockquotes
 - Unordered and ordered lists
 - Code blocks
 - Images and figure captions
+
+### Link Handling
+
+Links in the article are automatically converted to Markdown footnotes:
+
+**Original article:**
+```
+This is a [link to example](https://example.com) in the text.
+```
+
+**Generated markdown:**
+```markdown
+This is a link to example[^1] in the text.
+
+---
+
+## References
+
+[^1]: https://example.com
+```
+
+This preserves the URL while keeping the text flowing naturally. The footnote reference section is automatically appended at the end of the document.
 
 ## Planned: Other Medium Content
 
@@ -134,12 +172,24 @@ Framework is ready to add:
 
 Pass examples when ready, and the script can be extended.
 
+## How It Handles Heavy Pages
+
+Medium articles with lots of content can take time to load. The script:
+
+1. **Tries to wait for network idle** — waits for all network activity to settle (best reliability)
+2. **Retries once if it times out** — some heavy pages need a second attempt
+3. **Falls back to DOM content loaded** — if retries don't work, loads what's available
+4. **Waits extra time** — the `--wait` parameter adds additional buffer for lazy-loading images
+
+If you get 0 blocks on first run, running again usually succeeds. You can also increase `--wait` to 8-10 for very heavy pages.
+
 ## Notes
 
 - Medium images are fetched from `miro.medium.com`
 - All resources are downloaded directly (fonts, stylesheets are skipped for speed)
 - Article slug is derived from the URL's final path segment
 - Output encoding is UTF-8
+- Heavy articles may take 30-60 seconds to fully load
 
 ## Troubleshooting
 

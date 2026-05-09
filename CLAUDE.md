@@ -168,3 +168,18 @@ python scripts/make_booklet_pandoc.py
 - [ ] Add Twitter/CodePen iframe handling
 - [ ] Custom Markdown extensions for Medium-specific features
 - [ ] Batch processing (multiple articles → single booklet)
+- [ ] Style review utility (validate against Demaneuf_Medium style profile)
+- [ ] Fact-check utility (validate claims, cross-reference footnotes)
+
+---
+
+## Additional Resources (in .github/)
+
+The `.github/` folder contains optional workflows and style guides for article writing projects:
+
+- **`.github/docs/writing-styles.md`** — Detailed style profiles (Demaneuf_Medium, etc.) for reference when creating or editing long-form articles
+- **`.github/docs/peer-review.md`** — Systematic peer-review methodology (factual accuracy, citation quality, argumentative integrity, fairness, tone, readability, consistency)
+- **`.github/docs/grounding-protocol.md`** — Protocol for requesting external LLM grounding on factual claims
+- **`.github/workflow/`** — Workflow conventions, todo management, transient file handling
+
+These are optional and project-specific. Not all Edition projects will use them.

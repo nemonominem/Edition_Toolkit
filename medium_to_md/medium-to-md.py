@@ -3,16 +3,20 @@
 medium-to-md.py — Convert any Medium article to Markdown with embedded or local images.
 
 Usage:
-    /opt/anaconda3/envs/python_313x/bin/python medium-to-md.py https://gillesdemaneuf.medium.com/the-emi-fix-8be2313448b4 [--disk] [--debug] [output_dir]
+    python medium-to-md.py <url> [--dir output_dir] [--disk] [--debug] [--wait seconds]
 
 Options:
+    --dir       Output directory (default: current directory)
     --disk      Save images to disk instead of embedding as base64 in markdown (default: embed)
-    --debug     Print debug information during extraction
-    output_dir  Output directory (default: current directory)
+    --wait N    Wait N seconds for page to render (default: 4)
+    --nodebug   Disable debug output (debug is ON by default)
 
 Requirements:
-    pip install playwright
+    conda install -c conda-forge playwright
     playwright install chromium
+
+Example:
+    python medium-to-md.py https://medium.com/path/to/article --dir output/ --wait 5
 """
 
 import asyncio
@@ -86,7 +90,7 @@ async def save_image_to_disk(page, img_url: str, img_dir: Path, index: int) -> s
     return str(filepath)
 
 
-async def medium_to_markdown(url: str, output_dir: str = ".", embed_images: bool = True, debug: bool = False) -> str:
+async def medium_to_markdown(url: str, output_dir: str = ".", embed_images: bool = True, debug: bool = False, wait_seconds: int = 4) -> str:
     """
     Extract a Medium article to Markdown with images.
 
@@ -95,6 +99,7 @@ async def medium_to_markdown(url: str, output_dir: str = ".", embed_images: bool
         output_dir: Output directory
         embed_images: If True, embed images as base64. If False, save to disk.
         debug: If True, print debug information during extraction
+        wait_seconds: Seconds to wait for page rendering (default: 4)
     """
     slug = url.rstrip("/").split("/")[-1] or "article"
     output_path = Path(output_dir)
@@ -108,12 +113,14 @@ async def medium_to_markdown(url: str, output_dir: str = ".", embed_images: bool
     print(f"Converting: {url}", file=sys.stderr)
     print(f"Output dir: {output_path}", file=sys.stderr)
     print(f"Mode: {'Embedded (base64)' if embed_images else 'Disk'}", file=sys.stderr)
+    if debug:
+        print(f"Debug: ON | Wait time: {wait_seconds}s", file=sys.stderr)
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         context = await browser.new_context(
             viewport={"width": 1280, "height": 720},
-            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
         )
         page = await context.new_page()
 
@@ -128,33 +135,137 @@ async def medium_to_markdown(url: str, output_dir: str = ".", embed_images: bool
         await page.route("https://miro.medium.com/*", lambda route: route.continue_())
 
         print("  Loading page...", file=sys.stderr)
-        await page.goto(url, wait_until="domcontentloaded", timeout=30000)
+
+        # Try networkidle first (better), fall back to domcontentloaded
+        page_loaded = False
+        attempt = 1
+        max_attempts = 2
+
+        while attempt <= max_attempts and not page_loaded:
+            try:
+                if debug:
+                    if attempt > 1:
+                        print(f"    Retry {attempt}: Waiting for network to idle...", file=sys.stderr)
+                    else:
+                        print("    Waiting for network to idle...", file=sys.stderr)
+                await page.goto(url, wait_until="networkidle", timeout=40000)  # Increased for Cloudflare
+                page_loaded = True
+            except Exception as e:
+                if attempt < max_attempts:
+                    if debug:
+                        print(f"    Network idle timeout (attempt {attempt}), retrying...", file=sys.stderr)
+                    attempt += 1
+                    await page.wait_for_timeout(2000)  # Longer pause before retry
+                else:
+                    if debug:
+                        print(f"    Network idle timeout after {max_attempts} attempts, falling back to domcontentloaded", file=sys.stderr)
+                    try:
+                        await page.goto(url, wait_until="domcontentloaded", timeout=30000)  # Also increased
+                        page_loaded = True
+                    except Exception as e2:
+                        print(f"  Error: Failed to load page: {e2}", file=sys.stderr)
+                        raise
 
         # Wait for article to render
         try:
-            await page.wait_for_selector("article", timeout=15000)
+            if debug:
+                print("    Waiting for article element...", file=sys.stderr)
+            await page.wait_for_selector("article", timeout=10000)
         except Exception:
-            print("  Warning: No <article> tag found.", file=sys.stderr)
+            if debug:
+                print("  [DEBUG] Warning: No <article> tag found (may still have content).", file=sys.stderr)
+
+        # Wait for article paragraphs to render (ensures content is loaded)
+        # Note: This is just a loading check; content may still exist even if no p tags yet
+        try:
+            if debug:
+                print("    Waiting for article content to render...", file=sys.stderr)
+            await page.wait_for_selector("article p", timeout=8000)
+            if debug:
+                print("    Article paragraphs found.", file=sys.stderr)
+        except Exception:
+            if debug:
+                print("    Paragraphs not yet visible, proceeding anyway (content may still load)...", file=sys.stderr)
+
+        # Give Medium a moment to render images and complete any lazy-loading
+        wait_ms = int(wait_seconds * 1000)
+        print(f"  Waiting {wait_seconds}s for Medium page to fully load...", file=sys.stderr)
+        await page.wait_for_timeout(wait_ms)
 
         print("  Extracting content...", file=sys.stderr)
 
-        # Give Medium a moment to render images
-        await page.wait_for_timeout(2000)
-
         if debug:
             print("  [DEBUG] Checking page selectors...", file=sys.stderr)
+            # Debug: show what elements are on the page
+            page_check = await page.evaluate("""
+            () => {
+                return {
+                    title: document.title,
+                    url: document.location.href,
+                    hasArticle: !!document.querySelector('article'),
+                    hasMain: !!document.querySelector('main'),
+                    bodyLength: document.body.innerText.length,
+                    bodyPreview: document.body.innerText.substring(0, 200),
+                    isCloudflareChallenge: document.title.includes('Just a moment') || document.body.innerText.includes('security verification')
+                };
+            }
+            """)
+            print(f"  [DEBUG] Page title: {page_check['title']}", file=sys.stderr)
 
-        # Extract content with image positions preserved
+            # Check if Cloudflare is blocking
+            if page_check['isCloudflareChallenge']:
+                print(f"  [WARNING] Cloudflare security challenge detected", file=sys.stderr)
+                print(f"  [TIP] Try again or increase --wait to 15-20 seconds for this article", file=sys.stderr)
+
+            print(f"  [DEBUG] Has <article>: {page_check['hasArticle']}", file=sys.stderr)
+            print(f"  [DEBUG] Has <main>: {page_check['hasMain']}", file=sys.stderr)
+            print(f"  [DEBUG] Body text length: {page_check['bodyLength']}", file=sys.stderr)
+            if page_check['bodyLength'] > 0 and page_check['bodyLength'] < 300:
+                print(f"  [DEBUG] Body preview: {page_check['bodyPreview'][:100]}...", file=sys.stderr)
+
+        # Extract content with image positions and references preserved
         result = await page.evaluate("""
         () => {
             const article = document.querySelector('article');
             if (!article) {
-                return { blocks: [], debug: { articleFound: false } };
+                return { blocks: [], references: {}, debug: { articleFound: false } };
             }
 
             const blocks = [];
             let imgIndex = 0;
             const processedElements = new Set();
+            const references = {}; // Collect [id]: url for footnotes
+
+            // Convert element's text content to markdown, preserving links and preserving reference numbers
+            function elementToMarkdown(el) {
+                let md = '';
+                for (const node of el.childNodes) {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        md += node.textContent;
+                    } else if (node.nodeType === Node.ELEMENT_NODE) {
+                        const tag = node.tagName.toLowerCase();
+                        if (tag === 'strong' || tag === 'b') {
+                            md += '**' + elementToMarkdown(node) + '**';
+                        } else if (tag === 'em' || tag === 'i') {
+                            md += '_' + elementToMarkdown(node) + '_';
+                        } else if (tag === 'code') {
+                            md += '`' + node.innerText + '`';
+                        } else if (tag === 'a') {
+                            const href = node.getAttribute('href') || '';
+                            const text = node.innerText.trim();
+                            // Store reference and use footnote syntax
+                            const refKey = Object.keys(references).length + 1;
+                            references[refKey] = href;
+                            md += text + '[^' + refKey + ']';
+                        } else if (tag === 'br') {
+                            md += '\\n';
+                        } else {
+                            md += elementToMarkdown(node);
+                        }
+                    }
+                }
+                return md;
+            }
 
             // Recursively walk through all children, preserving order
             function walkElement(el) {
@@ -204,7 +315,7 @@ async def medium_to_markdown(url: str, output_dir: str = ".", embed_images: bool
 
                 // Handle headings
                 if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName)) {
-                    const text = el.innerText.trim();
+                    const text = elementToMarkdown(el).trim();
                     if (text) {
                         blocks.push({ type: tagName, text: text });
                         processedElements.add(el);
@@ -214,7 +325,7 @@ async def medium_to_markdown(url: str, output_dir: str = ".", embed_images: bool
 
                 // Handle paragraphs
                 if (tagName === 'p') {
-                    const text = el.innerText.trim();
+                    const text = elementToMarkdown(el).trim();
                     if (text && text.length > 0) {
                         blocks.push({ type: 'p', text: text });
                         processedElements.add(el);
@@ -224,7 +335,7 @@ async def medium_to_markdown(url: str, output_dir: str = ".", embed_images: bool
 
                 // Handle blockquotes
                 if (tagName === 'blockquote') {
-                    const text = el.innerText.trim();
+                    const text = elementToMarkdown(el).trim();
                     if (text) {
                         blocks.push({ type: 'blockquote', text: text });
                         processedElements.add(el);
@@ -235,7 +346,7 @@ async def medium_to_markdown(url: str, output_dir: str = ".", embed_images: bool
                 // Handle lists
                 if (tagName === 'ul' || tagName === 'ol') {
                     const items = Array.from(el.querySelectorAll(':scope > li'))
-                        .map(li => li.innerText.trim())
+                        .map(li => elementToMarkdown(li).trim())
                         .filter(t => t);
                     if (items.length > 0) {
                         blocks.push({ type: tagName, items: items });
@@ -262,17 +373,19 @@ async def medium_to_markdown(url: str, output_dir: str = ".", embed_images: bool
 
             walkElement(article);
 
-            return { blocks: blocks, debug: { articleFound: true, blockCount: blocks.length } };
+            return { blocks: blocks, references: references, debug: { articleFound: true, blockCount: blocks.length, refCount: Object.keys(references).length } };
         }
         """)
 
         blocks = result["blocks"]
+        references = result.get("references", {})
 
         if debug:
-            print(f"  [DEBUG] Extracted {len(blocks)} blocks", file=sys.stderr)
+            print(f"  [DEBUG] Extracted {len(blocks)} blocks, {len(references)} references", file=sys.stderr)
             # Show first few blocks
             for i, block in enumerate(blocks[:5]):
-                print(f"    Block {i}: type={block.get('type')}, content={str(block).[:80]}", file=sys.stderr)
+                block_str = str(block)[:80]
+                print(f"    Block {i}: type={block.get('type')}, content={block_str}", file=sys.stderr)
 
         # Convert blocks to markdown, processing images
         md_parts = []
@@ -326,6 +439,12 @@ async def medium_to_markdown(url: str, output_dir: str = ".", embed_images: bool
         # Join with double newlines
         md_text = "\n\n".join(md_parts)
 
+        # Append footnotes section if there are references
+        if references:
+            md_text += "\n\n---\n\n## References\n\n"
+            for ref_id, url in sorted(references.items(), key=lambda x: int(x[0])):
+                md_text += f"[^{ref_id}]: {url}\n"
+
         await browser.close()
 
         # Write markdown file
@@ -343,17 +462,40 @@ if __name__ == "__main__":
 
     url = sys.argv[1]
     embed_images = True
-    debug = False
+    debug = True  # Debug enabled by default
     output_dir = "."
+    wait_seconds = 4
 
     # Parse arguments
-    for arg in sys.argv[2:]:
+    i = 2
+    while i < len(sys.argv):
+        arg = sys.argv[i]
         if arg == "--disk":
             embed_images = False
-        elif arg == "--debug":
-            debug = True
+        elif arg == "--nodebug":
+            debug = False
+        elif arg == "--dir":
+            if i + 1 < len(sys.argv):
+                output_dir = sys.argv[i + 1]
+                i += 1
+            else:
+                print("Error: --dir requires a directory path", file=sys.stderr)
+                sys.exit(1)
+        elif arg == "--wait":
+            if i + 1 < len(sys.argv):
+                try:
+                    wait_seconds = int(sys.argv[i + 1])
+                except ValueError:
+                    print("Error: --wait requires an integer (seconds)", file=sys.stderr)
+                    sys.exit(1)
+                i += 1
+            else:
+                print("Error: --wait requires a number", file=sys.stderr)
+                sys.exit(1)
         else:
-            output_dir = arg
+            print(f"Error: Unknown argument '{arg}'", file=sys.stderr)
+            sys.exit(1)
+        i += 1
 
-    result = asyncio.run(medium_to_markdown(url, output_dir, embed_images, debug))
+    result = asyncio.run(medium_to_markdown(url, output_dir, embed_images, debug, wait_seconds))
     print(result)
