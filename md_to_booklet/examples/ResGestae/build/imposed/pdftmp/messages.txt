@@ -1,0 +1,12 @@
+          ----
+  pdfjam: This is pdfjam version 4.2.
+  pdfjam: Reading any site-wide or user-specific defaults...
+          (none found)
+  pdfjam: Effective call for this run of pdfjam:
+          /Library/TeX/texbin/pdfjam --paper a4paper --landscape --nup 2x1 --noautoscale --outfile=build/imposed/res_gestae_imposed_A4.pdf --no-tidy --builddir build/imposed/pdftmp -- build/smallpages/res_gestae_smallpages.pdf - 
+  pdfjam: Calling /Library/TeX/texbin/pdflatex...
+  pdfjam: FAILED.
+          The call to /Library/TeX/texbin/pdflatex resulted in an error.
+          You can examine the build directory at
+                  /Users/gillesdemaneuf/Work/ResGestae/build/imposed/pdftmp
+          to try to diagnose the problem.

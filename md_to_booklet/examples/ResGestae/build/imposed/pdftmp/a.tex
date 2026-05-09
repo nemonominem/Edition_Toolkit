@@ -1,0 +1,8 @@
+\batchmode
+\documentclass[a4paper,landscape,]{article}
+\usepackage[]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{pdfpages}
+\begin{document}
+\includepdfmerge[nup=2x1,noautoscale={--outfile=build/imposed/res_gestae_imposed_A4.pdf}]{source-1.pdf,-}
+\end{document}

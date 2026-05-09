@@ -1,0 +1,2 @@
+cd /Users/gillesdemaneuf/Work/ResGestae
+/Library/TeX/texbin/pdfjam --paper a4paper --landscape --nup 2x1 --noautoscale --outfile=build/imposed/res_gestae_imposed_A4.pdf --no-tidy --builddir build/imposed/pdftmp -- build/smallpages/res_gestae_smallpages.pdf - 

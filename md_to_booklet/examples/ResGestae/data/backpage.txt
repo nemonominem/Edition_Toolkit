@@ -1,0 +1,19 @@
+This booklet presents the Res Gestae Divi Augusti in a compact study format: authentic Latin text on the left-hand A5 pages and reliable English translations, vocabulary, grammar notes, and brief historical context on facing pages. The Res Gestae is Augustus’ own account of his life, offices, benefactions, and military achievements — a carefully constructed public self-portrait composed shortly before his death in AD 14.
+
+This edition is a working prototype intended for personal study use. It preserves the Latin inscriptions’ structure (35 numbered sections) and pairs each Latin passage with:
+- an English rendering for comprehension,
+- a short vocabulary list highlighting key words and forms,
+- a concise grammar note on constructions that recur in the passage,
+- a brief historical note situating the passage.
+
+Format and purpose:
+- A5 smallpages, two sections per page — Latin left, translation and notes right.
+- Designed for print-imposed A4 duplex output; cover and impressum included.
+- Focused on readability for learners of Latin and instructors: fast cross-reference, clear typographic separation of original and commentary, and pragmatic glosses rather than extended commentary.
+
+Credits & sources:
+Primary Latin text sourced from public-domain inscriptions and critical editions. English renderings and contextual material are compiled from scholarly translations and public sources (see data/english.txt and data/res_gestae_wikipedia.md).
+
+This booklet is experimental: corrections, improved translations, and expanded notes will follow. If you use this booklet in teaching or research, please report typos, mistranslations, or layout issues to the maintainer so they can be addressed in future editions.
+
+Booklet designed and prepared by Gilles Demaneuf

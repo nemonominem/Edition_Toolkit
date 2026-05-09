@@ -1,0 +1,170 @@
+# Edition Project — Claude Context
+
+## Project Overview
+
+Suite of publishing utilities for extracting, converting, and typesetting articles into publication-ready documents.
+
+Three independent tools:
+1. **medium_to_md** — Extract Medium articles to Markdown with embedded images
+2. **md_to_pdf** — Convert Markdown to print-ready PDF (WeasyPrint)
+3. **md_to_booklet** — Produce typeset booklets with imposition (Pandoc + XeLaTeX)
+
+---
+
+## Environment & Dependencies
+
+### Golden Rule: Use Conda, Not Pip
+
+All package management uses **conda** exclusively. Pip is only for:
+- `playwright install chromium` (browser binary download, not a package)
+- Packages truly unavailable via conda (rare)
+
+### Current Setup
+
+- **Python environment:** `python_313x` (conda environment)
+- **Working directory:** `/Users/gillesdemaneuf/Work/Edition`
+- **Run scripts:** Always from within the project subdirectories
+
+### Conda Workflow
+
+```bash
+# Activate the environment
+conda activate python_313x
+
+# Install packages (use conda, not pip)
+conda install package_name
+
+# Check installed packages
+conda list
+
+# See what a script needs before installing
+head -20 scripts/filename.py  # check imports
+```
+
+---
+
+## Tools & Dependencies
+
+### medium_to_md
+- **Requires:** `playwright` (browser automation)
+- **Install:** `conda install -c conda-forge playwright`
+- **Then:** `playwright install chromium` (binary download, one-time)
+- **No requirements.txt needed** — conda handles it
+
+### md_to_pdf
+- **Requires:** `markdown`, `weasyprint`, `pygments`
+- **Install:** `conda install markdown weasyprint pygments`
+- **Optional (for Mermaid):** `mermaid-cli` (npm-based, handled separately)
+- **System deps (macOS):** `brew install pango gdk-pixbuf libffi`
+
+### md_to_booklet
+- **Requires:** `pandoc`, `pypdf`, `requests`
+- **Install:** `conda install pandoc pypdf requests`
+- **Optional:** `pdfjam` (if not using pypdf fallback)
+
+---
+
+## When to Edit README Files
+
+Update a tool's README when:
+- Adding/removing features
+- Changing command syntax
+- Adding new content types
+- Installation process changes
+
+**Do NOT list pip commands** in READMEs — use conda instead.
+
+---
+
+## File Structure
+
+```
+Edition/
+├── CLAUDE.md                  (this file — project context)
+├── README.md                  (top-level overview)
+│
+├── medium_to_md/
+│   ├── README.md              (conda install lines)
+│   ├── medium-to-md.py
+│   └── approach.md
+│
+├── md_to_pdf/
+│   ├── README.md              (conda install lines)
+│   ├── md_to_pdf.py
+│   └── style.css
+│
+└── md_to_booklet/
+    ├── instructions.md
+    ├── README_printing.md
+    ├── scripts/
+    └── build/
+```
+
+---
+
+## Key Design Decisions
+
+1. **Embedded by default** — Images/styles embedded in output (single file, no broken links)
+2. **Markdown-centric** — Markdown is the universal interchange format
+3. **Path resolution** — Scripts auto-resolve paths; run from anywhere
+4. **Reproducible** — Same input always produces same output
+5. **Extensible** — Ready for videos, audio, iframes, custom embeds
+
+---
+
+## Common Commands
+
+```bash
+# Activate environment
+conda activate python_313x
+
+# Extract Medium article (with embedded images)
+cd medium_to_md
+python medium-to-md.py https://medium.com/path/to/article
+
+# Extract with debug info
+python medium-to-md.py https://medium.com/path/to/article --debug
+
+# Save images to disk instead of embedding
+python medium-to-md.py https://medium.com/path/to/article --disk
+
+# Convert Markdown to PDF
+cd ../md_to_pdf
+python md_to_pdf.py article.md
+
+# Override CSS styling
+python md_to_pdf.py article.md --css custom-style.css
+
+# Build booklet (Res Gestae example)
+cd ../md_to_booklet
+python scripts/make_booklet_pandoc.py
+```
+
+---
+
+## Troubleshooting
+
+**"No playwright found"**
+→ `conda install -c conda-forge playwright && playwright install chromium`
+
+**"WeasyPrint not found"**
+→ `conda install weasyprint markdown pygments`
+
+**"pandoc not found"**
+→ `conda install pandoc`
+
+**Medium extraction returns 0 blocks**
+→ Run with `--debug` flag to see what selectors were found
+
+**PDF fonts look wrong**
+→ Check `style.css` — ensure fonts are conda-installed or Google Fonts imported
+
+---
+
+## Future Enhancements
+
+- [ ] Add video embed support (iframe extraction + placeholder generation)
+- [ ] Add audio embed support
+- [ ] Add Twitter/CodePen iframe handling
+- [ ] Custom Markdown extensions for Medium-specific features
+- [ ] Batch processing (multiple articles → single booklet)
