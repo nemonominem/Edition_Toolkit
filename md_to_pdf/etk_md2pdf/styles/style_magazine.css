@@ -151,6 +151,16 @@ h1,
     column-span: all;
 }
 
+/* Cancel nested column-span for block children of .full-width — the parent
+ * div already spans both columns; re-applying column-span:all on a child
+ * causes WeasyPrint to emit an empty page and crash ("assert not page_is_empty"). */
+div.full-width > table,
+div.full-width > p,
+div.full-width > ul,
+div.full-width > ol {
+    column-span: unset;
+}
+
 /*
  * .single-column — switches an entire section to a single full-width column.
  * column-span:all forces the div out of the column flow; column-count:1

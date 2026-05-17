@@ -209,13 +209,15 @@ div.full-width {
     display: block;
 }
 
-/* Ensure direct block children of .full-width also fill the width */
+/* Ensure direct block children of .full-width also fill the width.
+ * Do NOT re-apply column-span:all here — the parent div already spans both
+ * columns, and a nested column-span causes WeasyPrint to emit an empty page
+ * and crash with "assert not page_is_empty". */
 div.full-width > table,
 div.full-width > p,
 div.full-width > ul,
 div.full-width > ol {
     width: 100%;
-    column-span: all;
 }
 
 /*
