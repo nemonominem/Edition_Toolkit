@@ -23,11 +23,13 @@ md_to_pdf/
 
 ## Installation
 
+Install directly from a tagged release on GitHub. Replace `v0.1.0` with the tag you want.
+
 ```bash
 conda activate python_313x
 
-# Install as an editable package — puts 'md2pdf' on your PATH
-pip install -e /path/to/Edition/md_to_pdf
+# Install from a specific tagged release — puts 'md2pdf' on your PATH
+pip install "git+ssh://git@github.com/nemonominem/Edition_Toolkit.git@v0.1.0#subdirectory=md_to_pdf"
 
 # macOS system libraries required by WeasyPrint
 brew install pango gdk-pixbuf libffi
@@ -41,10 +43,12 @@ On **Windows** (conda prompt):
 
 ```bat
 conda activate python_313x
-pip install -e C:\path\to\Edition\md_to_pdf
+pip install "git+ssh://git@github.com/nemonominem/Edition_Toolkit.git@v0.1.0#subdirectory=md_to_pdf"
 ```
 
 WeasyPrint's Windows dependencies are bundled in its wheel — no separate install needed.
+
+To check available tags: `git ls-remote --tags git@github.com:nemonominem/Edition_Toolkit.git`
 
 ---
 
