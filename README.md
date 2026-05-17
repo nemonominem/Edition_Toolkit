@@ -43,7 +43,7 @@ Convert Markdown articles to beautifully typeset, print-ready PDFs using WeasyPr
   - Full CSS Paged Media support (headers, footers, margins, page breaks)
   - Footnotes, tables, syntax-highlighted code blocks
   - Mermaid diagram rendering (optional)
-  - Customizable fonts, sizes, colors, and spacing via `style.css`
+  - Customizable fonts, sizes, colors, and spacing via bundled CSS styles (`thinktank`, `academic`, `magazine`, `intelligence`)
   - Image sizing via CSS selectors (no need to edit markdown)
   - Callout boxes, glossary formatting, automatic page breaks
   - Orphan/widow control, long URL wrapping
@@ -167,9 +167,11 @@ Edition/
 │
 ├── md_to_pdf/
 │   ├── README.md                      (detailed guide)
-│   ├── md_to_pdf.py                   (main script)
-│   ├── style.css                      (typography & layout)
-│   └── requirements.txt
+│   ├── md_to_pdf.py                   (legacy shim)
+│   ├── pyproject.toml
+│   └── etk_md2pdf/
+│       ├── convert.py                 (all conversion logic; md2pdf CLI entry point)
+│       └── styles/                    (bundled CSS: thinktank, academic, magazine, intelligence)
 │
 └── md_to_booklet/
     ├── instructions.md                (project spec)
@@ -215,7 +217,7 @@ Edition/
 | Convert to PDF | `md_to_pdf` | `.md` | `.pdf` (print-ready) |
 | Create booklet | `md_to_booklet` | structured `.md` | A5 + imposed A4 `.pdf` |
 | Save images separately | `medium_to_md --disk` | URL | `.md` + folder of images |
-| Customize PDF look | edit `style.css` | — | fonts, colors, margins, footer, etc. |
+| Customize PDF look | edit a style in `etk_md2pdf/styles/` | — | fonts, colors, margins, footer, etc. |
 | Debug extraction | `medium_to_md --debug` | URL | extraction details in stderr |
 
 ---
@@ -239,7 +241,7 @@ See [.github/workflow/todos.md](.github/workflow/todos.md) for implementation st
 - Try again—page rendering can vary
 
 **PDF fonts missing**
-- Check `style.css`—fonts must be installed locally or imported from Google Fonts
+- Check the relevant style in `md_to_pdf/etk_md2pdf/styles/` — fonts must be installed locally or imported from Google Fonts
 - Edit `FONT_BODY` and `FONT_MONO` variables to use system fonts
 
 **Large markdown file (embedded images)**

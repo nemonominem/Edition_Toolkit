@@ -77,32 +77,37 @@
     size: A4;
     margin: 1.4cm 1.4cm 1.8cm 1.4cm;
 
-    /* Footer bar — publication info centred */
-    @bottom-center {
+    /* Footer: publication name left | page centre | issue/website right */
+    @bottom-left {
         content: string(pub-footer);
-        font-family: 'Source Sans 3', Arial, sans-serif;
-        font-size: 7pt;
-        color: #ffffff;
-        background: #2d2d2d;
-        padding: 3pt 6pt;
-        width: 100%;
-        text-align: center;
-        letter-spacing: 0.03em;
-    }
-
-    /* Right footer — issue / website */
-    @bottom-right {
-        content: string(issue-footer);
         font-family: 'Source Sans 3', Arial, sans-serif;
         font-size: 7pt;
         color: #666;
         padding-top: 3pt;
     }
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: 'Source Sans 3', Arial, sans-serif;
+        font-size: 7pt;
+        color: #666;
+        padding-top: 3pt;
+    }
+    @bottom-right {
+        content: string(issue-footer);
+        font-family: 'Source Sans 3', Arial, sans-serif;
+        font-size: 7pt;
+        font-style: italic;
+        color: #666;
+        padding-top: 3pt;
+    }
 }
 
-/* First page: suppress generic footer — the header band carries the branding */
+/* First page: suppress footer — the header band carries the branding */
 @page :first {
     margin: 1.4cm 1.4cm 1.8cm 1.4cm;
+    @bottom-left   { content: none; }
+    @bottom-center { content: none; }
+    @bottom-right  { content: none; }
 }
 
 
@@ -145,6 +150,65 @@ h1,
 .header-band {
     column-span: all;
 }
+
+/*
+ * .single-column — switches an entire section to a single full-width column.
+ * column-span:all forces the div out of the column flow; column-count:1
+ * ensures its children lay out in one wide column (not re-columned).
+ */
+div.single-column {
+    column-span: all;
+    column-count: 1;
+    width: 100%;
+    display: block;
+}
+
+
+/* ── Key Takeaways box ───────────────────────────────────────────────────── */
+/*
+ * Full-width copper-accented summary box.
+ * Usage in Markdown source:
+ *   <div class="key-takeaways">
+ *   <h2>Key Takeaways</h2>
+ *   Body text and bullets…
+ *   </div>
+ * Note: use raw <h2> inside the div, not ## syntax — python-markdown does
+ * not parse Markdown inside raw HTML blocks.
+ */
+div.key-takeaways {
+    background: #fdf0e6;                         /* warm tinted copper background */
+    border-top: 2.5pt solid #c8631a;
+    border-bottom: 2.5pt solid #c8631a;
+    padding: 0.7em 1em 0.6em 1em;
+    margin: 0.8em 0 1.2em 0;
+    column-span: all;
+}
+
+div.key-takeaways h2 {
+    font-size: 9pt;
+    font-weight: 700;
+    color: #c8631a;
+    border: none;
+    padding: 0;
+    margin: 0 0 0.4em 0;
+}
+
+div.key-takeaways p {
+    margin-bottom: 0.4em;
+}
+
+p.scope-note {
+    font-style: italic;
+    font-size: 8pt;
+    color: #555;
+    margin-bottom: 0.5em;
+}
+
+div.key-takeaways ul,
+div.key-takeaways ol {
+    margin: 0.3em 0 0.3em 0;
+}
+
 
 p {
     margin: 0 0 0.45em 0;
@@ -236,11 +300,14 @@ h4, h5, h6 {
 
 /* ── Drop cap on first paragraph of article ──────────────────────────────── */
 /*
- * WeasyPrint supports ::first-letter for drop caps.
- * Applies to the first <p> immediately after an <h1> or after an element
- * with class .drop-cap-next. Three-line drop cap in accent colour.
+ * Drop cap via explicit opt-in only: add class="drop-cap" to a <p> in your
+ * Markdown source (raw HTML) to get the three-line copper drop cap.
+ *
+ * The automatic h1 + p::first-letter selector is intentionally removed:
+ * WeasyPrint crashes (assert BlockReplacedBox) when ::first-letter targets
+ * a paragraph whose first inline child is a formatted element (<em>, <img>,
+ * etc.) rather than a plain text node.  Opt-in avoids the crash entirely.
  */
-h1 + p::first-letter,
 p.drop-cap::first-letter {
     float: left;
     font-size: 3.1em;

@@ -91,7 +91,9 @@ Edition/
 ├── md_to_pdf/
 │   ├── README.md              (conda install lines)
 │   ├── md_to_pdf.py
-│   └── style.css
+│   └── etk_md2pdf/
+│       ├── convert.py
+│       └── styles/            (style_thinktank, style_academic, style_magazine, style_intelligence)
 │
 └── md_to_booklet/
     ├── instructions.md
@@ -157,7 +159,7 @@ python scripts/make_booklet_pandoc.py
 → Run with `--debug` flag to see what selectors were found
 
 **PDF fonts look wrong**
-→ Check `style.css` — ensure fonts are conda-installed or Google Fonts imported
+→ Check the bundled CSS in `md_to_pdf/etk_md2pdf/styles/` — ensure fonts are conda-installed or imported via Google Fonts in the stylesheet
 
 ---
 

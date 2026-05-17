@@ -18,7 +18,7 @@
  *
  * ── Font sizes ───────────────────────────────────────────────────────────
  *
- *   SIZE_BODY         9.5pt  Compact — matches IC report body size.
+ *   SIZE_BODY         8.5pt  Compact — matches IC report body size.
  *   SIZE_SMALL        7.5pt  Footnotes, captions, table notes, footer.
  *   SIZE_TABLE        8.5pt  Table body.
  *
@@ -43,12 +43,10 @@
  *
  * ── Header bar text ──────────────────────────────────────────────────────
  *
- *   HEADER_LEFT      "DRASTIC"                  Large bold navy acronym, top-left.
- *   HEADER_RIGHT     "OSINT RESEARCH PRODUCT"   Spaced caps navy, top-right.
- *                    White background, navy rule below. A solid navy block
- *                    approximates the barcode stripe between the two slots.
- *                    Change both @top-left content: and @top-right content:
- *                    values in the @page block below to rebrand.
+ *   HEADER_LEFT      "DRASTIC"                  Bold navy, white bg, top-left.
+ *   HEADER_RIGHT     "OSINT RESEARCH PRODUCT"   Bold navy, white bg, top-right.
+ *                    Both slots identical styling — same font, size, colour.
+ *                    Change content: values in @top-left and @top-right below.
  *
  * ── Footer text ──────────────────────────────────────────────────────────
  *
@@ -71,7 +69,7 @@
  *
  * ── Paragraph rhythm ─────────────────────────────────────────────────────
  *
- *   LINE_HEIGHT      1.35    Compact — matches IC report body.
+ *   LINE_HEIGHT      1.6     Matches IC report body leading.
  *   PARA_SPACING     0.5em   Space between paragraphs; no first-line indent.
  *
  * ── Special block classes (use in Markdown as raw HTML) ──────────────────
@@ -108,7 +106,7 @@
 
 @page {
     size: letter;                                 /* 8.5 × 11 in */
-    margin: 2.8cm 1.8cm 1.6cm 1.8cm;             /* top generous — header + gap to body */
+    margin: 2.5cm 1.8cm 1.6cm 1.8cm;
 
     /*
      * Header — white background, navy text.
@@ -122,48 +120,49 @@
      * @top-right only.
      */
     @top-left {
-        content: "DRASTIC";                       /* HEADER_LEFT — navy text, white bg */
-        font-family: 'Libre Franklin', Arial, sans-serif;
-        font-size: 13pt;
+        content: "DRASTIC";                       /* HEADER_LEFT */
+        font-family: 'Libre Baskerville', Cambria, Georgia, serif;
+        font-size: 12pt;
         font-weight: 700;
         color: #1d4b7a;
         background: #ffffff;
-        padding: 4pt 8pt 4pt 0;
-        vertical-align: middle;
+        padding-top: 1.3cm;
+        padding-left: 2mm;                         /* small nudge to align with body left edge */
+        vertical-align: top;
     }
     @top-center {
-        content: none;                            /* no center slot */
+        content: none;
     }
     @top-right {
-        content: "OSINT RESEARCH PRODUCT";        /* HEADER_RIGHT — white text, navy bg */
-        font-family: 'Libre Franklin', Arial, sans-serif;
-        font-size: 7.5pt;
+        content: "OSINT RESEARCH PRODUCT";        /* HEADER_RIGHT */
+        font-family: 'Libre Baskerville', Cambria, Georgia, serif;
+        font-size: 12pt;
         font-weight: 700;
-        letter-spacing: 0.2em;
-        color: #ffffff;
-        background: #1d4b7a;
-        padding: 4pt 8pt 4pt 8pt;
-        vertical-align: middle;
+        letter-spacing: 0.18em;
+        color: #1d4b7a;
+        background: #ffffff;
+        padding-top: 1.3cm;
+        vertical-align: top;
     }
 
-    /* Footer: author left | [ n ] centre | title right */
+    /* Footer: author left | [ n/m ] centre | title right */
     @bottom-left {
         content: "Author Name";                   /* FOOTER_LEFT — change to author */
-        font-family: 'Libre Franklin', Arial, sans-serif;
+        font-family: 'Libre Baskerville', Cambria, Georgia, serif;
         font-size: 7.5pt;
         color: #555;
         padding-top: 3pt;
     }
     @bottom-center {
-        content: "[ " counter(page) " ]";
-        font-family: 'Libre Franklin', Arial, sans-serif;
+        content: "[ " counter(page) "/" counter(pages) " ]";
+        font-family: 'Libre Baskerville', Cambria, Georgia, serif;
         font-size: 7.5pt;
         color: #555;
         padding-top: 3pt;
     }
     @bottom-right {
         content: "Article Title";                 /* FOOTER_RIGHT — change to article title */
-        font-family: 'Libre Franklin', Arial, sans-serif;
+        font-family: 'Libre Baskerville', Cambria, Georgia, serif;
         font-size: 7.5pt;
         font-style: italic;
         color: #555;
@@ -184,8 +183,52 @@
 
 /* ── Page-break helpers ───────────────────────────────────────────────────── */
 
-.annex-break { page-break-before: always; }
+.annex-break { page-break-before: always; break-before: page; }
 .annex-break + h2 { margin-top: 0; }
+
+
+/* ── Column layout utilities ─────────────────────────────────────────────── */
+
+/*
+ * .full-width  — forces a single element (table, image, figure) to span both
+ *               columns without breaking the surrounding two-column flow.
+ * Usage in Markdown:
+ *   <div class="full-width">
+ *   | col | col |
+ *   | ... | ... |
+ *   </div>
+ */
+/*
+ * .full-width — spans both columns. column-span:all must be on the div itself;
+ * WeasyPrint also requires the div to be a direct child of the column container.
+ * The table inside inherits the full width automatically.
+ */
+div.full-width {
+    column-span: all;
+    width: 100%;
+    display: block;
+}
+
+/* Ensure direct block children of .full-width also fill the width */
+div.full-width > table,
+div.full-width > p,
+div.full-width > ul,
+div.full-width > ol {
+    width: 100%;
+    column-span: all;
+}
+
+/*
+ * .single-column — switches an entire section to a single full-width column.
+ * WeasyPrint: column-span:all forces the div to span both columns, and
+ * column-count:1 inside resets the flow to single-column for its children.
+ */
+div.single-column {
+    column-span: all;
+    column-count: 1;
+    width: 100%;
+    display: block;
+}
 
 
 /* ── Body typography ─────────────────────────────────────────────────────── */
@@ -194,11 +237,12 @@ body {
     /* Sans-serif option (commented out):
     font-family: 'Libre Franklin', 'Gill Sans', Calibri, Arial, sans-serif; */
     font-family: 'Libre Baskerville', Cambria, Georgia, serif;
-    font-size: 9.5pt;
-    line-height: 1.35;
+    font-size: 8.5pt;
+    line-height: 1.6;
     color: #1a1a1a;
     hyphens: auto;
     text-align: justify;
+    margin-top: 1.6cm;                           /* extra gap between header and body */
     column-count: 2;
     column-gap: 0.55cm;
     column-rule: 0.5pt solid #c8d4e0;
@@ -229,7 +273,7 @@ h1 {
     font-size: 14pt;
     font-weight: 700;
     color: #1a1a1a;
-    margin-top: 0.6em;
+    margin-top: -0.9cm;                          /* pull up first-page title — compensates body margin-top */
     margin-bottom: 0;
     line-height: 1.2;
     text-align: left;
@@ -239,6 +283,11 @@ h1 {
     column-span: all;                            /* full width across both columns */
     box-shadow: 0 5pt 0 0 #c8a84b;              /* gold hairline below navy rule */
     margin-bottom: 0.55em;
+}
+
+/* Subsequent h1s (if any) should not have the negative margin */
+h1 + * ~ h1 {
+    margin-top: 0.6em;
 }
 
 
@@ -255,6 +304,7 @@ h2 {
     margin-top: 1.4em;
     margin-bottom: 0.35em;
     line-height: 1.3;
+    text-align: left;
     page-break-after: avoid;
     text-decoration: underline;
     text-decoration-color: #1d4b7a;
@@ -274,6 +324,7 @@ h3 {
     color: #1a1a1a;
     margin-top: 1.2em;
     margin-bottom: 0.25em;
+    text-align: left;
     page-break-after: avoid;
 }
 
@@ -284,6 +335,7 @@ h4, h5, h6 {
     color: #1a1a1a;
     margin-top: 0.9em;
     margin-bottom: 0.2em;
+    text-align: left;
     page-break-after: avoid;
 }
 
@@ -644,6 +696,14 @@ div.mermaid-placeholder {
     margin: 0.9em 0;
 }
 
+
+/* ── Column span test class — identical pattern to div.footnote ─────────── */
+
+div.test-span {
+    column-span: all;
+    width: 100%;
+    display: block;
+}
 
 /* ── Definition lists ────────────────────────────────────────────────────── */
 

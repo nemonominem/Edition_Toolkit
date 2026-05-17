@@ -1,42 +1,65 @@
 /*
- * style_academic.css — Academic monograph style for md_to_pdf.py
- *
- * Academic monograph style — single column, serif, classic book typography.
- * Colour accents applied to headings, rules, and structural elements.
+ * style.css — PDF stylesheet for md_to_pdf.py
  *
  * ╔══════════════════════════════════════════════════════════════════════════╗
  * ║  CONFIGURATION — edit the variables in this section to restyle the PDF  ║
  * ╚══════════════════════════════════════════════════════════════════════════╝
  *
+ * All tuneable values are collected here. The implementation rules below
+ * reference these comments; search for the variable name to find where it
+ * is applied if you need finer control.
+ *
  * ── Fonts ────────────────────────────────────────────────────────────────
  *
- *   FONT_BODY        'EB Garamond'  Classic old-style serif; close to
- *                    Monotype Ehrhardt and similar academic press faces.
- *   FONT_MONO        'Source Code Pro'  Inline code / fenced blocks.
+ *   FONT_BODY        'Source Serif 4', Georgia, 'Times New Roman', serif
+ *                    Any web font (needs internet at render time) or a locally
+ *                    installed font name. For offline use, remove the @import
+ *                    below and set to e.g. Georgia or "Palatino Linotype".
+ *
+ *   FONT_MONO        'Source Code Pro', 'Courier New', monospace
+ *                    Used for inline code and fenced code blocks.
  *
  * ── Font sizes ───────────────────────────────────────────────────────────
  *
- *   SIZE_BODY        10.5pt   Standard academic book body size.
- *   SIZE_SMALL        8.5pt  Footnotes, captions, running head, footer.
- *   SIZE_TABLE        9.5pt  Table body text.
+ *   SIZE_BODY        10pt   Body text. Independent of heading sizes.
+ *   SIZE_SMALL        8.5pt Footnotes, captions, code, glossary box, footer
+ *   SIZE_FOOTER       8.5pt Footer left/centre/right slots
+ *   SIZE_TABLE        9pt   Table body text
  *
- *   SIZE_H1          22pt    Chapter title.
- *   SIZE_H2          12pt    Section heading (bold, coloured rule below).
- *   SIZE_H3          10.5pt  Sub-section (bold italic, small-caps-style).
- *   SIZE_H4          10.5pt  Minor heading (bold, inline-style).
+ *   Heading sizes are intentionally independent of SIZE_BODY so you can
+ *   enlarge section titles without reflowing body text. To scale all
+ *   headings up or down together, apply the same delta to each SIZE_Hn.
+ *
+ *   SIZE_H1          18pt   Article / document title   (current: body × 1.8)
+ *   SIZE_H2          14pt   Major section headings     (current: body × 1.4)
+ *   SIZE_H3          11.5pt Sub-section headings       (current: body × 1.15)
+ *   SIZE_H4          10pt   Minor headings             (current: body × 1.0)
+ *
+ *   Example — larger headings, same body text:
+ *     SIZE_BODY  10pt  (unchanged)
+ *     SIZE_H1    22pt
+ *     SIZE_H2    17pt
+ *     SIZE_H3    13pt
+ *     SIZE_H4    11pt
  *
  * ── Colours ──────────────────────────────────────────────────────────────
  *
- *   COLOR_BODY          #111    Near-black body text.
- *   COLOR_ACCENT        #1a5c7a Deep teal — chapter titles, section rules,
- *                               blockquote bar, table header bg, link colour.
- *   COLOR_ACCENT_LIGHT  #d6eaf4 Very light teal for table header background.
- *   COLOR_MUTED         #333    Blockquote / callout text.
- *   COLOR_FAINT         #666    Footnotes, captions, running head.
- *   COLOR_RULE          #1a5c7a Horizontal rules (accent colour).
- *   COLOR_BG_CODE       #f4f4f4 Code block background.
+ *   COLOR_BODY          #1a1a1a  Main body text
+ *   COLOR_HEADING       inherit  Section titles h1–h4; defaults to COLOR_BODY
+ *                                Change color: inherit to e.g. color: #2c3e6b on h1–h4 rules
+ *   COLOR_MUTED         #333     Blockquote text
+ *   COLOR_FAINT         #666     Footer, footnote text, cite attribution lines
+ *   COLOR_LINK          #1a5276  Hyperlinks
+ *   COLOR_RULE          #ccc     Horizontal rules, footnote border
+ *   COLOR_PULLQUOTE_BAR #aaa     Left border of pull-quote / blockquote boxes
+ *   COLOR_BG_CODE       #f4f4f4  Code block background
+ *   COLOR_BG_TABLE      #f0f0f0  Table header background
+ *   COLOR_BG_CALLOUT    #f8f8f8  Callout / glossary box background
+ *   COLOR_CALLOUT_LABEL #555     'NOTE' / 'WARNING' label text
+ *   COLOR_CALLOUT_TITLE #333     Bold title line inside a callout
+ *   COLOR_CALLOUT_BODY  #333     Body text inside a callout
  *
- *   Per-callout accent colours:
+ *   Per-callout-type accent colours (border + background):
  *     div.callout-note      border #6c9fc2  bg #f0f6fb
  *     div.callout-warning   border #c2a040  bg #fdf8ee
  *     div.callout-important border #a07ac2  bg #f7f2fb
@@ -45,399 +68,282 @@
  *
  * ── Page layout ──────────────────────────────────────────────────────────
  *
- *   PAGE_SIZE        A4
- *   TEXT_WIDTH       ~120mm  Achieved via wide margins — classic academic
- *                    narrow measure for comfortable line lengths (~65 chars).
- *   MARGIN_TOP       3.0cm
- *   MARGIN_INNER     3.5cm   Left on recto (binding side).
- *   MARGIN_OUTER     2.8cm   Right on recto.
- *   MARGIN_BOTTOM    2.2cm   Space for page number.
+ *   PAGE_SIZE        A4      Change to 'Letter' for US letter (8.5×11in)
+ *   MARGIN_TOP       2.5cm
+ *   MARGIN_RIGHT     2.8cm
+ *   MARGIN_BOTTOM    1.4cm   Space between text area and footer
+ *   MARGIN_LEFT      2.8cm
+ *   MARGIN_FIRST_BTM 2.5cm   Bottom margin on page 1 (no footer)
  *
- * ── Paragraph rhythm ─────────────────────────────────────────────────────
+ * ── Footer ───────────────────────────────────────────────────────────────
  *
- *   LINE_HEIGHT      1.45    Slightly tighter than default — matches book
- *                            printing convention.
- *   PARA_INDENT      1.5em   First-line indent; no space between paragraphs
- *                            (classic book convention).  The FIRST paragraph
- *                            after a heading is NOT indented.
+ *   FOOTER_LEFT      "Author Name"    Change to author / organisation name.
+ *   FOOTER_CENTER    "p. " counter(page) " / " counter(pages)
+ *   FOOTER_RIGHT     "Article Title"  Change to article / publication title.
+ *                    \2018 and \2019 are curly single-quote characters (' ')
+ *                    Set any slot to:  none  to suppress it entirely.
+ *
+ * ── Line spacing & paragraph rhythm ─────────────────────────────────────
+ *
+ *   LINE_HEIGHT      1.6     Body line height (unitless multiplier)
+ *   PARA_SPACING     0.75em  Space below each paragraph
  *
  * ═══════════════════════════════════════════════════════════════════════════
- * Implementation below — only edit this for structural changes.
+ * Implementation below — only edit this if you need structural changes.
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
 
 /* ── Web fonts ───────────────────────────────────────────────────────────── */
-
-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400;1,700&family=Source+Code+Pro:wght@400&display=swap');
+/*
+ * Remove or comment out this @import for fully offline rendering.
+ * Replace FONT_BODY / FONT_MONO below with locally installed font names.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=Source+Code+Pro:wght@400&display=swap');
 
 
 /* ── Page layout ─────────────────────────────────────────────────────────── */
 
 @page {
-    size: A4;
-    margin: 3.0cm 2.8cm 2.2cm 3.5cm;            /* top right bottom left(binding) */
+    size: A4;                                    /* PAGE_SIZE */
+    margin: 2.5cm 2.8cm 1.8cm 2.8cm;            /* MARGIN_TOP RIGHT BOTTOM LEFT */
 
-    /* Running head — book title in small caps style, top centre */
-    @top-center {
-        content: string(chapter-title);
-        font-family: 'EB Garamond', Palatino, serif;
+    @bottom-left {
+        content: "Author Name";                   /* FOOTER_LEFT */
+        font-family: 'Source Serif 4', Georgia, serif;
+        font-size: 8.5pt;                        /* SIZE_FOOTER */
+        color: #666;                             /* COLOR_FAINT */
+    }
+    @bottom-center {
+        content: "p. " counter(page) " / " counter(pages);   /* FOOTER_CENTER */
+        font-family: 'Source Serif 4', Georgia, serif;
+        font-size: 8.5pt;
+        color: #666;
+    }
+    @bottom-right {
+        content: "Article Title";                     /* FOOTER_RIGHT */
+        font-family: 'Source Serif 4', Georgia, serif;
         font-size: 8.5pt;
         font-style: italic;
         color: #666;
-        padding-bottom: 4pt;
-        border-bottom: 0.5pt solid #1a5c7a;
-    }
-
-    /* Page number — centered at foot */
-    @bottom-center {
-        content: counter(page);
-        font-family: 'EB Garamond', Palatino, serif;
-        font-size: 8.5pt;
-        color: #333;
     }
 }
 
-/* First page: no running head, no page number */
+/* First page: no footer */
 @page :first {
-    margin: 3.0cm 2.8cm 3.0cm 3.5cm;
-    @top-center    { content: none; border: none; }
+    margin: 2.5cm 2.8cm 2.5cm 2.8cm;            /* MARGIN_FIRST_BTM replaces bottom */
+    @bottom-left   { content: none; }
     @bottom-center { content: none; }
-}
-
-/* Blank verso pages (WeasyPrint doesn't do two-page spreads, but
-   setting named pages here documents intent for future tooling)   */
-@page :left {
-    margin: 3.0cm 3.5cm 2.2cm 2.8cm;            /* mirror for left-hand pages */
+    @bottom-right  { content: none; }
 }
 
 
-/* ── Page-break helpers ───────────────────────────────────────────────────── */
+/* ── Page-break helpers (injected by md_to_pdf.py) ───────────────────────── */
 
 .annex-break { page-break-before: always; }
+
+/* Suppress the h2 top margin after a forced page break — the page margin
+   already provides adequate spacing at the top of the new page.           */
 .annex-break + h2 { margin-top: 0; }
-
-
-/* ── Running head string — capture from h1 ───────────────────────────────── */
-
-h1 { string-set: chapter-title content(); }
 
 
 /* ── Body typography ─────────────────────────────────────────────────────── */
 
 body {
-    font-family: 'EB Garamond', Palatino, 'Palatino Linotype', serif;
-    font-size: 10.5pt;
-    line-height: 1.45;
-    color: #111;
+    font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;  /* FONT_BODY */
+    font-size: 10pt;          /* SIZE_BODY */
+    line-height: 1.6;         /* LINE_HEIGHT */
+    color: #1a1a1a;           /* COLOR_BODY */
     hyphens: auto;
     text-align: justify;
 }
 
-/* Classic book paragraphs: first-line indent, no inter-paragraph space */
-p {
-    margin: 0;
-    text-indent: 1.5em;
-    orphans: 3;
-    widows: 3;
-}
+h1 { font-size: 19pt;    font-weight: 600; margin-top: 0;    margin-bottom: 0.4em; line-height: 1.2; page-break-after: avoid; color: inherit; text-align: left; }  /* SIZE_H1 — COLOR_HEADING: change color: inherit to e.g. color: #2c3e6b */
+h2 { font-size: 15pt;    font-weight: 600; margin-top: 2em;  margin-bottom: 0.4em; page-break-after: avoid; color: inherit; }  /* SIZE_H2 — COLOR_HEADING */
+h3 { font-size: 12pt;    font-weight: 600; margin-top: 1.5em; margin-bottom: 0.3em; page-break-after: avoid; color: inherit; }  /* SIZE_H3 — COLOR_HEADING */
+h4,
+h5,
+h6 { font-size: 10pt;    font-weight: 600; margin-top: 1.2em; margin-bottom: 0.2em; page-break-after: avoid; color: inherit; }  /* SIZE_H4 — COLOR_HEADING */
 
-/* First paragraph after a heading — flush left (no indent) */
-h1 + p,
-h2 + p,
-h3 + p,
-h4 + p,
-h5 + p,
-h6 + p,
-/* After block elements that break the flow */
-blockquote + p,
-div.pull-quote + p,
-div.callout + p,
-table + p,
-figure + p,
-pre + p,
-ul + p,
-ol + p,
-dl + p,
-hr + p,
-.annex-break + h2 + p {
-    text-indent: 0;
-}
+p { margin: 0 0 0.75em 0; orphans: 3; widows: 3; }           /* PARA_SPACING */
 
 em     { font-style: italic; }
-strong { font-weight: 700; }
-small  { font-size: 8.5pt; line-height: 1.5; }
-
-
-/* ── Chapter & section headings ──────────────────────────────────────────── */
-
-/*
- * h1 — Chapter title.
- * Large, bold, deep teal.  Generous space above (only at top of page)
- * and a teal rule below.
- */
-h1 {
-    font-size: 22pt;
-    font-weight: 700;
-    font-style: normal;
-    color: #1a5c7a;                              /* COLOR_ACCENT */
-    margin-top: 2.5em;
-    margin-bottom: 0.15em;
-    line-height: 1.15;
-    text-align: left;
-    page-break-after: avoid;
-    border-bottom: 1.5pt solid #1a5c7a;
-    padding-bottom: 0.3em;
-}
-
-/*
- * h2 — Section heading.
- * Bold, slightly larger than body, coloured.
- * A fine rule below in accent colour separates it from body text.
- */
-h2 {
-    font-size: 12pt;
-    font-weight: 700;
-    color: #1a5c7a;                              /* COLOR_ACCENT */
-    margin-top: 2.2em;
-    margin-bottom: 0.5em;
-    line-height: 1.25;
-    page-break-after: avoid;
-    border-bottom: 0.5pt solid #1a5c7a;
-    padding-bottom: 0.15em;
-}
-
-/*
- * h3 — Sub-section heading.
- * Bold italic, body size.  No rule.
- */
-h3 {
-    font-size: 10.5pt;
-    font-weight: 700;
-    font-style: italic;
-    color: #1a5c7a;
-    margin-top: 1.6em;
-    margin-bottom: 0.3em;
-    page-break-after: avoid;
-}
-
-/*
- * h4–h6 — Minor headings.  Bold, body colour, run-in style.
- */
-h4, h5, h6 {
-    font-size: 10.5pt;
-    font-weight: 700;
-    font-style: normal;
-    color: #111;
-    margin-top: 1.2em;
-    margin-bottom: 0.2em;
-    page-break-after: avoid;
-}
+strong { font-weight: 600; }
+small  { font-size: 8.5pt; line-height: 1.5; }                /* SIZE_SMALL */
 
 
 /* ── Blockquotes & pull-quotes ───────────────────────────────────────────── */
 
+/* Wrapper that keeps quote + attribution visually together */
 div.pull-quote {
-    margin: 1.4em 0 1.4em 1.8em;
-    padding: 0.6em 1em 0.5em 1em;
-    border-left: 3px solid #1a5c7a;             /* COLOR_ACCENT */
+    margin: 1.2em 0 1.2em 1.5em;
+    padding: 0.7em 1em 0.6em 1em;
+    border-left: 3px solid #aaa;              /* COLOR_PULLQUOTE_BAR */
 }
 
+/* The blockquote inside a pull-quote inherits the container border —
+   reset its own margin/border/padding so it doesn't double-indent */
 div.pull-quote blockquote {
     margin: 0;
     padding: 0;
     border: none;
-    color: #333;
+    color: #333;                               /* COLOR_MUTED */
     font-style: italic;
 }
-div.pull-quote blockquote p { margin: 0; text-indent: 0; }
+div.pull-quote blockquote p { margin-bottom: 0; }
 
+/* Attribution line — sits below the quote with clear breathing room */
 cite.pull-source {
     display: block;
-    margin-top: 0.5em;
-    padding-top: 0.4em;
-    border-top: 0.5pt solid #aac8d8;
-    font-size: 8.5pt;
+    margin-top: 0.6em;
+    padding-top: 0.45em;
+    border-top: 1px solid #ddd;
+    font-size: 8.5pt;                          /* SIZE_SMALL */
     font-style: normal;
-    color: #666;
+    color: #666;                               /* COLOR_FAINT */
 }
 
-/* Standalone blockquotes */
+/* Standalone blockquotes (not inside pull-quote wrapper) */
 blockquote {
-    margin: 1.2em 0 1.2em 2em;
-    padding-left: 0.8em;
-    border-left: 2.5pt solid #1a5c7a;           /* COLOR_ACCENT */
+    margin: 1em 0 1em 1.5em;
+    padding-left: 1em;
+    border-left: 3px solid #aaa;
     color: #333;
     font-style: italic;
 }
-blockquote p { margin: 0; text-indent: 0; }
-blockquote p + p { text-indent: 1em; margin-top: 0.4em; }
+blockquote p { margin-bottom: 0.3em; }
 
 
 /* ── Code ────────────────────────────────────────────────────────────────── */
 
 code {
-    font-family: 'Source Code Pro', 'Courier New', monospace;
-    font-size: 8.5pt;
-    background: #f4f4f4;
+    font-family: 'Source Code Pro', 'Courier New', monospace;  /* FONT_MONO */
+    font-size: 8.5pt;                          /* SIZE_SMALL */
+    background: #f4f4f4;                       /* COLOR_BG_CODE */
     padding: 0.1em 0.3em;
     border-radius: 2px;
 }
 pre {
-    background: #f4f4f4;
+    background: #f4f4f4;                       /* COLOR_BG_CODE */
     padding: 0.8em 1em;
     border-radius: 3px;
-    margin: 1.2em 0;
-    border-left: 3pt solid #1a5c7a;
+    margin: 1em 0;
 }
 pre code { background: none; padding: 0; font-size: 8.5pt; line-height: 1.4; }
 
 
 /* ── Tables ──────────────────────────────────────────────────────────────── */
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1.4em 0;
-    font-size: 9.5pt;
-    text-indent: 0;                              /* tables are not paragraphs */
-}
-th {
-    background: #d6eaf4;                         /* COLOR_ACCENT_LIGHT */
-    color: #1a5c7a;                              /* COLOR_ACCENT */
-    font-weight: 700;
-    text-align: left;
-    padding: 0.35em 0.6em;
-    border-top: 1.5pt solid #1a5c7a;
-    border-bottom: 1pt solid #1a5c7a;
-}
-td {
-    padding: 0.3em 0.6em;
-    border-bottom: 0.5pt solid #ccc;
-    vertical-align: top;
-}
-tr:last-child td {
-    border-bottom: 1pt solid #1a5c7a;
-}
+table { width: 100%; border-collapse: collapse; margin: 1.2em 0; font-size: 9pt; }  /* SIZE_TABLE */
+th    { background: #f0f0f0; font-weight: 600; text-align: left; padding: 0.35em 0.55em; border: 1px solid #ccc; }  /* COLOR_BG_TABLE */
+td    { padding: 0.3em 0.55em; border: 1px solid #ddd; vertical-align: top; }
+tr:nth-child(even) td { background: #fafafa; }
 
 
 /* ── Images ──────────────────────────────────────────────────────────────── */
 
-img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 1.4em auto;
-    text-indent: 0;
+img { max-width: 100%; height: auto; display: block; margin: 1em 0; }
+
+/*
+ * Per-image size overrides — use a substring of the filename.
+ * Pattern:  img[src*="part-of-filename"] { max-width: XX%; }
+ * Add entries here rather than changing width= in the source document.
+ */
+img[src*="houssin"],
+img[src*="Tedros_31Jan"] {
+    max-width: 42%;
 }
 
-/* Per-image size overrides — add entries keyed to filename substrings */
-/* img[src*="figure-1"] { max-width: 70%; } */
 
+/* ── Image captions ─────────────────────────────────────────────────────── */
 
-/* ── Image captions ──────────────────────────────────────────────────────── */
-
+/* Injected by md_to_pdf.py: <p class="img-caption"> immediately after <img> */
 p.img-caption {
-    font-size: 8.5pt;
+    font-size: 8.5pt;                        /* SIZE_SMALL */
     font-style: italic;
     color: #555;
     text-align: center;
-    margin-top: -0.6em;
-    margin-bottom: 1.2em;
-    text-indent: 0;
+    margin-top: -0.4em;
+    margin-bottom: 1em;
     line-height: 1.4;
 }
 
+/* Inside a callout the body text is already italic — make the caption upright,
+   smaller, and visually separated so it reads as a label, not body text.     */
 div.callout p.img-caption {
     font-style: normal;
     font-size: 8pt;
     color: #666;
-    border-top: 0.5pt solid #ddd;
+    border-top: 1px solid #ddd;
     padding-top: 0.3em;
     margin-top: 0.4em;
     text-align: left;
-    text-indent: 0;
 }
 
 
 /* ── Footnotes ───────────────────────────────────────────────────────────── */
 
 div.footnote {
-    margin-top: 2.4em;
-    padding-top: 0.7em;
-    border-top: 0.5pt solid #1a5c7a;            /* accent rule above footnotes */
-    font-size: 8.5pt;
-    line-height: 1.45;
-    color: #444;
+    margin-top: 2em;
+    padding-top: 0.8em;
+    border-top: 1px solid #ccc;               /* COLOR_RULE */
+    font-size: 8.5pt;                         /* SIZE_SMALL */
+    line-height: 1.5;
+    color: #333;                              /* COLOR_MUTED */
 }
-div.footnote ol { padding-left: 1.6em; margin: 0; }
-div.footnote li { margin-bottom: 0.25em; text-indent: 0; }
-div.footnote > hr { display: none; }
-div.footnote p  { margin: 0; text-indent: 0; }
-a.footnote-backref { text-decoration: none; color: #1a5c7a; }
+div.footnote ol { padding-left: 1.5em; margin: 0; }
+div.footnote li { margin-bottom: 0.3em; }
+div.footnote > hr { display: none; }          /* suppress python-markdown's spurious <hr> */
+a.footnote-backref { text-decoration: none; }
 
 
 /* ── Rules ───────────────────────────────────────────────────────────────── */
 
-hr {
-    border: none;
-    border-top: 0.5pt solid #1a5c7a;            /* COLOR_RULE */
-    margin: 2em 0;
-}
+hr { border: none; border-top: 1px solid #ccc; margin: 2em 0; }  /* COLOR_RULE */
 
 
 /* ── Links ───────────────────────────────────────────────────────────────── */
 
 a {
-    color: #1a5c7a;                              /* COLOR_ACCENT */
+    color: #1a5276;                           /* COLOR_LINK */
     text-decoration: none;
     word-break: break-all;
     overflow-wrap: break-word;
 }
 
 
-/* ── Lists ───────────────────────────────────────────────────────────────── */
-
-ul, ol {
-    margin: 0.6em 0 0.6em 0;
-    padding-left: 2em;
-    text-indent: 0;
-}
-li {
-    margin-bottom: 0.2em;
-    text-indent: 0;
-}
-li p { text-indent: 0; }
-
-
-/* ── GFM callout boxes ───────────────────────────────────────────────────── */
+/* ── GFM callout boxes ([!NOTE], [!WARNING], etc.) ──────────────────────── */
 
 div.callout {
-    margin: 1.4em 0;
+    margin: 1.2em 0;
     padding: 0.6em 1em;
-    border-left: 4pt solid #1a5c7a;
-    background: #f0f6fb;
+    border-left: 4px solid #aaa;
+    background: #f8f8f8;                      /* COLOR_BG_CALLOUT */
     font-size: 9.5pt;
     font-style: italic;
-    color: #333;
+    color: #333;                              /* COLOR_MUTED */
 }
-div.callout p { margin: 0 0 0.4em 0; text-indent: 0; font-style: inherit; }
+div.callout p { margin: 0 0 0.4em 0; font-style: inherit; }
+
+/* First <p> inside a callout is the title line (**bold** in Markdown).
+   Override italic so it renders upright and visually distinct from body. */
 div.callout p:first-of-type {
     font-style: normal;
-    font-weight: 700;
-    color: #1a5c7a;
+    font-weight: 600;
+    color: #333;                             /* COLOR_CALLOUT_TITLE — change to e.g. #1a3a5c */
 }
 
 p.callout-label {
-    font-weight: 700;
+    font-weight: 600;
     font-style: normal;
-    font-size: 8.5pt;
+    font-size: 8.5pt;                         /* SIZE_SMALL */
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
     margin-bottom: 0.3em !important;
-    color: #1a5c7a;
+    color: #555;                               /* COLOR_CALLOUT_LABEL */
 }
 
+/* Accent colours per callout type — change border-color and background freely */
 div.callout-note      { border-color: #6c9fc2; background: #f0f6fb; }
 div.callout-tip       { border-color: #6aaa6a; background: #f0faf0; }
 div.callout-important { border-color: #a07ac2; background: #f7f2fb; }
@@ -448,34 +354,32 @@ div.callout-caution   { border-color: #c26060; background: #fdf2f2; }
 /* ── Glossary inline box ─────────────────────────────────────────────────── */
 
 div.glossary-box {
-    font-size: 8.5pt;
+    font-size: 8.5pt;                         /* SIZE_SMALL */
     font-style: italic;
     color: #444;
-    background: #f0f6fb;
-    border-left: 2.5pt solid #1a5c7a;
+    background: #f8f8f8;                      /* COLOR_BG_CALLOUT */
+    border-left: 3px solid #bbb;
     padding: 0.4em 0.8em;
-    margin: 1.2em 0;
+    margin: 1em 0;
     line-height: 1.5;
-    text-indent: 0;
 }
 
 
-/* ── Mermaid placeholder ─────────────────────────────────────────────────── */
+/* ── Mermaid placeholder (shown when mmdc is not installed) ──────────────── */
 
 div.mermaid-placeholder {
     font-style: italic;
     color: #888;
-    font-size: 8.5pt;
+    font-size: 8.5pt;                         /* SIZE_SMALL */
     text-align: center;
     padding: 0.8em 1em;
-    border: 1pt dashed #aac8d8;
-    background: #f0f6fb;
-    margin: 1.2em 0;
-    text-indent: 0;
+    border: 1px dashed #bbb;
+    background: #fafafa;
+    margin: 1em 0;
 }
 
 
 /* ── Definition lists ────────────────────────────────────────────────────── */
 
-dt { font-weight: 700; color: #1a5c7a; text-indent: 0; }
-dd { margin: 0 0 0.5em 1.8em; text-indent: 0; }
+dt { font-weight: 600; }
+dd { margin: 0 0 0.5em 1.5em; }

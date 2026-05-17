@@ -59,10 +59,10 @@ def resolve_css(spec: str | None) -> Path:
       5. '<spec>.css' in bundled styles/           → use bundled
       6. Strip leading 'style_' / trailing '.css' and retry 4+5
 
-    If spec is None, returns the default bundled style (style_serif.css).
+    If spec is None, returns the default bundled style (style_thinktank.css).
     """
     styles = _styles_dir()
-    default = styles / 'style_serif.css'
+    default = styles / 'style_thinktank.css'
 
     if spec is None:
         return default
@@ -174,8 +174,8 @@ def render_mermaid_blocks(text: str, out_dir: Path) -> str:
                 )
             print(f"  [mermaid] Rendered diagram {idx} → {png_name}")
             return (
-                f'<img src="{png_path}" alt="Diagram {idx}" '
-                f'style="max-width:100%;display:block;margin:1em auto;">'
+                f'<p class="img-block"><img src="{png_path}" alt="Diagram {idx}" '
+                f'style="max-width:100%;display:block;margin:1em auto;"></p>'
             )
         except Exception as e:
             print(f"  [mermaid] Exception on diagram {idx}: {e}", file=sys.stderr)
@@ -306,6 +306,80 @@ def inject_annex_breaks(text: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Markdown image pre-processing
+# ---------------------------------------------------------------------------
+
+def convert_md_images(text: str) -> str:
+    """
+    Pre-convert Markdown image syntax to raw HTML before python-markdown
+    processes the document.
+
+    Python-Markdown does not parse ![]() inside raw HTML blocks (e.g.
+    <div class="single-column">), so images inside those divs render as plain
+    text.  Converting them to <img> tags first fixes this for both wrapped and
+    unwrapped images.
+
+    Two cases are distinguished:
+
+    Standalone image — ![]() is the only non-whitespace content on its line:
+        Emitted as <p><img ...></p> so it forms its own block and never appears
+        as inline content inside a paragraph.  This avoids the WeasyPrint crash
+        (assert BlockReplacedBox) that occurs when a block-level img lands inside
+        a paragraph that also triggers a ::first-letter float (e.g. drop caps in
+        column layouts).
+
+    Inline image — ![]() appears within a line of other text:
+        Emitted as a bare <img> with display:inline so it flows with surrounding
+        text.
+
+    Handles optional width attribute:
+        ![alt](path){width=60%}  →  max-width:60%
+        ![alt](path)             →  max-width:100%
+
+    resolve_image_paths() later rewrites relative src values to file:// URIs
+    and continues to work correctly on the output of this step.
+    """
+    # Pattern: optional leading whitespace, image syntax, optional {width=...},
+    # optional trailing whitespace — entire line.
+    STANDALONE = re.compile(
+        r'^[ \t]*'
+        r'!\[([^\]]*)\]\(([^)]+)\)'
+        r'(?:\{width=([^}]+)\})?'
+        r'[ \t]*$',
+        re.MULTILINE,
+    )
+    # Inline pattern (used after standalone lines are already replaced)
+    INLINE = re.compile(
+        r'!\[([^\]]*)\]\(([^)]+)\)(?:\{width=([^}]+)\})?'
+    )
+
+    def standalone_img(m: re.Match) -> str:
+        alt   = m.group(1)
+        src   = m.group(2)
+        width = m.group(3)
+        max_w = width if width else '100%'
+        # class="img-block" lets CSS drop-cap selectors exclude image paragraphs
+        return (
+            f'<p class="img-block"><img src="{src}" alt="{alt}" '
+            f'style="max-width:{max_w};display:block;margin:0.5em auto;"></p>'
+        )
+
+    def inline_img(m: re.Match) -> str:
+        alt   = m.group(1)
+        src   = m.group(2)
+        width = m.group(3)
+        max_w = width if width else '100%'
+        return (
+            f'<img src="{src}" alt="{alt}" '
+            f'style="max-width:{max_w};display:inline;vertical-align:middle;">'
+        )
+
+    text = STANDALONE.sub(standalone_img, text)
+    text = INLINE.sub(inline_img, text)
+    return text
+
+
+# ---------------------------------------------------------------------------
 # HTML conversion
 # ---------------------------------------------------------------------------
 
@@ -333,6 +407,7 @@ def md_to_html(md_path: Path) -> str:
 
     text = md_path.read_text(encoding='utf-8')
     text = convert_gfm_callouts(text)
+    text = convert_md_images(text)
     text = render_mermaid_blocks(text, md_path.parent / 'images')
     text = convert_pullquotes(text)
     text = inject_annex_breaks(text)
@@ -497,9 +572,9 @@ def main():
         metavar='STYLE',
         default=None,
         help=(
-            'Style to apply. Accepts: a bare name (serif, academic, magazine, '
+            'Style to apply. Accepts: a bare name (thinktank, academic, magazine, '
             'intelligence), style_<name>, style_<name>.css, or a full path to '
-            'any .css file. Default: serif.'
+            'any .css file. Default: thinktank.'
         ),
     )
     parser.add_argument('--engine',

@@ -13,11 +13,10 @@ md_to_pdf/
 │   ├── __init__.py
 │   ├── convert.py          All conversion logic; entry point for md2pdf CLI
 │   └── styles/             Bundled CSS styles (shipped with the package)
-│       ├── style_serif.css
+│       ├── style_thinktank.css
 │       ├── style_academic.css
 │       ├── style_magazine.css
 │       └── style_intelligence.css
-└── style_*.css             Top-level copies (reference / ad-hoc use)
 ```
 
 ---
@@ -54,16 +53,16 @@ WeasyPrint's Windows dependencies are bundled in its wheel — no separate insta
 After installation, `md2pdf` is available system-wide in the conda environment.
 
 ```bash
-# Default style (serif)
+# Default style (thinktank)
 md2pdf article.md
 
 # Explicit output path
 md2pdf article.md output/draft.pdf
 
 # Named bundled style — all of these are equivalent:
-md2pdf article.md --css intelligence
-md2pdf article.md --css style_intelligence
-md2pdf article.md --css style_intelligence.css
+md2pdf article.md --css thinktank
+md2pdf article.md --css style_thinktank
+md2pdf article.md --css style_thinktank.css
 
 # Full path to any CSS file (your own style or override)
 md2pdf article.md --css /path/to/custom.css
@@ -86,7 +85,7 @@ python md_to_pdf.py article.md --css intelligence
 
 ## Style reference
 
-### style_serif.css — Default
+### style_thinktank.css — Default
 
 Single-column, serif (Source Serif 4), A4, three-slot footer, justified body.
 
@@ -167,26 +166,29 @@ Optional full-width author band above h1:
 
 ### style_intelligence.css — Analytical report
 
-Single-column, Libre Franklin, US Letter. Navy (`#1d4b7a`) + gold (`#c8a84b`)
-palette. Navy header bar on every page (configurable left/right text).
-Page numbers as `[ N ]`.
+Two-column, Libre Baskerville (serif), US Letter. Navy (`#1d4b7a`) + gold (`#c8a84b`)
+palette. Header on every page: bold navy acronym left, spaced caps right, both on white.
+Footer: author left / `[ n/m ]` centre / title right.
 
 | Variable | Default | Controls |
 |---|---|---|
-| `FONT_BODY` | Libre Franklin | Body, headings, header bar |
-| `SIZE_BODY` | 10pt | Base size |
-| `SIZE_H1` | 16pt | Document title (navy double rule below) |
-| `SIZE_H2` | 10pt | Section head (body-size, bold, navy, ruled) |
-| `COLOR_NAVY` | #1d4b7a | Header bar, headings, rules, tables |
-| `COLOR_GOLD` | #c8a84b | Secondary rules, sidebar border |
-| `HEADER_LEFT` | "DRASTIC" | Bold acronym in header bar — edit `@top-left content:` |
-| `HEADER_RIGHT` | "DRASTIC RESEARCH PAPER" | Spaced caps in header bar — edit `@top-right content:` |
+| `FONT_BODY` | Libre Baskerville | Serif body, headings, header, footer. Sans-serif alternative (`Libre Franklin`) commented out in CSS. |
+| `SIZE_BODY` | 8.5pt | Base size |
+| `SIZE_H1` | 14pt | Document title (navy double rule below, spans both columns) |
+| `SIZE_H2` | 9.5pt | Section head (bold navy, underlined) |
+| `COLOR_NAVY` | #1d4b7a | Headings, rules, tables, header text |
+| `COLOR_GOLD` | #c8a84b | Secondary rules, sidebar border, h1 shadow rule |
+| `HEADER_LEFT` | "DRASTIC" | Bold navy, top-left — edit `@top-left content:` |
+| `HEADER_RIGHT` | "OSINT RESEARCH PRODUCT" | Bold navy, top-right — edit `@top-right content:` |
+| `FOOTER_LEFT` | "Author Name" | Left footer slot — edit `@bottom-left content:` |
+| `FOOTER_RIGHT` | "Article Title" | Right footer slot (italic) — edit `@bottom-right content:` |
 | `PAGE_SIZE` | Letter | 8.5 × 11 in |
+| `COLUMNS` | 2 | Two-column body grid |
 
 Special block classes (use as raw HTML in Markdown):
 
 ```html
-<!-- Steel-blue key findings box, navy top+bottom rules -->
+<!-- Steel-blue key findings box, navy top+bottom rules — spans both columns -->
 <div class="key-takeaways">
 ## Key Takeaways
 <p class="scope-note">*Scope note text.*</p>
@@ -197,6 +199,21 @@ Body text and bullets...
 <div class="sidebar-note">
 ### Sidebar Title
 Body text...
+</div>
+
+<!-- Force a table or image to span both columns -->
+<div class="full-width">
+
+| col | col |
+| --- | --- |
+
+</div>
+
+<!-- Switch an entire section (e.g. an Annex) to single full-width column -->
+<div class="single-column">
+
+All content here flows as one wide column...
+
 </div>
 
 <!-- Inline red highlight for key data -->
@@ -224,6 +241,8 @@ Body text...
 | GFM callouts (`> [!NOTE]`) | Converted to `<div class="callout callout-note">` |
 | Pull-quotes (`\| "Quote"`) | Converted to styled blockquote + citation |
 | Page breaks before annexes | Auto-injected before `## Annex N`, `## Notes`, `## Further Reading` |
+| Full-width elements | Wrap in `<div class="full-width">` to span both columns |
+| Single-column sections | Wrap in `<div class="single-column">` for annexes or notes |
 | Orphan/widow control | `orphans: 3; widows: 3` on `<p>` |
 
 **Not supported by WeasyPrint:**
