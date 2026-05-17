@@ -77,9 +77,9 @@
  *
  * ── Footer ───────────────────────────────────────────────────────────────
  *
- *   FOOTER_LEFT      "G. Demaneuf"
+ *   FOOTER_LEFT      "Author Name"    Change to author / organisation name.
  *   FOOTER_CENTER    "p. " counter(page) " / " counter(pages)
- *   FOOTER_RIGHT     "\2018P-values and other Pitfalls\2019"
+ *   FOOTER_RIGHT     "Article Title"  Change to article / publication title.
  *                    \2018 and \2019 are curly single-quote characters (' ')
  *                    Set any slot to:  none  to suppress it entirely.
  *
@@ -109,7 +109,7 @@
     margin: 2.5cm 2.8cm 1.8cm 2.8cm;            /* MARGIN_TOP RIGHT BOTTOM LEFT */
 
     @bottom-left {
-        content: "G. Demaneuf";                  /* FOOTER_LEFT */
+        content: "Author Name";                   /* FOOTER_LEFT */
         font-family: 'Source Serif 4', Georgia, serif;
         font-size: 8.5pt;                        /* SIZE_FOOTER */
         color: #666;                             /* COLOR_FAINT */
@@ -121,7 +121,7 @@
         color: #666;
     }
     @bottom-right {
-        content: "P-values and other Pitfalls";       /* FOOTER_RIGHT */
+        content: "Article Title";                     /* FOOTER_RIGHT */
         font-family: 'Source Serif 4', Georgia, serif;
         font-size: 8.5pt;
         font-style: italic;

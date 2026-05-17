@@ -1,3 +1,16 @@
+Metadata-Version: 2.4
+Name: etk-md2pdf
+Version: 0.1.0
+Summary: Edition ToolKit — convert Markdown to print-ready PDF via WeasyPrint
+License: MIT
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: markdown>=3.5
+Requires-Dist: weasyprint>=60
+Requires-Dist: pygments>=2.15
+Provides-Extra: pandoc
+Requires-Dist: pypandoc>=1.12; extra == "pandoc"
+
 # md_to_pdf  (etk-md2pdf)
 
 Converts a Markdown article to a print-ready PDF using WeasyPrint.
