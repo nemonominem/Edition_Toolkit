@@ -387,6 +387,41 @@ def convert_md_images(text: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Markdown heading pre-processing
+# ---------------------------------------------------------------------------
+
+def convert_md_headings(text: str) -> str:
+    """
+    Pre-convert ATX Markdown headings (# … ######) to <hN> HTML tags.
+
+    Python-Markdown does not parse headings inside raw HTML blocks (e.g.
+    <div class="single-column">).  Converting them to <hN> tags before
+    python-markdown runs fixes this for both wrapped and normal-flow headings.
+    Normal-flow headings that python-markdown would have handled are converted
+    here instead — the output is identical.
+
+    Inline Markdown within the heading text (bold, italic, code, links) is
+    converted via md_inline() so emphasis etc. is preserved.
+    """
+    def replace_heading(m: re.Match) -> str:
+        hashes = m.group(1)
+        content = m.group(2).strip()
+        level = len(hashes)
+        # Convert inline markdown in the heading text
+        inner = md_inline(content)
+        # md_inline wraps in <p>; strip it
+        inner = re.sub(r'^\s*<p>(.*)</p>\s*$', r'\1', inner.strip(), flags=re.DOTALL)
+        return f'<h{level}>{inner}</h{level}>'
+
+    return re.sub(
+        r'^(#{1,6})[ \t]+(.+?)[ \t]*#*[ \t]*$',
+        replace_heading,
+        text,
+        flags=re.MULTILINE,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Markdown table pre-processing
 # ---------------------------------------------------------------------------
 
@@ -529,6 +564,7 @@ def md_to_html(md_path: Path) -> str:
 
     text = md_path.read_text(encoding='utf-8')
     text = convert_gfm_callouts(text)
+    text = convert_md_headings(text)
     text = convert_md_images(text)
     text = convert_md_tables(text)
     text = render_mermaid_blocks(text, md_path.parent / 'images')
