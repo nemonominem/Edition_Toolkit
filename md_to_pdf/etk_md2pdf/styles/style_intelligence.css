@@ -524,7 +524,8 @@ th {
 td {
     padding: 0.3em 0.55em;
     border-bottom: 0.5pt solid #c8d4e0;
-    vertical-align: middle;
+    vertical-align: top;
+    text-align: left;
     overflow-wrap: break-word;
     word-break: break-word;
 }

@@ -426,6 +426,7 @@ td {
     padding: 0.2em 0.45em;
     border-bottom: 0.5pt solid #ddd;
     vertical-align: top;
+    text-align: left;
     overflow-wrap: break-word;
     word-break: break-word;
 }

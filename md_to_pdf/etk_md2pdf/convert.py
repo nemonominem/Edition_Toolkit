@@ -757,7 +757,8 @@ def _mark_oversized_spans(
     return html, marked
 
 
-def convert_weasyprint(md_path: Path, pdf_path: Path, css_path: Path) -> None:
+def convert_weasyprint(md_path: Path, pdf_path: Path, css_path: Path,
+                       custom_css_path: Path | None = None) -> None:
     """Primary pipeline: Markdown → HTML → PDF via WeasyPrint."""
     from weasyprint import HTML, CSS
     from weasyprint.text.fonts import FontConfiguration
@@ -781,6 +782,9 @@ def convert_weasyprint(md_path: Path, pdf_path: Path, css_path: Path) -> None:
 
     font_config = FontConfiguration()
     sheets = [CSS(filename=str(css_path), font_config=font_config)]
+    if custom_css_path and custom_css_path.exists():
+        sheets.append(CSS(filename=str(custom_css_path), font_config=font_config))
+        print(f"  [weasyprint] Custom CSS: {custom_css_path}")
 
     doc = HTML(string=html_str, base_url=str(md_path.parent))
 
@@ -926,6 +930,16 @@ def main():
             'any .css file. Default: thinktank.'
         ),
     )
+    parser.add_argument(
+        '--custom',
+        metavar='CSS',
+        default=None,
+        help=(
+            'Path to a project-specific CSS file applied after the core style. '
+            'Use it to set author name, title slot text, font overrides, or any '
+            'other per-project customisation. Overrides anything in the core style.'
+        ),
+    )
     parser.add_argument('--engine',
                         choices=['weasyprint', 'pandoc', 'auto'],
                         default='auto',
@@ -954,15 +968,30 @@ def main():
         print(f"  Bundled styles: {', '.join(_list_bundled_styles())}", file=sys.stderr)
         sys.exit(1)
 
+    custom_css_path = None
+    if args.custom:
+        # Resolution order: exact path, relative to cwd, with .css appended
+        _c = Path(args.custom)
+        for candidate in [_c, Path.cwd() / _c,
+                          _c.with_suffix('.css'), Path.cwd() / _c.with_suffix('.css')]:
+            if candidate.exists():
+                custom_css_path = candidate.resolve()
+                break
+        if custom_css_path is None:
+            print(f"Error: --custom CSS not found: '{args.custom}'", file=sys.stderr)
+            sys.exit(1)
+
     print(f"Input  : {md_path}")
     print(f"Output : {pdf_path}")
     print(f"Style  : {css_path}")
+    if custom_css_path:
+        print(f"Custom : {custom_css_path}")
 
     engine = args.engine
 
     if engine in ('weasyprint', 'auto'):
         try:
-            convert_weasyprint(md_path, pdf_path, css_path)
+            convert_weasyprint(md_path, pdf_path, css_path, custom_css_path)
             return
         except ImportError:
             if engine == 'weasyprint':
