@@ -113,8 +113,9 @@
 
 /* ── Page-break helpers ───────────────────────────────────────────────────── */
 
-.annex-break { page-break-before: always; }
+.annex-break { page-break-before: always; break-before: page; }
 .annex-break + h2 { margin-top: 0; }
+.page-break  { page-break-before: always; break-before: page; height: 0; }
 
 
 /* ── Footer string capture ───────────────────────────────────────────────── */
@@ -181,10 +182,11 @@ div.single-column {
     display: block;
 }
 
-/* div.no-span — applied automatically by convert.py to spanning elements whose
+/* .no-span — applied automatically by convert.py to spanning elements whose
  * content exceeds one page height.  Prevents the assert-not-page-is-empty
  * crash without affecting normal-sized spanning elements. */
-div.no-span {
+div.no-span,
+table.no-span {
     column-span: none !important;
 }
 

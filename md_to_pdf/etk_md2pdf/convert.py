@@ -617,42 +617,49 @@ def md_to_html(md_path: Path) -> str:
 # Conversion engines
 # ---------------------------------------------------------------------------
 
-def _mark_oversized_spans(html: str, char_threshold: int = 3000) -> tuple[str, int]:
+def _mark_oversized_spans(
+    html: str,
+    div_char_threshold: int = 20_000,
+    table_row_threshold: int = 25,
+) -> tuple[str, int]:
     """
-    Scan for div.single-column and div.full-width elements whose inner HTML
-    exceeds *char_threshold* characters and add class 'no-span' to them.
+    Pre-mark spanning elements that are too tall for WeasyPrint to handle with
+    column-span:all (raises ``assert not page_is_empty``).
 
-    WeasyPrint raises ``assert not page_is_empty`` when a column-spanning element
-    is taller than a single page (it cannot be split).  Pre-marking oversized
-    elements lets the fallback CSS target only ``div.no-span`` instead of
-    stripping column-span from the entire document.
+    Two element types are checked:
+
+    div.single-column — marked when inner HTML exceeds *div_char_threshold*
+        characters.  At 8.5pt body text a single-column page holds roughly
+        7,000–8,000 chars; 20,000 chars (~2.5 pages) is a safe threshold.
+        div.full-width is intentionally excluded: its tables are already
+        protected by 'div.full-width table { column-span: none }' in CSS,
+        and marking the div itself would strip its own column-span:all.
+
+    Standalone <table> elements — marked when the table has more than
+        *table_row_threshold* <tr> rows.  These tables sit directly in the
+        two-column flow with column-span:all; if they exceed one page WeasyPrint
+        crashes.  Marking adds class 'no-span' which the CSS turns into
+        column-span:none, letting the table flow inside a single column instead.
+        Tables already inside div.full-width or div.single-column are excluded
+        (their column-span is already suppressed by the CSS rules).
 
     Returns (patched_html, count_marked).
     """
-    # Match opening tag for the two spanning div classes.
-    # We need to find the matching close tag, so we walk the string manually
-    # rather than using a regex that can't handle nesting.
-    # Only mark div.single-column — div.full-width already handles nested
-    # column-span via the CSS rule 'div.full-width table { column-span: none }'.
-    # Marking div.full-width as no-span would strip its own column-span:all,
-    # making it render in the two-column flow (exactly the wrong behaviour).
-    OPEN = re.compile(
-        r'<div\s+class="(single-column[^"]*)"'
-    )
     marked = 0
+
+    # ── 1. div.single-column ────────────────────────────────────────────────
+    OPEN_DIV = re.compile(r'<div\s+class="(single-column[^"]*)"')
     out = []
     pos = 0
-    for m in OPEN.finditer(html):
+    for m in OPEN_DIV.finditer(html):
         tag_start = m.start()
         tag_end = m.end()
-        # Find the '>' that closes the opening tag
         gt = html.index('>', tag_end)
         inner_start = gt + 1
 
-        # Walk forward counting div depth to find the matching </div>
         depth = 1
         scan = inner_start
-        inner_end = len(html)  # fallback: treat rest of doc as inner content
+        inner_end = len(html)
         while depth > 0 and scan < len(html):
             next_open = html.find('<div', scan)
             next_close = html.find('</div>', scan)
@@ -669,20 +676,85 @@ def _mark_oversized_spans(html: str, char_threshold: int = 3000) -> tuple[str, i
                     scan = next_close + 6
 
         inner_html = html[inner_start:inner_end]
-        if len(inner_html) > char_threshold:
-            # Insert 'no-span' into the class attribute of this opening tag
+        if len(inner_html) > div_char_threshold:
             classes = m.group(1)
-            new_tag = f'<div class="{classes} no-span"'
             out.append(html[pos:tag_start])
-            out.append(new_tag)
+            out.append(f'<div class="{classes} no-span"')
             pos = tag_end
             marked += 1
-            print(f"  [weasyprint] Marking div.{classes.split()[0]} as no-span "
-                  f"({len(inner_html):,} chars > threshold {char_threshold:,})",
-                  file=sys.stderr)
-
+            print(
+                f"  [weasyprint] Marking div.single-column as no-span "
+                f"({len(inner_html):,} chars > threshold {div_char_threshold:,})",
+                file=sys.stderr,
+            )
     out.append(html[pos:])
-    return ''.join(out), marked
+    html = ''.join(out)
+
+    # ── 2. Standalone <table> elements (not inside a spanning div) ──────────
+    # Build a set of character ranges covered by div.full-width and
+    # div.single-column so we can skip tables nested inside them.
+    SPANNING_DIV = re.compile(r'<div\s+class="(?:full-width|single-column)[^"]*"')
+    spanning_ranges: list[tuple[int, int]] = []
+    for dm in SPANNING_DIV.finditer(html):
+        gt = html.index('>', dm.end())
+        inner_start = gt + 1
+        depth = 1
+        scan = inner_start
+        inner_end = len(html)
+        while depth > 0 and scan < len(html):
+            nopen = html.find('<div', scan)
+            nclose = html.find('</div>', scan)
+            if nclose == -1:
+                break
+            if nopen != -1 and nopen < nclose:
+                depth += 1
+                scan = nopen + 4
+            else:
+                depth -= 1
+                if depth == 0:
+                    inner_end = nclose
+                else:
+                    scan = nclose + 6
+        spanning_ranges.append((dm.start(), inner_end))
+
+    def inside_spanning_div(pos: int) -> bool:
+        return any(start <= pos <= end for start, end in spanning_ranges)
+
+    TABLE_OPEN = re.compile(r'<table\b([^>]*)>')
+    out = []
+    pos = 0
+    for tm in TABLE_OPEN.finditer(html):
+        if inside_spanning_div(tm.start()):
+            continue  # already protected by CSS
+        # Count <tr> tags inside this table
+        table_start = tm.start()
+        # Find </table>
+        table_end = html.find('</table>', tm.end())
+        if table_end == -1:
+            continue
+        table_end += len('</table>')
+        inner = html[tm.end():table_end - len('</table>')]
+        row_count = inner.count('<tr')
+        if row_count > table_row_threshold:
+            attrs = tm.group(1)
+            # Add no-span to existing class or as new attribute
+            if 'class="' in attrs:
+                new_attrs = re.sub(r'class="([^"]*)"', r'class="\1 no-span"', attrs)
+            else:
+                new_attrs = attrs + ' class="no-span"'
+            out.append(html[pos:table_start])
+            out.append(f'<table{new_attrs}>')
+            pos = tm.end()
+            marked += 1
+            print(
+                f"  [weasyprint] Marking standalone <table> as no-span "
+                f"({row_count} rows > threshold {table_row_threshold})",
+                file=sys.stderr,
+            )
+    out.append(html[pos:])
+    html = ''.join(out)
+
+    return html, marked
 
 
 def convert_weasyprint(md_path: Path, pdf_path: Path, css_path: Path) -> None:

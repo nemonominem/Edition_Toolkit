@@ -185,6 +185,7 @@
 
 .annex-break { page-break-before: always; break-before: page; }
 .annex-break + h2 { margin-top: 0; }
+.page-break  { page-break-before: always; break-before: page; height: 0; }
 
 
 /* ── Column layout utilities ─────────────────────────────────────────────── */
@@ -242,12 +243,13 @@ div.single-column {
     display: block;
 }
 
-/* div.no-span — applied automatically by convert.py to spanning elements whose
+/* .no-span — applied automatically by convert.py to spanning elements whose
  * content exceeds one page height (WeasyPrint cannot split column-span:all
  * elements across pages).  The element flows inline in the two-column grid
  * rather than spanning, which avoids the assert-not-page-is-empty crash while
  * keeping the rest of the document's column layout intact. */
-div.no-span {
+div.no-span,
+table.no-span {
     column-span: none !important;
 }
 

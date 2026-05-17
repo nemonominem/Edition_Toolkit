@@ -279,3 +279,65 @@ Two-column text before the table. No div wrapper — the table CSS applies colum
 | Row 20 | Consultant | WEF | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
 
 Two-column text resumes after Section 13. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+## Section 14: Footnote rendering tests
+
+### 14a: Footnote in normal flow (EXPECTED: superscript number)
+
+This sentence has a footnote in normal two-column flow.[^fn-normal] And this sentence has a second footnote also in normal flow.[^fn-normal2]
+
+### 14b: Same footnote key used twice (EXPECTED: both render as superscript)
+
+First use of a repeated key.[^fn-repeat] Some text between. Second use of the same key.[^fn-repeat]
+
+### 14c: Footnote inside pull-quote (EXPECTED: superscript in blockquote)
+
+| "This is a pull-quote with a footnote ref inside it."[^fn-pullquote]
+| source: Test source, 2024.
+
+Text after the pull-quote with a ref to the same key.[^fn-pullquote]
+
+### 14d: Footnote ref inside div.single-column (EXPECTED: superscript)
+
+<div class="single-column">
+
+This text is inside div.single-column and has a footnote.[^fn-in-div] The ref should render as a superscript number, not as literal text.
+
+</div>
+
+Text after the div with same key.[^fn-in-div]
+
+### 14e: Footnote ref inside div.full-width (EXPECTED: superscript)
+
+<div class="full-width">
+
+This text is inside div.full-width and has a footnote.[^fn-in-fw] The ref should render as a superscript number.
+
+</div>
+
+Text after the div. Lorem ipsum dolor sit amet.
+
+### 14f: Image in normal flow (EXPECTED: visible, column-width)
+
+This is text before a Markdown image in normal flow.
+
+![Test image in normal flow](images/test_img1.png)
+
+Text after the image.
+
+### 14g: Image inside div.single-column (EXPECTED: visible, full-width)
+
+<div class="single-column">
+
+![Test image inside div.single-column](images/test_img1.png)
+
+</div>
+
+Text after the div. Lorem ipsum.
+
+[^fn-normal]: This is the footnote definition for Section 14a — normal flow.
+[^fn-normal2]: This is the second footnote definition for Section 14a.
+[^fn-repeat]: This footnote is referenced twice in Section 14b.
+[^fn-pullquote]: This footnote is referenced inside a pull-quote and after it in Section 14c.
+[^fn-in-div]: This footnote is referenced inside div.single-column and after it in Section 14d.
+[^fn-in-fw]: This footnote is referenced inside div.full-width and after it in Section 14e.
