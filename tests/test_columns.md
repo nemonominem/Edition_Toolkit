@@ -184,3 +184,98 @@ Two-column text after the box. Lorem ipsum dolor sit amet, consectetur adipiscin
 ## Section 10: Two columns confirmed
 
 Final two-column section. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.
+
+## Section 11: Large Markdown table inside div.full-width (EXPECTED: full-width, no crash)
+
+Two-column text before the div.
+
+<div class="full-width">
+
+| Actor | Role | Organisation | Notes |
+| ----- | ---- | ------------ | ----- |
+| Row 01 | Lead analyst | WHO | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 02 | Support | UNAIDS | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 03 | Field officer | CDC | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 04 | Coordinator | ECDC | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 05 | Director | NIH | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 06 | Adviser | Wellcome | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 07 | Researcher | EcoHealth | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 08 | Analyst | DARPA | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 09 | Observer | State Dept | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 10 | Consultant | WEF | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 11 | Lead analyst | WHO | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 12 | Support | UNAIDS | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 13 | Field officer | CDC | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 14 | Coordinator | ECDC | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 15 | Director | NIH | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 16 | Adviser | Wellcome | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 17 | Researcher | EcoHealth | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 18 | Analyst | DARPA | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 19 | Observer | State Dept | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 20 | Consultant | WEF | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+
+</div>
+
+Two-column text resumes after Section 11. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+## Section 12: Large Markdown table inside div.single-column (EXPECTED: single-column, no crash)
+
+Two-column text before the div.
+
+<div class="single-column">
+
+| Actor | Role | Organisation | Notes |
+| ----- | ---- | ------------ | ----- |
+| Row 01 | Lead analyst | WHO | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 02 | Support | UNAIDS | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 03 | Field officer | CDC | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 04 | Coordinator | ECDC | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 05 | Director | NIH | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 06 | Adviser | Wellcome | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 07 | Researcher | EcoHealth | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 08 | Analyst | DARPA | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 09 | Observer | State Dept | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 10 | Consultant | WEF | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 11 | Lead analyst | WHO | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 12 | Support | UNAIDS | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 13 | Field officer | CDC | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 14 | Coordinator | ECDC | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 15 | Director | NIH | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 16 | Adviser | Wellcome | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 17 | Researcher | EcoHealth | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 18 | Analyst | DARPA | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 19 | Observer | State Dept | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 20 | Consultant | WEF | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+
+</div>
+
+Two-column text resumes after Section 12. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+## Section 13: Large standalone Markdown table (EXPECTED: full-width span, no crash)
+
+Two-column text before the table. No div wrapper — the table CSS applies column-span:all directly.
+
+| Actor | Role | Organisation | Notes |
+| ----- | ---- | ------------ | ----- |
+| Row 01 | Lead analyst | WHO | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 02 | Support | UNAIDS | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 03 | Field officer | CDC | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 04 | Coordinator | ECDC | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 05 | Director | NIH | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 06 | Adviser | Wellcome | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 07 | Researcher | EcoHealth | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 08 | Analyst | DARPA | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 09 | Observer | State Dept | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 10 | Consultant | WEF | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 11 | Lead analyst | WHO | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 12 | Support | UNAIDS | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 13 | Field officer | CDC | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 14 | Coordinator | ECDC | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 15 | Director | NIH | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 16 | Adviser | Wellcome | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 17 | Researcher | EcoHealth | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 18 | Analyst | DARPA | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 19 | Observer | State Dept | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+| Row 20 | Consultant | WEF | Long cell content to make rows tall: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor. |
+
+Two-column text resumes after Section 13. Lorem ipsum dolor sit amet, consectetur adipiscing elit.

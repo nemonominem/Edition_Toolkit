@@ -161,6 +161,14 @@ div.full-width > ol {
     column-span: unset;
 }
 
+/* Cancel column-span:all on ALL tables nested inside spanning containers
+ * (not just direct children — handles tables generated from Markdown inside
+ * the div).  Same WeasyPrint crash reason as above. */
+div.full-width table,
+div.single-column table {
+    column-span: none !important;
+}
+
 /*
  * .single-column — switches an entire section to a single full-width column.
  * column-span:all forces the div out of the column flow; column-count:1
@@ -171,6 +179,13 @@ div.single-column {
     column-count: 1;
     width: 100%;
     display: block;
+}
+
+/* div.no-span — applied automatically by convert.py to spanning elements whose
+ * content exceeds one page height.  Prevents the assert-not-page-is-empty
+ * crash without affecting normal-sized spanning elements. */
+div.no-span {
+    column-span: none !important;
 }
 
 
@@ -409,6 +424,8 @@ td {
     padding: 0.2em 0.45em;
     border-bottom: 0.5pt solid #ddd;
     vertical-align: top;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 tr:last-child td { border-bottom: 1pt solid #c8631a; }
 

@@ -339,44 +339,166 @@ def convert_md_images(text: str) -> str:
     resolve_image_paths() later rewrites relative src values to file:// URIs
     and continues to work correctly on the output of this step.
     """
-    # Pattern: optional leading whitespace, image syntax, optional {width=...},
-    # optional trailing whitespace — entire line.
-    STANDALONE = re.compile(
-        r'^[ \t]*'
-        r'!\[([^\]]*)\]\(([^)]+)\)'
-        r'(?:\{width=([^}]+)\})?'
-        r'[ \t]*$',
-        re.MULTILINE,
-    )
-    # Inline pattern (used after standalone lines are already replaced)
-    INLINE = re.compile(
+    # One image token: ![alt](src) optionally followed by {width=VALUE}
+    IMG_TOKEN = re.compile(
         r'!\[([^\]]*)\]\(([^)]+)\)(?:\{width=([^}]+)\})?'
     )
 
-    def standalone_img(m: re.Match) -> str:
-        alt   = m.group(1)
-        src   = m.group(2)
-        width = m.group(3)
+    def make_block(alt: str, src: str, width: str | None) -> str:
         max_w = width if width else '100%'
-        # class="img-block" lets CSS drop-cap selectors exclude image paragraphs
         return (
             f'<p class="img-block"><img src="{src}" alt="{alt}" '
             f'style="max-width:{max_w};display:block;margin:0.5em auto;"></p>'
         )
 
-    def inline_img(m: re.Match) -> str:
-        alt   = m.group(1)
-        src   = m.group(2)
-        width = m.group(3)
+    def make_inline(alt: str, src: str, width: str | None) -> str:
         max_w = width if width else '100%'
         return (
             f'<img src="{src}" alt="{alt}" '
             f'style="max-width:{max_w};display:inline;vertical-align:middle;">'
         )
 
-    text = STANDALONE.sub(standalone_img, text)
-    text = INLINE.sub(inline_img, text)
+    def replace_line(m: re.Match) -> str:
+        """
+        Called for lines whose *entire non-whitespace content* is one or more
+        image tokens (possibly chained: ![a](x)![b](y)![c](z)).
+        Each token becomes its own <p class="img-block"> block.
+        """
+        blocks = []
+        for tok in IMG_TOKEN.finditer(m.group(0)):
+            blocks.append(make_block(tok.group(1), tok.group(2), tok.group(3)))
+        return '\n'.join(blocks)
+
+    # A "standalone image line" is a line whose non-whitespace content consists
+    # entirely of image tokens (one or more, possibly chained without spaces).
+    STANDALONE_LINE = re.compile(
+        r'^[ \t]*(?:!\[[^\]]*\]\([^)]+\)(?:\{width=[^}]+\})?)+[ \t]*$',
+        re.MULTILINE,
+    )
+
+    text = STANDALONE_LINE.sub(replace_line, text)
+
+    # Remaining ![]() tokens are genuinely inline (within a sentence).
+    text = IMG_TOKEN.sub(
+        lambda m: make_inline(m.group(1), m.group(2), m.group(3)),
+        text,
+    )
     return text
+
+
+# ---------------------------------------------------------------------------
+# Markdown table pre-processing
+# ---------------------------------------------------------------------------
+
+def convert_md_tables(text: str) -> str:
+    """
+    Pre-convert Markdown pipe-table syntax to raw HTML <table> elements before
+    python-markdown processes the document.
+
+    Python-Markdown's TableExtension does not parse tables inside raw HTML
+    blocks (e.g. <div class="full-width">).  This pre-processor runs before
+    python-markdown and converts every pipe-table — whether inside a raw HTML
+    block or in normal Markdown flow — to a <table> element.
+
+    Pipe tables that python-markdown would have handled are converted here
+    instead; the TableExtension never sees them (they're already HTML), which
+    is harmless.
+
+    Format recognised:
+        | col1 | col2 | col3 |
+        | ---- | ---- | ---- |   ← separator row: cells contain only [-:| ]
+        | val  | val  | val  |
+        ...
+
+    A separator row must be the second row; tables without one are left alone
+    (they are not valid GFM tables).
+
+    Inline Markdown within cells is converted with md_inline().
+    """
+    # Detect a separator row: each cell contains only dashes, colons, spaces
+    SEP_CELL = re.compile(r'^[ \t]*:?-+:?[ \t]*$')
+
+    def is_separator_row(cells: list[str]) -> bool:
+        return bool(cells) and all(SEP_CELL.match(c) for c in cells)
+
+    def parse_row(line: str) -> list[str]:
+        """Split a pipe-table row into cell strings (stripped)."""
+        line = line.strip()
+        if line.startswith('|'):
+            line = line[1:]
+        if line.endswith('|'):
+            line = line[:-1]
+        return [c.strip() for c in line.split('|')]
+
+    def align_from_sep(cell: str) -> str:
+        c = cell.strip()
+        left = c.startswith(':')
+        right = c.endswith(':')
+        if left and right:
+            return ' style="text-align:center"'
+        if right:
+            return ' style="text-align:right"'
+        return ''  # left-align is default
+
+    def render_table(block: str) -> str:
+        lines = [l for l in block.splitlines() if l.strip()]
+        if len(lines) < 2:
+            return block
+
+        rows = [parse_row(l) for l in lines]
+        # Validate: row[1] must be separator
+        if not is_separator_row(rows[1]):
+            return block
+
+        header_cells = rows[0]
+        sep_cells = rows[1]
+        data_rows = rows[2:]
+
+        # Derive column count and alignments from the separator row
+        n_cols = max(len(header_cells), len(sep_cells))
+        aligns = []
+        for i in range(n_cols):
+            c = sep_cells[i] if i < len(sep_cells) else ''
+            aligns.append(align_from_sep(c))
+
+        def cell_html(content: str) -> str:
+            """Convert inline Markdown in a cell to HTML, unwrapping outer <p>."""
+            h = md_inline(content)
+            # md_inline wraps in <p>...</p>; strip that for table cells
+            h = re.sub(r'^\s*<p>(.*)</p>\s*$', r'\1', h.strip(), flags=re.DOTALL)
+            return h
+
+        parts = ['<table>']
+
+        # Header
+        parts.append('<thead><tr>')
+        for i, hdr in enumerate(header_cells):
+            al = aligns[i] if i < len(aligns) else ''
+            parts.append(f'<th{al}>{cell_html(hdr)}</th>')
+        parts.append('</tr></thead>')
+
+        # Body
+        if data_rows:
+            parts.append('<tbody>')
+            for row in data_rows:
+                parts.append('<tr>')
+                for i in range(n_cols):
+                    content = row[i] if i < len(row) else ''
+                    al = aligns[i] if i < len(aligns) else ''
+                    parts.append(f'<td{al}>{cell_html(content)}</td>')
+                parts.append('</tr>')
+            parts.append('</tbody>')
+
+        parts.append('</table>')
+        return '\n'.join(parts)
+
+    # Match a run of consecutive pipe-table lines (lines starting with |).
+    # We allow blank lines between table and surrounding text but not within.
+    TABLE_BLOCK = re.compile(
+        r'(?m)^(?:\|[^\n]*\n)+',
+    )
+
+    return TABLE_BLOCK.sub(lambda m: render_table(m.group(0)), text)
 
 
 # ---------------------------------------------------------------------------
@@ -408,6 +530,7 @@ def md_to_html(md_path: Path) -> str:
     text = md_path.read_text(encoding='utf-8')
     text = convert_gfm_callouts(text)
     text = convert_md_images(text)
+    text = convert_md_tables(text)
     text = render_mermaid_blocks(text, md_path.parent / 'images')
     text = convert_pullquotes(text)
     text = inject_annex_breaks(text)
@@ -494,6 +617,74 @@ def md_to_html(md_path: Path) -> str:
 # Conversion engines
 # ---------------------------------------------------------------------------
 
+def _mark_oversized_spans(html: str, char_threshold: int = 3000) -> tuple[str, int]:
+    """
+    Scan for div.single-column and div.full-width elements whose inner HTML
+    exceeds *char_threshold* characters and add class 'no-span' to them.
+
+    WeasyPrint raises ``assert not page_is_empty`` when a column-spanning element
+    is taller than a single page (it cannot be split).  Pre-marking oversized
+    elements lets the fallback CSS target only ``div.no-span`` instead of
+    stripping column-span from the entire document.
+
+    Returns (patched_html, count_marked).
+    """
+    # Match opening tag for the two spanning div classes.
+    # We need to find the matching close tag, so we walk the string manually
+    # rather than using a regex that can't handle nesting.
+    # Only mark div.single-column — div.full-width already handles nested
+    # column-span via the CSS rule 'div.full-width table { column-span: none }'.
+    # Marking div.full-width as no-span would strip its own column-span:all,
+    # making it render in the two-column flow (exactly the wrong behaviour).
+    OPEN = re.compile(
+        r'<div\s+class="(single-column[^"]*)"'
+    )
+    marked = 0
+    out = []
+    pos = 0
+    for m in OPEN.finditer(html):
+        tag_start = m.start()
+        tag_end = m.end()
+        # Find the '>' that closes the opening tag
+        gt = html.index('>', tag_end)
+        inner_start = gt + 1
+
+        # Walk forward counting div depth to find the matching </div>
+        depth = 1
+        scan = inner_start
+        inner_end = len(html)  # fallback: treat rest of doc as inner content
+        while depth > 0 and scan < len(html):
+            next_open = html.find('<div', scan)
+            next_close = html.find('</div>', scan)
+            if next_close == -1:
+                break
+            if next_open != -1 and next_open < next_close:
+                depth += 1
+                scan = next_open + 4
+            else:
+                depth -= 1
+                if depth == 0:
+                    inner_end = next_close
+                else:
+                    scan = next_close + 6
+
+        inner_html = html[inner_start:inner_end]
+        if len(inner_html) > char_threshold:
+            # Insert 'no-span' into the class attribute of this opening tag
+            classes = m.group(1)
+            new_tag = f'<div class="{classes} no-span"'
+            out.append(html[pos:tag_start])
+            out.append(new_tag)
+            pos = tag_end
+            marked += 1
+            print(f"  [weasyprint] Marking div.{classes.split()[0]} as no-span "
+                  f"({len(inner_html):,} chars > threshold {char_threshold:,})",
+                  file=sys.stderr)
+
+    out.append(html[pos:])
+    return ''.join(out), marked
+
+
 def convert_weasyprint(md_path: Path, pdf_path: Path, css_path: Path) -> None:
     """Primary pipeline: Markdown → HTML → PDF via WeasyPrint."""
     from weasyprint import HTML, CSS
@@ -511,12 +702,98 @@ def convert_weasyprint(md_path: Path, pdf_path: Path, css_path: Path) -> None:
     html_str = md_to_html(md_path)
     html_str = resolve_image_paths(html_str, md_path.parent)
 
+    # Pre-mark spanning elements whose content exceeds one page worth of text.
+    # Those elements get class 'no-span'; the fallback CSS targets only them,
+    # leaving normal-sized single-column and full-width elements intact.
+    html_str, n_marked = _mark_oversized_spans(html_str)
+
     font_config = FontConfiguration()
     sheets = [CSS(filename=str(css_path), font_config=font_config)]
 
     doc = HTML(string=html_str, base_url=str(md_path.parent))
-    doc.write_pdf(str(pdf_path), stylesheets=sheets, font_config=font_config)
-    print(f"  [weasyprint] Written to {pdf_path}")
+
+    # WeasyPrint uses bare asserts internally; the most common triggers are:
+    #   - an image taller than a blank page
+    #   - a table cell with a very long unbreakable token (e.g. long URL or
+    #     a run of dashes) that exceeds the column/page width
+    # We cascade through progressively more aggressive fallback CSS overrides
+    # so that as much of the document as possible is still rendered.
+    #
+    # Shared word-break override applied in all fallback passes.
+    _WORDBREAK = (
+        'td, th, p, li, blockquote, pre, code { '
+        '  overflow-wrap: break-word !important; '
+        '  word-break: break-all !important; '
+        '} '
+    )
+    # Target only pre-marked oversized elements — normal column-spanning divs
+    # (div.single-column, div.full-width without 'no-span') keep their layout.
+    _NO_SPAN = (
+        'div.no-span { '
+        '  column-span: none !important; '
+        '} '
+    )
+    # Last-resort: strip column-span from ALL spanning elements
+    _NO_SPAN_ALL = (
+        'div.full-width, div.single-column, table, div.footnote { '
+        '  column-span: none !important; '
+        '} '
+    )
+
+    FALLBACKS = [
+        # Pass 1 — force word-breaking everywhere (catches long tokens in cells)
+        (
+            'word-break everywhere',
+            CSS(string=_WORDBREAK + 'img { max-width:100% !important; max-height:80vh !important; }'),
+        ),
+        # Pass 2 — remove column-span only from oversized (pre-marked) elements
+        (
+            'oversized spans removed',
+            CSS(string=_WORDBREAK + _NO_SPAN),
+        ),
+        # Pass 3 — remove column-span from ALL spanning elements (nuclear option)
+        (
+            'all column-spans removed',
+            CSS(string=_WORDBREAK + _NO_SPAN_ALL),
+        ),
+        # Pass 4 — also hide images
+        (
+            'all column-spans removed, images hidden',
+            CSS(string=_WORDBREAK + _NO_SPAN_ALL + 'img { display: none !important; }'),
+        ),
+        # Pass 5 — also hide tables (last resort)
+        (
+            'all column-spans removed, images and tables hidden',
+            CSS(string=_WORDBREAK + _NO_SPAN_ALL + 'img, table { display: none !important; }'),
+        ),
+    ]
+
+    last_err = None
+    for label, fallback_css in [(None, None)] + [(l, c) for l, c in FALLBACKS]:
+        extra = [fallback_css] if fallback_css else []
+        try:
+            doc.write_pdf(str(pdf_path), stylesheets=sheets + extra,
+                          font_config=font_config)
+            if label:
+                print(f"  [weasyprint] Written ({label}) to {pdf_path}")
+                print(f"  [weasyprint] Warning: layout required fallback — {label}.",
+                      file=sys.stderr)
+                print("               Review oversized images or tables in the source.",
+                      file=sys.stderr)
+            else:
+                print(f"  [weasyprint] Written to {pdf_path}")
+            return
+        except (AssertionError, Exception) as e:
+            last_err = e
+            print(f"  [weasyprint] Attempt ({label or 'normal'}) failed: "
+                  f"{type(e).__name__}: {e}", file=sys.stderr)
+            if label is None:
+                print(f"  [weasyprint] Trying fallbacks ...", file=sys.stderr)
+            continue
+
+    raise RuntimeError(
+        f"WeasyPrint failed on all fallback attempts. Last error: {last_err}"
+    ) from last_err
 
 
 def convert_pandoc(md_path: Path, pdf_path: Path, css_path: Path) -> None:

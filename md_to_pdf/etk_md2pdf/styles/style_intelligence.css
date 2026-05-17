@@ -220,6 +220,16 @@ div.full-width > ol {
     width: 100%;
 }
 
+/* Cancel column-span:all on tables nested inside spanning containers.
+ * The table { column-span: all } rule below is for standalone tables in the
+ * two-column flow; inside div.full-width or div.single-column the parent
+ * already spans both columns, so a nested column-span triggers WeasyPrint's
+ * assert-not-page-is-empty crash. */
+div.full-width table,
+div.single-column table {
+    column-span: none !important;
+}
+
 /*
  * .single-column — switches an entire section to a single full-width column.
  * WeasyPrint: column-span:all forces the div to span both columns, and
@@ -230,6 +240,15 @@ div.single-column {
     column-count: 1;
     width: 100%;
     display: block;
+}
+
+/* div.no-span — applied automatically by convert.py to spanning elements whose
+ * content exceeds one page height (WeasyPrint cannot split column-span:all
+ * elements across pages).  The element flows inline in the two-column grid
+ * rather than spanning, which avoids the assert-not-page-is-empty crash while
+ * keeping the rest of the document's column layout intact. */
+div.no-span {
+    column-span: none !important;
 }
 
 
@@ -506,6 +525,8 @@ td {
     padding: 0.3em 0.55em;
     border-bottom: 0.5pt solid #c8d4e0;
     vertical-align: middle;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 tr:nth-child(even) td {
