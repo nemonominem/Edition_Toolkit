@@ -1,40 +1,59 @@
-## Core environment
+## Environment
 
-- Python 3.11+
-- `requests`
-- `beautifulsoup4`
-- `pypdf`
-- `pillow`
-- `pytesseract`
+- Python 3.13+ via conda (`conda activate python_313x`)
+- All packages managed with **conda**, not pip (exception: `pip install -e md_to_pdf/` for the md2pdf entry point)
 
-## System dependency
+---
 
-- `tesseract`
-  - Needed for OCR when extracting text from screenshots or embedded document images.
-  - On macOS, install with Homebrew: `brew install tesseract`
+## medium_to_md
 
-## What each one is for
+| Package | Install | Purpose |
+|---------|---------|---------|
+| `playwright` | `conda install -c conda-forge playwright` | Headless browser for Medium extraction |
+| Chromium binary | `playwright install chromium` (one-time) | Browser driver |
 
-- `requests`
-  - Fetching simple web pages or downloads when direct browser access is not practical.
-- `beautifulsoup4`
-  - Extracting readable text from saved HTML or lightly structured pages.
-- `pypdf`
-  - Extracting text from saved PDF sources.
-- `pillow`
-  - Basic image handling before OCR.
-- `pytesseract`
-  - Running OCR from Python against screenshots and document images.
+---
+
+## md_to_pdf (Typst engine — default)
+
+| Tool/Package | Install | Purpose |
+|---------|---------|---------|
+| `typst` binary | `brew install typst` | Compiles .typ → PDF |
+| Libre Baskerville font | `brew install font-libre-baskerville` | Used in intelligence style |
+| Python stdlib only | — | No Python packages needed |
+
+Install the package entry point:
+```bash
+pip install -e md_to_pdf/
+```
+
+---
+
+## md_to_pdf (WeasyPrint engine — optional)
+
+| Package | Install | Purpose |
+|---------|---------|---------|
+| `weasyprint` | `conda install weasyprint` | HTML/CSS → PDF renderer |
+| `markdown` | `conda install markdown` | Markdown → HTML conversion |
+| `pygments` | `conda install pygments` | Syntax highlighting in code blocks |
+| `pango`, `gdk-pixbuf`, `libffi` | `brew install pango gdk-pixbuf libffi` | WeasyPrint system deps (macOS) |
+| `mmdc` (mermaid-cli) | `npm install -g @mermaid-js/mermaid-cli` | Renders Mermaid diagrams to PNG (optional) |
+
+---
+
+## md_to_booklet
+
+| Package | Install | Purpose |
+|---------|---------|---------|
+| `pandoc` | `conda install pandoc` | Markdown → LaTeX conversion |
+| `pypdf` | `conda install pypdf` | PDF page imposition |
+| `requests` | `conda install requests` | HTTP downloads if needed |
+
+---
 
 ## Deliberate non-requirements
 
-Avoid adding large frameworks or extra dependencies unless the task clearly needs them. In most cases, this repo should stay lean and rely on:
-
-- built-in Markdown editing,
-- shell tools,
-- the minimal Python stack above,
-- and direct source reading whenever possible.
-
-## Practical rule
-
-If a task can be done cleanly without installing anything new, do that. If installation is needed, prefer the smallest widely used library that fits the repo's research-and-writing workflow.
+- No `requests` or `beautifulsoup4` — Medium extraction uses Playwright (full browser), not raw HTTP
+- No `pillow` or `pytesseract` — no OCR in this pipeline
+- No `pip` for packages (except the editable md2pdf install above)
+- Keep engines lean: Typst engine requires only Python stdlib + the typst binary
