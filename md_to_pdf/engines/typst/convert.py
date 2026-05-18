@@ -102,7 +102,7 @@ def convert_inline(text: str, footnotes: dict[str, str]) -> str:
         src_m = re.search(r'src=["\']([^"\']+)["\']', attrs)
         alt_m = re.search(r'alt=["\']([^"\']*)["\']', attrs)
         if src_m:
-            src = src_m.group(1)
+            src = _resolve_image_src(src_m.group(1))
             alt = alt_m.group(1) if alt_m else ''
             if alt:
                 return stash(
@@ -352,9 +352,21 @@ _IMG_RE = re.compile(
 )
 
 
+def _resolve_image_src(src: str) -> str:
+    """Resolve a relative image src to an absolute path using _md_dir.
+    Absolute paths and URLs are returned unchanged."""
+    if src.startswith(('/', 'http://', 'https://', 'data:')):
+        return src
+    if _md_dir is not None:
+        resolved = (_md_dir / src).resolve()
+        if resolved.exists():
+            return str(resolved)
+    return src
+
+
 def convert_image(m: re.Match) -> str:
     alt   = m.group(1)
-    src   = m.group(2)
+    src   = _resolve_image_src(m.group(2))
     width = m.group(3)
 
     # Convert percentage width
@@ -437,6 +449,7 @@ def convert_list_block(lines: list[str], footnotes: dict[str, str], ordered: boo
 
 _mermaid_counter = 0
 _mermaid_images_dir: Path | None = None  # set per-document in convert_md_to_typ
+_md_dir: Path | None = None              # directory of the source .md file; used to resolve relative image paths
 
 
 def next_mermaid_placeholder() -> str:
@@ -478,7 +491,8 @@ _IMG_STANDALONE_RE = re.compile(r'^!\[')
 def convert_md_to_typ(md_text: str, style: str = "intelligence",
                       styles_dir: Path | None = None,
                       justify: bool = True,
-                      images_dir: Path | None = None) -> str:
+                      images_dir: Path | None = None,
+                      md_dir: Path | None = None) -> str:
     """
     Convert Markdown text to a complete Typst source file.
 
@@ -493,9 +507,11 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
         Typst source string.
     """
     # Reset mermaid state for each document
-    global _mermaid_counter, _mermaid_images_dir
+    global _mermaid_counter, _mermaid_images_dir, _md_dir
     _mermaid_counter = 0
     _mermaid_images_dir = images_dir
+    # _md_dir is used by convert_image/_resolve_image_src to turn relative paths absolute
+    _md_dir = md_dir if md_dir is not None else (images_dir.parent if images_dir is not None else None)
 
     # 1. Extract footnote definitions
     md_text, footnotes = extract_footnotes(md_text)
@@ -1062,7 +1078,8 @@ def main() -> None:
 
     typ_text = convert_md_to_typ(md_text, style=args.style, styles_dir=styles_dir,
                                  justify=not args.no_justify,
-                                 images_dir=images_dir)
+                                 images_dir=images_dir,
+                                 md_dir=md_path.parent)
     typ_path.write_text(typ_text, encoding='utf-8')
     print(f"Written: {typ_path}")
 

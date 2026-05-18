@@ -1,4 +1,4 @@
-#import "/Users/gillesdemaneuf/Work/Edition/md_to_typst/styles/intelligence.typ": doc, key-takeaways, insights-box, pull-quote, callout, callout-note, callout-warning, mermaid-placeholder
+#import "/Users/gillesdemaneuf/Work/Edition/md_to_pdf/engines/typst/styles/thinktank.typ": doc, key-takeaways, insights-box, pull-quote, callout, callout-note, callout-warning, mermaid-placeholder
 
 #show: doc.with(
   author:   "Author Name",
@@ -56,7 +56,7 @@ Two-column text after the bare table. Lorem ipsum dolor sit amet, consectetur ad
 Two-column text before the image.
 
 #figure(
-  image("images/test_img1.png", width: 100%),
+  image("/Users/gillesdemaneuf/Work/Edition/md_to_pdf/tests/shared/images/test_img1.png", width: 100%),
   caption: [Test image — bare Markdown syntax, stays column-width],
 )
 
@@ -67,7 +67,7 @@ Two-column text after the bare image. Lorem ipsum dolor sit amet, consectetur ad
 Two-column text before the div. This is the canonical working pattern for full-width images.
 ]
 
-#figure(image("images/test_img1.png", width: 100%), caption: [Full-width image — working pattern]) Fig. 1 — This image spans the full page width using raw HTML img inside div.single-column.
+#figure(image("/Users/gillesdemaneuf/Work/Edition/md_to_pdf/tests/shared/images/test_img1.png", width: 100%), caption: [Full-width image — working pattern]) Fig. 1 — This image spans the full page width using raw HTML img inside div.single-column.
 
 #columns(2, gutter: 0.5cm)[
 Two-column text resumes here after the full-width image. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -78,7 +78,7 @@ Two-column text before the div.
 ]
 
 #figure(
-  image("images/test_img1.png", width: 100%),
+  image("/Users/gillesdemaneuf/Work/Edition/md_to_pdf/tests/shared/images/test_img1.png", width: 100%),
   caption: [Test image — Markdown syntax inside div — will NOT render],
 )
 
@@ -90,7 +90,7 @@ Two-column text after the div. Lorem ipsum dolor sit amet, consectetur adipiscin
 Two-column text before the div.
 ]
 
-#figure(image("images/test_img1.png", width: 100%), caption: [Test image — raw HTML img, full width]) _Caption: this image should be full width._
+#figure(image("/Users/gillesdemaneuf/Work/Edition/md_to_pdf/tests/shared/images/test_img1.png", width: 100%), caption: [Test image — raw HTML img, full width]) _Caption: this image should be full width._
 
 #columns(2, gutter: 0.5cm)[
 Two-column text after the div. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
@@ -100,7 +100,7 @@ Two-column text after the div. Lorem ipsum dolor sit amet, consectetur adipiscin
 Two-column text before the div.
 ]
 
-#figure(image("images/test_img1.png", width: 100%), caption: [Test image — raw HTML img inside div.full-width]) _Caption: div.full-width — two-column flow should resume after._
+#figure(image("/Users/gillesdemaneuf/Work/Edition/md_to_pdf/tests/shared/images/test_img1.png", width: 100%), caption: [Test image — raw HTML img inside div.full-width]) _Caption: div.full-width — two-column flow should resume after._
 
 #columns(2, gutter: 0.5cm)[
 Two-column text after the div. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
@@ -132,7 +132,7 @@ Two-column text after the div. Lorem ipsum dolor sit amet, consectetur adipiscin
 Two-column text before the diagram.
 
 #figure(
-  image("/Users/gillesdemaneuf/Work/Edition/tests/images/_mermaid_1.png", width: 100%),
+  image("/Users/gillesdemaneuf/Work/Edition/md_to_pdf/tests/shared/images/_mermaid_1.png", width: 100%),
   caption: [Diagram 1],
 )
 
@@ -146,7 +146,7 @@ Two-column text before the div.
 This prose is inside div.single-column before the diagram. Lorem ipsum dolor sit amet.
 
 #figure(
-  image("/Users/gillesdemaneuf/Work/Edition/tests/images/_mermaid_2.png", width: 100%),
+  image("/Users/gillesdemaneuf/Work/Edition/md_to_pdf/tests/shared/images/_mermaid_2.png", width: 100%),
   caption: [Diagram 2],
 )
 
@@ -525,7 +525,7 @@ Text after the div. Lorem ipsum dolor sit amet.
 This is text before a Markdown image in normal flow.
 
 #figure(
-  image("images/test_img1.png", width: 100%),
+  image("/Users/gillesdemaneuf/Work/Edition/md_to_pdf/tests/shared/images/test_img1.png", width: 100%),
   caption: [Test image in normal flow],
 )
 
@@ -535,7 +535,7 @@ Text after the image.
 ]
 
 #figure(
-  image("images/test_img1.png", width: 100%),
+  image("/Users/gillesdemaneuf/Work/Edition/md_to_pdf/tests/shared/images/test_img1.png", width: 100%),
   caption: [Test image inside div.single-column],
 )
 
