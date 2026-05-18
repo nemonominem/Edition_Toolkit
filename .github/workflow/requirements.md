@@ -1,7 +1,7 @@
 ## Environment
 
 - Python 3.13+ via conda (`conda activate python_313x`)
-- All packages managed with **conda**, not pip (exception: `pip install -e md_to_pdf/` for the md2pdf entry point)
+- All packages managed with **conda**, not pip
 
 ---
 
@@ -21,11 +21,7 @@
 | `typst` binary | `brew install typst` | Compiles .typ → PDF |
 | Libre Baskerville font | `brew install font-libre-baskerville` | Used in intelligence style |
 | Python stdlib only | — | No Python packages needed |
-
-Install the package entry point:
-```bash
-pip install -e md_to_pdf/
-```
+| md2pdf entry point | `conda develop md_to_pdf/` | Puts the `md2pdf` command on PATH |
 
 ---
 
@@ -55,5 +51,5 @@ pip install -e md_to_pdf/
 
 - No `requests` or `beautifulsoup4` — Medium extraction uses Playwright (full browser), not raw HTTP
 - No `pillow` or `pytesseract` — no OCR in this pipeline
-- No `pip` for packages (except the editable md2pdf install above)
+- No pip — use conda for all packages
 - Keep engines lean: Typst engine requires only Python stdlib + the typst binary

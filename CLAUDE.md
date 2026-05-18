@@ -55,7 +55,7 @@ head -20 scripts/filename.py  # check imports
 - **Default engine:** Typst — `brew install typst`; Python stdlib only
 - **WeasyPrint engine (optional):** `conda install markdown weasyprint pygments`
 - **System deps for WeasyPrint (macOS):** `brew install pango gdk-pixbuf libffi`
-- **Install package:** `pip install -e md_to_pdf/` (puts `md2pdf` on PATH)
+- **Install package:** `conda develop md_to_pdf/` (puts `md2pdf` on PATH)
 - **Fonts:** `brew install font-libre-baskerville` (intelligence style)
 
 ### md_to_booklet

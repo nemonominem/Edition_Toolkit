@@ -39,7 +39,7 @@ Two rendering engines behind a single `md2pdf` command.
 ```bash
 conda activate python_313x
 cd md_to_pdf
-pip install -e .           # installs md2pdf command
+conda develop .            # installs md2pdf command
 brew install typst         # default engine
 brew install font-libre-baskerville
 

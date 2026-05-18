@@ -16,7 +16,7 @@ Two rendering engines, one command.
 conda activate python_313x
 
 # Install the package (puts md2pdf on PATH)
-pip install -e .
+conda develop .
 
 # Typst engine (default) — install the typst binary
 brew install typst
