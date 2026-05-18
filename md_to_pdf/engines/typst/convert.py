@@ -53,15 +53,23 @@ def _escape_typst(text: str) -> str:
     text = text.replace("<", "\\<").replace(">", "\\>")
     # $ introduces math
     text = text.replace("$", "\\$")
-    # _ and * are emphasis markers in Typst markup mode
-    # (we handle bold/italic separately, so escape stray ones)
+    # # introduces function calls / headings in code mode
+    text = text.replace("#", "\\#")
+    # * and _ are emphasis markers — escape stray ones not consumed by bold/italic
+    text = text.replace("*", "\\*")
+    text = text.replace("_", "\\_")
+    # [ opens a content block in Typst; ] closes one — both must be escaped in plain text
+    text = text.replace("[", "\\[")
+    text = text.replace("]", "\\]")
     return text
 
 
-# Pattern: **bold** or __bold__
-_BOLD_RE   = re.compile(r'\*\*(.+?)\*\*|__(.+?)__', re.DOTALL)
-# Pattern: *italic* or _italic_ (single)
-_ITALIC_RE = re.compile(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)|(?<!_)_(?!_)(.+?)(?<!_)_(?!_)')
+# Pattern: ***bold+italic*** (must be matched BEFORE bold and italic separately)
+_BOLD_ITALIC_RE = re.compile(r'\*\*\*(.+?)\*\*\*', re.DOTALL)
+# Pattern: **bold** or __bold__ (word-boundary anchored to avoid false matches)
+_BOLD_RE   = re.compile(r'\*\*(.+?)\*\*|(?<!\w)__(.+?)__(?!\w)', re.DOTALL)
+# Pattern: *italic* or _italic_ (single, word-boundary anchored)
+_ITALIC_RE = re.compile(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)|(?<!\w)_(?!_)(.+?)(?<!_)_(?!\w)')
 # Pattern: `inline code`
 _CODE_RE   = re.compile(r'`([^`]+)`')
 # Pattern: [text](url)
@@ -132,7 +140,14 @@ def convert_inline(text: str, footnotes: dict[str, str]) -> str:
     def replace_link(m: re.Match) -> str:
         link_text = m.group(1)
         url       = m.group(2)
-        return stash(f'#link("{url}")[{link_text}]')
+        # Escape specials in link text (@ triggers label refs, # triggers calls, etc.)
+        # Respect already-stashed placeholders from step 1 (inline code, HTML imgs).
+        segs = re.split(r'(\x00PH\d+\x00)', link_text)
+        escaped_link = ''.join(
+            seg if re.match(r'\x00PH\d+\x00', seg) else _escape_typst(seg)
+            for seg in segs
+        )
+        return stash(f'#link("{url}")[{escaped_link}]')
     text = _LINK_RE.sub(replace_link, text)
 
     # 3. Footnote references  [^key]
@@ -145,24 +160,39 @@ def convert_inline(text: str, footnotes: dict[str, str]) -> str:
         return stash(f"#footnote[{key}]")
     text = _FNREF_RE.sub(replace_fnref, text)
 
-    # 4. Bold **text**
+    def _escape_inner(s: str) -> str:
+        """Escape the inner text of a bold/italic/strike span.
+        Placeholders (already-stashed inline elements) pass through untouched;
+        raw text segments are escaped so stray Typst specials don't leak out."""
+        segs = re.split(r'(\x00PH\d+\x00)', s)
+        return ''.join(
+            seg if re.match(r'\x00PH\d+\x00', seg) else _escape_typst(seg)
+            for seg in segs
+        )
+
+    # 4. Bold+italic ***text*** (must come before bold and italic separately)
+    def replace_bold_italic(m: re.Match) -> str:
+        return stash(f"*_{_escape_inner(m.group(1))}_*")
+    text = _BOLD_ITALIC_RE.sub(replace_bold_italic, text)
+
+    # 5. Bold **text**
     def replace_bold(m: re.Match) -> str:
         inner = m.group(1) or m.group(2)
-        return stash(f"*{inner}*")
+        return stash(f"*{_escape_inner(inner)}*")
     text = _BOLD_RE.sub(replace_bold, text)
 
-    # 5. Italic *text*
+    # 6. Italic *text*
     def replace_italic(m: re.Match) -> str:
         inner = m.group(1) or m.group(2)
-        return stash(f"_{inner}_")
+        return stash(f"_{_escape_inner(inner)}_")
     text = _ITALIC_RE.sub(replace_italic, text)
 
-    # 6. Strikethrough ~~text~~
+    # 7. Strikethrough ~~text~~
     def replace_strike(m: re.Match) -> str:
-        return stash(f"#strike[{m.group(1)}]")
+        return stash(f"#strike[{_escape_inner(m.group(1))}]")
     text = _STRIKE_RE.sub(replace_strike, text)
 
-    # 7. Escape remaining special Typst characters
+    # 8. Escape remaining special Typst characters
     # (do it per-segment between placeholders so we don't corrupt them)
     parts = re.split(r'(\x00PH\d+\x00)', text)
     escaped_parts = []
@@ -173,7 +203,7 @@ def convert_inline(text: str, footnotes: dict[str, str]) -> str:
             escaped_parts.append(_escape_typst(part))
     text = ''.join(escaped_parts)
 
-    # 8. Restore placeholders
+    # 9. Restore placeholders
     for i, ph in enumerate(placeholders):
         text = text.replace(f"\x00PH{i}\x00", ph)
 
@@ -645,7 +675,8 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
 
         # ── Blockquote (plain >)  ─────────────────────────────────────────────
         if line.startswith('> ') or line == '>':
-            bq_lines: list[str] = []
+            bq_lines: list[str] = [line[2:] if line.startswith('> ') else '']
+            i += 1
             while i < n and (lines[i].startswith('> ') or lines[i] == '>'):
                 bl = lines[i]
                 if bl.startswith('> '):
@@ -660,7 +691,8 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
 
         # ── Pull-quote  | "text" ... ──────────────────────────────────────────
         if _PULLQUOTE_RE.match(line):
-            pq_lines: list[str] = []
+            pq_lines: list[str] = [line]
+            i += 1
             while i < n and _PULLQUOTE_RE.match(lines[i]):
                 pq_lines.append(lines[i])
                 i += 1
@@ -670,7 +702,8 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
         # ── Pipe table ────────────────────────────────────────────────────────
         # Standalone tables always span full width (mirrors CSS column-span:all).
         if _TABLE_LINE_RE.match(line):
-            tbl_lines: list[str] = []
+            tbl_lines: list[str] = [line]
+            i += 1
             while i < n and _TABLE_LINE_RE.match(lines[i]):
                 tbl_lines.append(lines[i])
                 i += 1
@@ -682,7 +715,8 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
 
         # ── Unordered list ────────────────────────────────────────────────────
         if _UL_LINE_RE.match(line):
-            ul_lines: list[str] = []
+            ul_lines: list[str] = [line]
+            i += 1
             while i < n and (_UL_LINE_RE.match(lines[i]) or
                               (ul_lines and lines[i].startswith('  '))):
                 ul_lines.append(lines[i])
@@ -692,7 +726,8 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
 
         # ── Ordered list ──────────────────────────────────────────────────────
         if _OL_LINE_RE.match(line):
-            ol_lines: list[str] = []
+            ol_lines: list[str] = [line]
+            i += 1
             while i < n and (_OL_LINE_RE.match(lines[i]) or
                               (ol_lines and lines[i].startswith('  '))):
                 ol_lines.append(lines[i])
@@ -729,7 +764,11 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
                 inner_text = '\n'.join(div_lines).strip()
 
             if div_class == 'page-break':
+                # pagebreak must be at page level, not inside #columns()
+                # Use fullwidth sentinels to break out of any column context
+                output.append('\x00FULLWIDTH_START\x00')
                 output.append('#pagebreak()')
+                output.append('\x00FULLWIDTH_END\x00')
 
             elif div_class == 'key-takeaways':
                 # Detect optional scope note: first paragraph starting with
@@ -914,7 +953,8 @@ def _convert_block_content(text: str, footnotes: dict[str, str]) -> str:
             continue
 
         if line.startswith('> ') or line == '>':
-            bq_lines: list[str] = []
+            bq_lines: list[str] = [line[2:] if line.startswith('> ') else '']
+            i += 1
             while i < n and (lines[i].startswith('> ') or lines[i] == '>'):
                 bl = lines[i]
                 bq_lines.append(bl[2:] if bl.startswith('> ') else '')
@@ -924,7 +964,8 @@ def _convert_block_content(text: str, footnotes: dict[str, str]) -> str:
             continue
 
         if _PULLQUOTE_RE.match(line):
-            pq_lines: list[str] = []
+            pq_lines: list[str] = [line]
+            i += 1
             while i < n and _PULLQUOTE_RE.match(lines[i]):
                 pq_lines.append(lines[i])
                 i += 1
@@ -932,7 +973,8 @@ def _convert_block_content(text: str, footnotes: dict[str, str]) -> str:
             continue
 
         if _TABLE_LINE_RE.match(line):
-            tbl_lines: list[str] = []
+            tbl_lines: list[str] = [line]
+            i += 1
             while i < n and _TABLE_LINE_RE.match(lines[i]):
                 tbl_lines.append(lines[i])
                 i += 1
@@ -940,7 +982,8 @@ def _convert_block_content(text: str, footnotes: dict[str, str]) -> str:
             continue
 
         if _UL_LINE_RE.match(line):
-            ul_lines: list[str] = []
+            ul_lines: list[str] = [line]
+            i += 1
             while i < n and (_UL_LINE_RE.match(lines[i]) or
                               (ul_lines and lines[i].startswith('  '))):
                 ul_lines.append(lines[i])
@@ -949,7 +992,8 @@ def _convert_block_content(text: str, footnotes: dict[str, str]) -> str:
             continue
 
         if _OL_LINE_RE.match(line):
-            ol_lines: list[str] = []
+            ol_lines: list[str] = [line]
+            i += 1
             while i < n and (_OL_LINE_RE.match(lines[i]) or
                               (ol_lines and lines[i].startswith('  '))):
                 ol_lines.append(lines[i])
