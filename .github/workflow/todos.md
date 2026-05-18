@@ -24,18 +24,20 @@
 
 5. `Open` · **Batch processing pipeline** — Extend medium_to_md to support extracting multiple Medium articles and combining into single Markdown file or booklet structure for md_to_booklet.
 
+6. `Open` · **Better style differentiation: magazine, thinktank, academic** — Current Typst styles (and WeasyPrint to a lesser extent) are too visually similar. Each style should have a clearly distinct identity: different layout (single vs two-column), font choices, colour palette, spacing rhythm, and header/footer treatment. Typst is the priority since it is the default engine.
+
 ---
 
 ## Implicit (completed this session)
 
-6. `Implicit` · **Pre-process Markdown image syntax to `<img>` tags** — Added `convert_md_images()` in `convert.py` to convert `![]()` (including `{width=}`) to raw `<img>` before python-markdown runs, fixing images inside raw HTML divs rendering as plain text.
+7. `Implicit` · **Pre-process Markdown image syntax to `<img>` tags** — Added `convert_md_images()` in `convert.py` to convert `![]()` (including `{width=}`) to raw `<img>` before python-markdown runs, fixing images inside raw HTML divs rendering as plain text.
 
-7. `Implicit` · **Fix WeasyPrint crash on column + image/float** — Wrapped standalone and Mermaid images in `<p class="img-block">`. Removed automatic `h1 + p::first-letter` drop-cap selector in `style_magazine.css` (WeasyPrint bug: asserts on `::first-letter` when first inline child is `<em>` or replaced element). Drop cap is now explicit opt-in via `p.drop-cap`.
+8. `Implicit` · **Fix WeasyPrint crash on column + image/float** — Wrapped standalone and Mermaid images in `<p class="img-block">`. Removed automatic `h1 + p::first-letter` drop-cap selector in `style_magazine.css` (WeasyPrint bug: asserts on `::first-letter` when first inline child is `<em>` or replaced element). Drop cap is now explicit opt-in via `p.drop-cap`.
 
-8. `Implicit` · **Rename serif style to thinktank** — Fixed bad `.pdf` extension from rename; updated default in `convert.py`; updated all references in `README.md`, `CLAUDE.md`, `md_to_pdf/README.md`.
+9. `Implicit` · **Rename serif style to thinktank** — Fixed bad `.pdf` extension from rename; updated default in `convert.py`; updated all references in `README.md`, `CLAUDE.md`, `md_to_pdf/README.md`.
 
-9. `Implicit` · **Move root-level CSS duplicates to `etk_md2pdf/styles/`** — Deleted 4 duplicate `style_*.css` files from `md_to_pdf/` root; updated file trees and references in all three READMEs and `CLAUDE.md`.
+10. `Implicit` · **Move root-level CSS duplicates to `etk_md2pdf/styles/`** — Deleted 4 duplicate `style_*.css` files from `md_to_pdf/` root; updated file trees and references in all three READMEs and `CLAUDE.md`.
 
-10. `Implicit` · **Magazine style fixes** — Replaced dark footer bar with clean three-slot footer matching intelligence style. Added missing `div.single-column` and `div.key-takeaways` rules (fixes Sections 3e, 4, 7, 9 in test). Fixed Section 9 test to use raw HTML headings inside the div (python-markdown limitation).
+11. `Implicit` · **Magazine style fixes** — Replaced dark footer bar with clean three-slot footer matching intelligence style. Added missing `div.single-column` and `div.key-takeaways` rules (fixes Sections 3e, 4, 7, 9 in test). Fixed Section 9 test to use raw HTML headings inside the div (python-markdown limitation).
 
-11. `Implicit` · **Tag v0.1.0 and fix installation docs** — Tagged first distribution release; replaced `pip install -e` with `git+ssh` tagged install in `md_to_pdf/README.md`; tag kept up to date with HEAD across multiple commits.
+12. `Implicit` · **Tag v0.1.0 and fix installation docs** — Tagged first distribution release; replaced `pip install -e` with `git+ssh` tagged install in `md_to_pdf/README.md`; tag kept up to date with HEAD across multiple commits.
