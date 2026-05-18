@@ -1,16 +1,20 @@
 # Tests
 
-Shared test inputs for both engines.
-
 ## Structure
 
 ```
 tests/
-├── shared/
+├── shared/                   Inputs used by both engines
 │   ├── test_columns.md       Comprehensive layout test (columns, images, tables, callouts)
 │   ├── WHO_Compromission.md  Real-world article for end-to-end validation
 │   ├── who.css               Per-article CSS override (WeasyPrint engine)
 │   └── images/               Static assets referenced by test files
+├── typst/                    Typst engine outputs
+│   ├── test_columns.typ      Compiled .typ source (reference)
+│   └── test_columns_<style>.pdf   4 styles: intelligence, magazine, thinktank, academic
+├── weasyprint/               WeasyPrint engine outputs
+│   ├── test_columns_<style>.pdf   4 styles: intelligence, magazine, thinktank, academic
+│   └── run_large_table_test.sh
 └── README.md
 ```
 
@@ -20,18 +24,21 @@ tests/
 conda activate python_313x
 cd /Users/gillesdemaneuf/Work/Edition/md_to_pdf
 
-# Typst engine (default)
-md2pdf tests/shared/test_columns.md --compile
+# Typst — all 4 styles
+for STYLE in intelligence magazine thinktank academic; do
+  md2pdf tests/shared/test_columns.md --style $STYLE --output tests/typst/test_columns_${STYLE}.pdf --compile
+done
 
-# WeasyPrint engine
-md2pdf tests/shared/test_columns.md --engine weasyprint --css intelligence
-md2pdf tests/shared/test_columns.md --engine weasyprint --css magazine
+# WeasyPrint — all 4 styles
+for STYLE in intelligence magazine thinktank academic; do
+  python engines/weasyprint/convert.py tests/shared/test_columns.md tests/weasyprint/test_columns_${STYLE}.pdf --css $STYLE
+done
 
 # WHO article — Typst
 md2pdf tests/shared/WHO_Compromission.md --compile
 
 # WHO article — WeasyPrint with custom CSS
-md2pdf tests/shared/WHO_Compromission.md --engine weasyprint --css intelligence --custom tests/shared/who.css
+python engines/weasyprint/convert.py tests/shared/WHO_Compromission.md tests/weasyprint/WHO_Compromission.pdf --css intelligence --custom tests/shared/who.css
 ```
 
 ## test_columns.md — section index
