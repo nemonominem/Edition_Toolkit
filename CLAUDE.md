@@ -98,14 +98,16 @@ Edition/
 │   ├── engines/
 │   │   ├── typst/             (DEFAULT engine)
 │   │   │   ├── convert.py
-│   │   │   ├── styles/*.typ
+│   │   │   ├── styles/        (intelligence, magazine, thinktank, academic)
 │   │   │   └── README.md
 │   │   └── weasyprint/        (fallback engine: --engine weasyprint)
 │   │       ├── convert.py
-│   │       ├── styles/*.css
+│   │       ├── styles/        (intelligence, magazine, thinktank, academic)
 │   │       └── README.md
 │   └── tests/
 │       ├── shared/            (test_columns.md, WHO article, images/)
+│       ├── typst/             (output PDFs + .typ sources, 4 styles)
+│       ├── weasyprint/        (output PDFs, 4 styles)
 │       └── README.md
 │
 └── md_to_booklet/

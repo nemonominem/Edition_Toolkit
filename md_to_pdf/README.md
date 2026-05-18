@@ -53,17 +53,19 @@ md_to_pdf/
 ├── engines/
 │   ├── typst/                  Typst engine
 │   │   ├── convert.py
-│   │   ├── styles/*.typ
+│   │   ├── styles/             intelligence, magazine, thinktank, academic
 │   │   └── README.md
 │   └── weasyprint/             WeasyPrint engine
 │       ├── convert.py
-│       ├── styles/*.css
+│       ├── styles/             intelligence, magazine, thinktank, academic
 │       └── README.md
 └── tests/
     ├── shared/                 Input files used by both engines
     │   ├── test_columns.md
     │   ├── WHO_Compromission.md
     │   └── images/
+    ├── typst/                  Typst output PDFs + .typ sources (4 styles)
+    ├── weasyprint/             WeasyPrint output PDFs (4 styles)
     └── README.md
 ```
 
