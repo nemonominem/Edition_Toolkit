@@ -1,14 +1,10 @@
 README.md
 pyproject.toml
 etk_md2pdf/__init__.py
-etk_md2pdf/convert.py
+etk_md2pdf/dispatcher.py
 etk_md2pdf.egg-info/PKG-INFO
 etk_md2pdf.egg-info/SOURCES.txt
 etk_md2pdf.egg-info/dependency_links.txt
 etk_md2pdf.egg-info/entry_points.txt
 etk_md2pdf.egg-info/requires.txt
 etk_md2pdf.egg-info/top_level.txt
-etk_md2pdf/styles/style_academic.css
-etk_md2pdf/styles/style_intelligence.css
-etk_md2pdf/styles/style_magazine.css
-etk_md2pdf/styles/style_serif.css

@@ -4,27 +4,32 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "etk-md2pdf"
-version = "0.1.0"
-description = "Edition ToolKit — convert Markdown to print-ready PDF via WeasyPrint"
+version = "0.2.0"
+description = "Edition ToolKit — convert Markdown to print-ready PDF (Typst or WeasyPrint)"
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
 
-dependencies = [
+# Core deps cover the Typst engine (stdlib-only Python; typst binary installed separately).
+# WeasyPrint deps are optional — install with: pip install etk-md2pdf[weasyprint]
+dependencies = []
+
+[project.optional-dependencies]
+weasyprint = [
     "markdown>=3.5",
     "weasyprint>=60",
     "pygments>=2.15",
 ]
 
-[project.optional-dependencies]
-pandoc = ["pypandoc>=1.12"]
-
 [project.scripts]
-md2pdf = "etk_md2pdf.convert:main"
+md2pdf = "etk_md2pdf.dispatcher:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["etk_md2pdf*"]
 
 [tool.setuptools.package-data]
-etk_md2pdf = ["styles/*.css"]
+etk_md2pdf = [
+    "engines/typst/styles/*.typ",
+    "engines/weasyprint/styles/*.css",
+]

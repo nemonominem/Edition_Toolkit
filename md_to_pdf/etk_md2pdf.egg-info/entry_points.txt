@@ -1,2 +1,2 @@
 [console_scripts]
-md2pdf = etk_md2pdf.convert:main
+md2pdf = etk_md2pdf.dispatcher:main

@@ -20,31 +20,9 @@ from pathlib import Path
 # ---------------------------------------------------------------------------
 
 def _styles_dir() -> Path:
-    """
-    Return the Path to the package's bundled styles/ directory.
-    Works for editable installs, regular installs, and zipimport (wheels).
-    """
-    # importlib.resources.files() is the canonical API (Python 3.9+).
-    # It returns a Traversable; we convert to a real Path via as_posix /
-    # a temporary extraction if necessary (wheels store files in a zip).
-    pkg_files = _res.files('etk_md2pdf')
-    styles = pkg_files / 'styles'
-    # If styles is already a real directory (editable / regular install),
-    # return it directly.  Otherwise materialise it with as_file().
-    try:
-        p = Path(str(styles))
-        if p.is_dir():
-            return p
-    except TypeError:
-        pass
-    # Fallback: extract to a temp dir (zip-based installs)
-    import atexit, tempfile as _tf
-    tmp = Path(_tf.mkdtemp(prefix='etk_md2pdf_styles_'))
-    atexit.register(shutil.rmtree, tmp, ignore_errors=True)
-    for item in styles.iterdir():
-        dest = tmp / item.name
-        dest.write_bytes(item.read_bytes())
-    return tmp
+    """Return the Path to this engine's bundled styles/ directory."""
+    # Styles live alongside this convert.py file.
+    return Path(__file__).resolve().parent / 'styles'
 
 
 def resolve_css(spec: str | None) -> Path:

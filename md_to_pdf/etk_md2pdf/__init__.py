@@ -1,2 +1,3 @@
-# etk_md2pdf — Edition ToolKit: Markdown → PDF converter
-__version__ = "0.1.0"
+# etk_md2pdf — Edition ToolKit unified Markdown-to-PDF package.
+# Engines: typst (default), weasyprint.
+__version__ = "0.2.0"

@@ -1,6 +1,5 @@
+
+[weasyprint]
 markdown>=3.5
 weasyprint>=60
 pygments>=2.15
-
-[pandoc]
-pypandoc>=1.12

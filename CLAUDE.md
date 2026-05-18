@@ -6,7 +6,7 @@ Suite of publishing utilities for extracting, converting, and typesetting articl
 
 Three independent tools:
 1. **medium_to_md** — Extract Medium articles to Markdown with embedded images
-2. **md_to_pdf** — Convert Markdown to print-ready PDF (WeasyPrint)
+2. **md_to_pdf** — Convert Markdown to print-ready PDF (Typst default; WeasyPrint fallback)
 3. **md_to_booklet** — Produce typeset booklets with imposition (Pandoc + XeLaTeX)
 
 ---
@@ -52,10 +52,11 @@ head -20 scripts/filename.py  # check imports
 - **No requirements.txt needed** — conda handles it
 
 ### md_to_pdf
-- **Requires:** `markdown`, `weasyprint`, `pygments`
-- **Install:** `conda install markdown weasyprint pygments`
-- **Optional (for Mermaid):** `mermaid-cli` (npm-based, handled separately)
-- **System deps (macOS):** `brew install pango gdk-pixbuf libffi`
+- **Default engine:** Typst — `brew install typst`; Python stdlib only
+- **WeasyPrint engine (optional):** `conda install markdown weasyprint pygments`
+- **System deps for WeasyPrint (macOS):** `brew install pango gdk-pixbuf libffi`
+- **Install package:** `pip install -e md_to_pdf/` (puts `md2pdf` on PATH)
+- **Fonts:** `brew install font-libre-baskerville` (intelligence style)
 
 ### md_to_booklet
 - **Requires:** `pandoc`, `pypdf`, `requests`
@@ -84,16 +85,28 @@ Edition/
 ├── README.md                  (top-level overview)
 │
 ├── medium_to_md/
-│   ├── README.md              (conda install lines)
+│   ├── README.md
 │   ├── medium-to-md.py
 │   └── approach.md
 │
-├── md_to_pdf/
-│   ├── README.md              (conda install lines)
-│   ├── md_to_pdf.py
-│   └── etk_md2pdf/
-│       ├── convert.py
-│       └── styles/            (style_thinktank, style_academic, style_magazine, style_intelligence)
+├── md_to_pdf/                 (unified package — installs md2pdf command)
+│   ├── pyproject.toml
+│   ├── README.md
+│   ├── etk_md2pdf/
+│   │   ├── __init__.py
+│   │   └── dispatcher.py      (entry point: parses --engine, delegates)
+│   ├── engines/
+│   │   ├── typst/             (DEFAULT engine)
+│   │   │   ├── convert.py
+│   │   │   ├── styles/*.typ
+│   │   │   └── README.md
+│   │   └── weasyprint/        (fallback engine: --engine weasyprint)
+│   │       ├── convert.py
+│   │       ├── styles/*.css
+│   │       └── README.md
+│   └── tests/
+│       ├── shared/            (test_columns.md, WHO article, images/)
+│       └── README.md
 │
 └── md_to_booklet/
     ├── instructions.md
@@ -130,12 +143,14 @@ python medium-to-md.py https://medium.com/path/to/article --debug
 # Save images to disk instead of embedding
 python medium-to-md.py https://medium.com/path/to/article --disk
 
-# Convert Markdown to PDF
-cd ../md_to_pdf
-python md_to_pdf.py article.md
+# Convert Markdown to PDF (Typst, default)
+md2pdf article.md --compile
 
-# Override CSS styling
-python md_to_pdf.py article.md --css custom-style.css
+# Convert with WeasyPrint engine
+md2pdf article.md --engine weasyprint --css intelligence
+
+# Ragged-right text
+md2pdf article.md --no-justify
 
 # Build booklet (Res Gestae example)
 cd ../md_to_booklet

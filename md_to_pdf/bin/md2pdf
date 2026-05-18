@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+"""
+md2pdf — unified Markdown → PDF dispatcher.
+
+Selects an engine and delegates conversion.
+
+Engines
+-------
+  typst      (default)  md_to_pdf/engines/typst/convert.py
+  weasyprint             md_to_pdf/engines/weasyprint/convert.py
+
+Usage
+-----
+  md2pdf article.md                          # typst engine, intelligence style
+  md2pdf article.md --engine weasyprint      # WeasyPrint engine
+  md2pdf article.md --engine typst --style intelligence --compile
+  md2pdf article.md --engine weasyprint --css magazine
+
+The dispatcher passes all remaining arguments through to the selected engine's
+own CLI, so engine-specific flags (--style, --css, --compile, --custom, etc.)
+work exactly as documented per engine.
+"""
+
+from __future__ import annotations
+
+import argparse
+import subprocess
+import sys
+from pathlib import Path
+
+# Root of the engines directory (adjacent to this script's parent)
+_ENGINES_DIR = Path(__file__).resolve().parent.parent / "engines"
+
+_ENGINE_SCRIPTS = {
+    "typst":      _ENGINES_DIR / "typst"      / "convert.py",
+    "weasyprint": _ENGINES_DIR / "weasyprint"  / "convert.py",
+}
+
+
+def main() -> None:
+    # Pull --engine out before passing remaining argv to the engine.
+    # We use a minimal parser with parse_known_args so all other flags
+    # are forwarded verbatim.
+    pre = argparse.ArgumentParser(add_help=False)
+    pre.add_argument(
+        "--engine", "-e",
+        choices=list(_ENGINE_SCRIPTS),
+        default="typst",
+        help="Rendering engine: typst (default) or weasyprint.",
+    )
+    known, rest = pre.parse_known_args()
+    engine = known.engine
+
+    script = _ENGINE_SCRIPTS[engine]
+    if not script.exists():
+        print(f"md2pdf: engine script not found: {script}", file=sys.stderr)
+        sys.exit(1)
+
+    # Forward to the engine, inheriting stdin/stdout/stderr
+    cmd = [sys.executable, str(script)] + rest
+    result = subprocess.run(cmd)
+    sys.exit(result.returncode)
+
+
+if __name__ == "__main__":
+    main()

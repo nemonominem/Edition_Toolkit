@@ -1,270 +1,73 @@
-# md_to_pdf  (etk-md2pdf)
+# etk-md2pdf
 
-Converts a Markdown article to a print-ready PDF using WeasyPrint.
-Part of the Edition ToolKit (`etk`).
+Markdown → PDF converter for the Edition ToolKit.  
+Two rendering engines, one command.
 
-## Files
+## Engines
 
-```
-md_to_pdf/
-├── pyproject.toml          Package definition — install from here
-├── md_to_pdf.py            Legacy script shim (delegates to the package)
-├── etk_md2pdf/
-│   ├── __init__.py
-│   ├── convert.py          All conversion logic; entry point for md2pdf CLI
-│   └── styles/             Bundled CSS styles (shipped with the package)
-│       ├── style_thinktank.css
-│       ├── style_academic.css
-│       ├── style_magazine.css
-│       └── style_intelligence.css
-```
-
----
+| Engine | Default | Technology | Best for |
+|--------|---------|------------|----------|
+| `typst` | ✓ | [Typst](https://typst.app/) | All new work — fast, precise, no crashes |
+| `weasyprint` | | [WeasyPrint](https://weasyprint.org/) | CSS-based legacy workflow |
 
 ## Installation
 
-Install directly from a tagged release on GitHub. Replace `v0.1.0` with the tag you want.
-
 ```bash
 conda activate python_313x
 
-# Install from a specific tagged release — puts 'md2pdf' on your PATH
-pip install "git+ssh://git@github.com/nemonominem/Edition_Toolkit.git@v0.1.0#subdirectory=md_to_pdf"
+# Install the package (puts md2pdf on PATH)
+pip install -e .
 
-# macOS system libraries required by WeasyPrint
+# Typst engine (default) — install the typst binary
+brew install typst
+
+# WeasyPrint engine (optional)
+conda install markdown weasyprint pygments
 brew install pango gdk-pixbuf libffi
-
-# Mermaid diagram renderer (optional — diagrams show as placeholders without it)
-brew install node
-npm install -g @mermaid-js/mermaid-cli
 ```
-
-On **Windows** (conda prompt):
-
-```bat
-conda activate python_313x
-pip install "git+ssh://git@github.com/nemonominem/Edition_Toolkit.git@v0.1.0#subdirectory=md_to_pdf"
-```
-
-WeasyPrint's Windows dependencies are bundled in its wheel — no separate install needed.
-
-To check available tags: `git ls-remote --tags git@github.com:nemonominem/Edition_Toolkit.git`
-
----
 
 ## Usage
 
-After installation, `md2pdf` is available system-wide in the conda environment.
-
 ```bash
-# Default style (thinktank)
+# Typst engine (default)
 md2pdf article.md
+md2pdf article.md --style intelligence --compile
 
-# Explicit output path
-md2pdf article.md output/draft.pdf
+# WeasyPrint engine
+md2pdf article.md --engine weasyprint
+md2pdf article.md --engine weasyprint --css intelligence --custom overrides.css
 
-# Named bundled style — all of these are equivalent:
-md2pdf article.md --css thinktank
-md2pdf article.md --css style_thinktank
-md2pdf article.md --css style_thinktank.css
-
-# Full path to any CSS file (your own style or override)
-md2pdf article.md --css /path/to/custom.css
-
-# List all available bundled styles
-md2pdf --list-styles
-
-# Force a specific engine
-md2pdf article.md --css academic --engine weasyprint
+# Ragged-right text (Typst only)
+md2pdf article.md --no-justify
 ```
 
-Without installation, the legacy script still works:
+## Structure
 
-```bash
-conda activate python_313x
-python md_to_pdf.py article.md --css intelligence
+```
+md_to_pdf/
+├── pyproject.toml              Package definition
+├── README.md                   This file
+├── etk_md2pdf/
+│   ├── __init__.py
+│   └── dispatcher.py           md2pdf entry point — parses --engine, delegates
+├── engines/
+│   ├── typst/                  Typst engine
+│   │   ├── convert.py
+│   │   ├── styles/*.typ
+│   │   └── README.md
+│   └── weasyprint/             WeasyPrint engine
+│       ├── convert.py
+│       ├── styles/*.css
+│       └── README.md
+└── tests/
+    ├── shared/                 Input files used by both engines
+    │   ├── test_columns.md
+    │   ├── WHO_Compromission.md
+    │   └── images/
+    └── README.md
 ```
 
----
+## Per-engine documentation
 
-## Style reference
-
-### style_thinktank.css — Default
-
-Single-column, serif (Source Serif 4), A4, three-slot footer, justified body.
-
-| Variable | Default | Controls |
-|---|---|---|
-| `FONT_BODY` | Source Serif 4, Georgia | Body, headings, footer |
-| `FONT_MONO` | Source Code Pro | Inline code, code blocks |
-| `SIZE_BODY` | 10pt | Base size |
-| `SIZE_H1–H4` | 19 / 15 / 12 / 10pt | Heading levels |
-| `SIZE_SMALL` | 8.5pt | Footnotes, captions, footer |
-| `PAGE_SIZE` | A4 | Change to `Letter` for US letter |
-| `FOOTER_LEFT` | "Author Name" | Left footer slot |
-| `FOOTER_CENTER` | p. n / m | Centre footer slot |
-| `FOOTER_RIGHT` | "Article Title" | Right footer slot |
-| `LINE_HEIGHT` | 1.6 | Body line spacing |
-| `PARA_SPACING` | 0.75em | Space below paragraphs |
-
-Footer slots are in the `@page` block. Set any slot to `content: none` to suppress it.
-The `@page :first` block suppresses all footer slots on page 1.
-
----
-
-### style_academic.css — Academic monograph
-
-Single-column, EB Garamond, A4. Classic book conventions: first-line indent,
-no inter-paragraph space, teal (`#1a5c7a`) accents on headings and rules.
-Running head captured from h1 via `string-set`.
-
-| Variable | Default | Controls |
-|---|---|---|
-| `FONT_BODY` | EB Garamond | Body, headings |
-| `SIZE_BODY` | 10.5pt | Base size |
-| `SIZE_H1` | 22pt | Chapter title |
-| `SIZE_H2` | 12pt | Section heading (bold, teal, ruled) |
-| `SIZE_H3` | 10.5pt | Sub-section (bold italic, teal) |
-| `COLOR_ACCENT` | #1a5c7a | Headings, rules, bars, links |
-| `PAGE_SIZE` | A4 | — |
-| `MARGIN_LEFT` | 3.5cm | Binding-side margin |
-
-No footer text by default — page number only, centered.
-
----
-
-### style_magazine.css — Two-column magazine
-
-Two-column grid (`column-count: 2`), Source Sans 3, A4. Copper (`#c8631a`)
-accent. Drop cap on first paragraph after h1. h1 spans full width;
-tables and footnotes also span both columns.
-
-| Variable | Default | Controls |
-|---|---|---|
-| `FONT_BODY` | Source Sans 3 | Body, headings |
-| `SIZE_BODY` | 8.5pt | Compact magazine body |
-| `SIZE_H1` | 36pt | Display title (full-width, copper) |
-| `SIZE_H2` | 8.5pt | Section head (body-size, bold, copper, ruled above) |
-| `COLOR_ACCENT` | #c8631a | Title, heads, bullets, rules, bars |
-| `COLUMN_GAP` | 0.7cm | Gutter between columns |
-| `PAGE_SIZE` | A4 | — |
-
-Optional footer strings — add to Markdown source to populate footer slots:
-
-```html
-<span class="pub-footer">Publication Name · Month Year</span>
-<span class="issue-footer">www.example.com</span>
-```
-
-Optional full-width author band above h1:
-
-```html
-<div class="header-band">
-<p>Author name and affiliation, byline text</p>
-</div>
-
-# Article Title
-```
-
----
-
-### style_intelligence.css — Analytical report
-
-Two-column, Libre Baskerville (serif), US Letter. Navy (`#1d4b7a`) + gold (`#c8a84b`)
-palette. Header on every page: bold navy acronym left, spaced caps right, both on white.
-Footer: author left / `[ n/m ]` centre / title right.
-
-| Variable | Default | Controls |
-|---|---|---|
-| `FONT_BODY` | Libre Baskerville | Serif body, headings, header, footer. Sans-serif alternative (`Libre Franklin`) commented out in CSS. |
-| `SIZE_BODY` | 8.5pt | Base size |
-| `SIZE_H1` | 14pt | Document title (navy double rule below, spans both columns) |
-| `SIZE_H2` | 9.5pt | Section head (bold navy, underlined) |
-| `COLOR_NAVY` | #1d4b7a | Headings, rules, tables, header text |
-| `COLOR_GOLD` | #c8a84b | Secondary rules, sidebar border, h1 shadow rule |
-| `HEADER_LEFT` | "DRASTIC" | Bold navy, top-left — edit `@top-left content:` |
-| `HEADER_RIGHT` | "OSINT RESEARCH PRODUCT" | Bold navy, top-right — edit `@top-right content:` |
-| `FOOTER_LEFT` | "Author Name" | Left footer slot — edit `@bottom-left content:` |
-| `FOOTER_RIGHT` | "Article Title" | Right footer slot (italic) — edit `@bottom-right content:` |
-| `PAGE_SIZE` | Letter | 8.5 × 11 in |
-| `COLUMNS` | 2 | Two-column body grid |
-
-Special block classes (use as raw HTML in Markdown):
-
-```html
-<!-- Steel-blue key findings box, navy top+bottom rules — spans both columns -->
-<div class="key-takeaways">
-## Key Takeaways
-<p class="scope-note">*Scope note text.*</p>
-Body text and bullets...
-</div>
-
-<!-- Cream aside box, gold left border -->
-<div class="sidebar-note">
-### Sidebar Title
-Body text...
-</div>
-
-<!-- Force a table or image to span both columns -->
-<div class="full-width">
-
-| col | col |
-| --- | --- |
-
-</div>
-
-<!-- Switch an entire section (e.g. an Annex) to single full-width column -->
-<div class="single-column">
-
-All content here flows as one wide column...
-
-</div>
-
-<!-- Inline red highlight for key data -->
-<span class="highlight">96%</span>
-
-<!-- Small italic note below a table -->
-<p class="table-note">a. Footnote text here.</p>
-```
-
----
-
-## What the script handles
-
-| Feature | How |
-|---|---|
-| Headings, paragraphs, lists | Standard Markdown |
-| **Bold**, *italic*, `code` | Standard Markdown |
-| Footnotes (`[^key]`) | `footnotes` extension — rendered at end of document |
-| Tables | `tables` extension |
-| Fenced code blocks | `fenced_code` + optional Pygments syntax highlighting |
-| Inline HTML | Passed through as-is |
-| Images | Relative paths rewritten to `file://` URIs |
-| Image sizing | `width="40%"` on `<img>` tag; per-image CSS via `img[src*="name"]` |
-| Mermaid diagrams | Rendered to PNG via `mmdc` if installed; labelled placeholder otherwise |
-| GFM callouts (`> [!NOTE]`) | Converted to `<div class="callout callout-note">` |
-| Pull-quotes (`\| "Quote"`) | Converted to styled blockquote + citation |
-| Page breaks before annexes | Auto-injected before `## Annex N`, `## Notes`, `## Further Reading` |
-| Full-width elements | Wrap in `<div class="full-width">` to span both columns |
-| Single-column sections | Wrap in `<div class="single-column">` for annexes or notes |
-| Orphan/widow control | `orphans: 3; widows: 3` on `<p>` |
-
-**Not supported by WeasyPrint:**
-- JavaScript
-- `position: fixed`
-- CSS Grid (partial only)
-- Video / audio embeds
-
----
-
-## Pandoc fallback
-
-If WeasyPrint is unavailable the script falls back to pandoc + wkhtmltopdf.
-This path does not support CSS Paged Media (no header/footer bars, no
-per-image CSS selectors).
-
-```bash
-conda activate python_313x
-conda install pandoc
-brew install --cask wkhtmltopdf
-```
+- [Typst engine](engines/typst/README.md)
+- [WeasyPrint engine](engines/weasyprint/README.md)

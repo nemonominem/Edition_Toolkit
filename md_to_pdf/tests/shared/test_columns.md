@@ -335,6 +335,21 @@ Text after the image.
 
 Text after the div. Lorem ipsum.
 
+## Section 15: Insights box
+
+Two-column text before the insights box.
+
+<div class="insights">
+### The Role of the Huanan Seafood Wholesale Market
+
+Some scientists and China's public health officials have shifted their view on the role of the Huanan Seafood Wholesale Market in the pandemic since early 2020. Some now view the market as a potential site of community spread rather than where the initial human infection may have occurred.
+
+- On January 1, 2020, China's security authorities shut down the market after several workers fell ill in late December 2019. China focused early source tracing on the market and Hubei Province.
+- In January 2020, a scientific article described clinical features of initial COVID-19 infections and found that some patients did not have any known association with the market.
+</div>
+
+Two-column text resumes after the insights box. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
 [^fn-normal]: This is the footnote definition for Section 14a — normal flow.
 [^fn-normal2]: This is the second footnote definition for Section 14a.
 [^fn-repeat]: This footnote is referenced twice in Section 14b.
