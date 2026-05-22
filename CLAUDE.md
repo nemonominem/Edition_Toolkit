@@ -164,14 +164,14 @@ python medium-to-md.py https://medium.com/path/to/article --debug
 # Save images to disk instead of embedding
 python medium-to-md.py https://medium.com/path/to/article --disk
 
-# Harden Markdown — review pass (writes article_review.md)
-python md_harden/md_harden.py article.md --review --style intelligence
+# Harden Markdown — review pass (writes <stem>_review.md alongside the source)
+python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns.md --review --style intelligence
+# With Claude semantic review (recommended)
+python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns.md --review --claude --style intelligence
 # Apply surviving suggestions from reviewed file
-python md_harden/md_harden.py article.md --apply article_review.md
+python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns.md --apply md_to_pdf/tests/shared/test_columns_review.md
 # Skip ambiguous bold-heading promotion
-python md_harden/md_harden.py article.md --review --skip bold-headings
-# Add Claude API semantic review section
-python md_harden/md_harden.py article.md --review --claude --style intelligence
+python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns.md --review --skip bold-headings
 
 # Convert hardened Markdown to PDF (Typst, default)
 md2pdf article_hardened.md --style intelligence --compile

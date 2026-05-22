@@ -36,16 +36,14 @@ Pass `--style <name>` to load per-style conventions (pull-quote attribution form
 conda activate python_313x
 
 # Generate review document (open in VSCode Preview, edit, then apply)
-python md_harden/md_harden.py article.md --review --style intelligence
+# Run from the Edition/ root; path to source file is relative to cwd
+python md_harden/md_harden.py path/to/article.md --review --claude --style intelligence
 
 # Apply surviving suggestions from reviewed file
-python md_harden/md_harden.py article.md --apply article_review.md
+python md_harden/md_harden.py path/to/article.md --apply path/to/article_review.md
 
 # Skip the bold-heading promotion (ambiguous — needs human judgement)
-python md_harden/md_harden.py article.md --review --skip bold-headings
-
-# Add Claude API semantic review section
-python md_harden/md_harden.py article.md --review --claude --style intelligence
+python md_harden/md_harden.py path/to/article.md --review --skip bold-headings
 ```
 
 ---
@@ -103,7 +101,7 @@ cd medium_to_md
 python medium-to-md.py https://medium.com/path/to/article -o ../articles/
 
 # 2. Harden the Markdown — generate review, approve, apply
-python md_harden/md_harden.py ../articles/article.md --review --style intelligence
+python md_harden/md_harden.py ../articles/article.md --review --claude --style intelligence
 # → open article_review.md in VSCode Preview, delete/edit suggestions
 python md_harden/md_harden.py ../articles/article.md --apply ../articles/article_review.md
 # → produces articles/article_hardened.md
