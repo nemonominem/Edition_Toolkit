@@ -24,7 +24,33 @@ python medium-to-md.py https://medium.com/path/to/article
 
 ---
 
-### 2. md_to_pdf — Markdown to Print-Ready PDF
+### 2. md_harden — Markdown Hardener
+
+Normalize and validate a Markdown file before conversion. Produces a human-reviewable `_review.md` with numbered Before/After suggestion blocks — the author approves every change before the file goes to `md2pdf`.
+
+**Transforms:** bold-only paragraphs → H4, bare Notes/References headings removed, pull-quote spacing and attribution normalised, consistency advisories (et al. italics, apostrophe style, unquoted pull-quotes).
+
+Pass `--style <name>` to load per-style conventions (pull-quote attribution format, confidence thresholds) from `md_to_pdf/styles/<name>.json`.
+
+```bash
+conda activate python_313x
+
+# Generate review document (open in VSCode Preview, edit, then apply)
+python md_harden/md_harden.py article.md --review --style intelligence
+
+# Apply surviving suggestions from reviewed file
+python md_harden/md_harden.py article.md --apply article_review.md
+
+# Skip the bold-heading promotion (ambiguous — needs human judgement)
+python md_harden/md_harden.py article.md --review --skip bold-headings
+
+# Add Claude API semantic review section
+python md_harden/md_harden.py article.md --review --claude --style intelligence
+```
+
+---
+
+### 3. md_to_pdf — Markdown to Print-Ready PDF
 
 Convert Markdown articles to professionally typeset, print-ready PDFs.  
 Two rendering engines behind a single `md2pdf` command.
@@ -52,7 +78,7 @@ md2pdf article.md --engine weasyprint --css intelligence
 
 ---
 
-### 3. md_to_booklet — Markdown to Typeset Booklet
+### 4. md_to_booklet — Markdown to Typeset Booklet
 
 Produce print-ready booklets with page imposition (Pandoc + XeLaTeX).
 
@@ -76,9 +102,14 @@ conda activate python_313x
 cd medium_to_md
 python medium-to-md.py https://medium.com/path/to/article -o ../articles/
 
-# 2. Convert to PDF
-cd ../md_to_pdf
-md2pdf ../articles/article.md --compile
+# 2. Harden the Markdown — generate review, approve, apply
+python md_harden/md_harden.py ../articles/article.md --review --style intelligence
+# → open article_review.md in VSCode Preview, delete/edit suggestions
+python md_harden/md_harden.py ../articles/article.md --apply ../articles/article_review.md
+# → produces articles/article_hardened.md
+
+# 3. Convert hardened file to PDF
+md2pdf ../articles/article_hardened.md --style intelligence --compile
 ```
 
 ---
@@ -91,8 +122,16 @@ Edition/
 │   ├── medium-to-md.py
 │   └── README.md
 │
+├── md_harden/
+│   └── md_harden.py            (Markdown normalizer — run before md2pdf)
+│
 ├── md_to_pdf/                  (unified package — installs md2pdf)
 │   ├── pyproject.toml
+│   ├── styles/                 (shared per-style JSON — spec + hardening config)
+│   │   ├── intelligence.json   (2-col, navy/gold, source: attribution)
+│   │   ├── academic.json       (1-col, serif, Source: attribution)
+│   │   ├── magazine.json       (1-col, rust accent, source: attribution)
+│   │   └── thinktank.json      (2-col, green accent, Source: attribution)
 │   ├── etk_md2pdf/
 │   │   ├── __init__.py
 │   │   └── dispatcher.py       (entry point: parses --engine, delegates)
@@ -116,8 +155,11 @@ Edition/
 | Task | Command |
 |------|---------|
 | Extract Medium article | `python medium-to-md.py <url>` |
-| Convert to PDF (Typst) | `md2pdf article.md --compile` |
-| Convert to PDF (WeasyPrint) | `md2pdf article.md --engine weasyprint --css intelligence` |
+| Harden — generate review | `python md_harden/md_harden.py article.md --review --style intelligence` |
+| Harden — apply review | `python md_harden/md_harden.py article.md --apply article_review.md` |
+| Harden + Claude review | `python md_harden/md_harden.py article.md --review --claude --style intelligence` |
+| Convert to PDF (Typst) | `md2pdf article_hardened.md --style intelligence --compile` |
+| Convert to PDF (WeasyPrint) | `md2pdf article_hardened.md --engine weasyprint --css intelligence` |
 | Ragged-right text | `md2pdf article.md --no-justify` |
 | Custom CSS override | `md2pdf article.md --engine weasyprint --custom overrides.css` |
 | List styles | `md2pdf --list-styles` |

@@ -1,0 +1,120 @@
+{
+  "_comment": [
+    "intelligence.json — shared style definition for the Intelligence Community style.",
+    "",
+    "This file is the authoritative source for style-level conventions that span",
+    "multiple tools in the Edition pipeline:",
+    "",
+    "  md_harden  — reads 'hardening' to know what to flag and how to normalise",
+    "               Markdown before conversion.",
+    "  md2pdf     — engines/typst/styles/intelligence.typ and",
+    "               engines/weasyprint/styles/style_intelligence.css implement",
+    "               the rendering decisions listed in 'design' below.",
+    "",
+    "When you change a convention here, update the corresponding engine file(s)",
+    "manually. The JSON is the spec; the .typ and .css are the implementations.",
+    "",
+    "Style identity: US Intelligence Community analytical report.",
+    "Two-column serif body, navy + gold accent palette.",
+    "Defaults to DRASTIC / OSINT RESEARCH PRODUCT branding."
+  ],
+
+  "design": {
+    "_comment": "Rendering decisions — implemented in intelligence.typ and style_intelligence.css.",
+    "layout": {
+      "columns": 2,
+      "page": "a4",
+      "margins_cm": { "top": 3.2, "bottom": 2.5, "left": 2.0, "right": 2.0 }
+    },
+    "palette": {
+      "navy":        "#1d4b7a",
+      "gold":        "#c8a84b",
+      "box_blue":    "#d0dce8",
+      "box_cream":   "#f5f0dc",
+      "stripe":      "#e8eef4",
+      "faint":       "#555555",
+      "body_black":  "#1a1a1a",
+      "highlight":   "#c0392b",
+      "bg_code":     "#f2f2f2"
+    },
+    "typography": {
+      "font_body":   ["Palatino", "Palatino Linotype", "Book Antiqua", "Georgia", "serif"],
+      "font_mono":   ["Source Code Pro", "Courier New", "monospace"],
+      "size_body":   "9.5pt",
+      "size_h1":     "16pt",
+      "size_h2":     "11pt",
+      "size_h3":     "10.5pt",
+      "size_h4":     "9.5pt",
+      "size_footer": "7.5pt"
+    },
+    "branding_defaults": {
+      "pub_name":  "DRASTIC",
+      "doc_type":  "OSINT RESEARCH PRODUCT",
+      "author":    "Author Name",
+      "title":     "Article Title"
+    }
+  },
+
+  "hardening": {
+    "_comment": [
+      "Conventions that md_harden enforces when --style intelligence is passed.",
+      "Each rule has a 'confidence' (applied as the default Confidence% in the",
+      "review document) and an 'action' explaining what the transform does.",
+      "Rules with confidence >= 50 get Treatment: Apply; below 50 get Treatment: Review."
+    ],
+
+    "pull_quote_attribution": {
+      "_comment": "The attribution line following a pull-quote block (| text).",
+      "style":      "source:",
+      "confidence": 90,
+      "action":     "Normalise 'Source:' → 'source:'. Lowercase is the house style — less intrusive than a capital label."
+    },
+
+    "pull_quote_spacing": {
+      "_comment": "A pipe immediately followed by a non-space character.",
+      "confidence": 99,
+      "action":     "Insert space after leading pipe: |\"text\" → | \"text\"."
+    },
+
+    "pull_quote_missing_source": {
+      "_comment": "Pull-quote block with no following | source: line.",
+      "confidence": 30,
+      "action":     "Flag for review — missing attribution is often intentional (paraphrase, narrative)."
+    },
+
+    "bold_headings": {
+      "_comment": [
+        "Standalone bold-only paragraph (** text **) on its own line, followed",
+        "by a blank line → promote to H4.",
+        "Guards: skip if inner text > 80 chars (body emphasis, not a heading).",
+        "        skip if next line is non-blank (definition term or lead-in)."
+      ],
+      "confidence": 90,
+      "action":     "Replace **text** paragraph with #### text."
+    },
+
+    "strip_bare_sections": {
+      "_comment": "Bare ## Notes or ## References headings with no body content.",
+      "confidence": 95,
+      "action":     "Remove the heading line; it adds no information in print layout."
+    },
+
+    "et_al_italics": {
+      "_comment": "et al. in in-text citations should be italicised per academic convention.",
+      "confidence": 40,
+      "action":     "Flag all plain 'et al.' for possible replacement with '*et al.*'. Low confidence — review before applying."
+    },
+
+    "apostrophe_consistency": {
+      "_comment": "Document mixes straight and curly apostrophes.",
+      "confidence": 35,
+      "action":     "Advisory only — one example shown. Apply globally in editor with regex."
+    },
+
+    "pull_quote_style_consistency": {
+      "_comment": "Pull-quote lines that open without a quotation mark (possible unquoted paraphrase).",
+      "confidence": 30,
+      "action":     "Advisory only — verify each is intentional before adding quotes."
+    }
+  }
+}

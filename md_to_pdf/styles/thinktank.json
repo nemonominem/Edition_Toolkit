@@ -1,0 +1,77 @@
+{
+  "_comment": [
+    "thinktank.json — shared style definition for the Think-Tank style.",
+    "",
+    "Formal two-column layout with forest-green accent. Clean, authoritative,",
+    "suitable for policy briefs and research reports.",
+    "",
+    "Rendering implementations:",
+    "  engines/typst/styles/thinktank.typ",
+    "  engines/weasyprint/styles/style_thinktank.css",
+    "",
+    "md_harden reads 'hardening' when --style thinktank is passed.",
+    "md2pdf engines read 'design' for reference; rendering is in the .typ/.css files."
+  ],
+
+  "design": {
+    "_comment": "Rendering decisions — implemented in thinktank.typ and style_thinktank.css.",
+    "layout": {
+      "columns": 2,
+      "page": "a4",
+      "margins_cm": { "top": 3.0, "bottom": 2.5, "left": 2.0, "right": 2.0 }
+    },
+    "palette": {
+      "green":        "#2a5c3f",
+      "light_green":  "#d4e6da",
+      "pale_green":   "#f0f5f2",
+      "warm_grey":    "#4a4a4a",
+      "faint":        "#666666",
+      "body_black":   "#1a1a1a",
+      "bg_code":      "#f2f2f2",
+      "rule_light":   "#b0c4b8",
+      "stripe":       "#e8eeeb"
+    },
+    "typography": {
+      "font_body":   ["Palatino", "Palatino Linotype", "Book Antiqua", "Georgia", "serif"],
+      "font_mono":   ["Source Code Pro", "Courier New", "monospace"],
+      "size_body":   "9.5pt",
+      "size_h1":     "16pt",
+      "size_h2":     "11pt"
+    },
+    "branding_defaults": {
+      "pub_name": "Policy Brief",
+      "doc_type": "RESEARCH REPORT",
+      "author":   "Author Name",
+      "title":    "Article Title"
+    }
+  },
+
+  "hardening": {
+    "_comment": [
+      "Conventions that md_harden enforces when --style thinktank is passed.",
+      "Think-tank style uses capitalised Source: to match formal policy report",
+      "citation conventions. Two-column layout same as intelligence style.",
+      "et al. italics at moderate confidence — policy reports vary."
+    ],
+
+    "pull_quote_attribution": {
+      "_comment": "Think-tank style uses capitalised Source: — matches formal report citations.",
+      "style":      "Source:",
+      "confidence": 90,
+      "action":     "Normalise 'source:' -> 'Source:'. Capitalised form matches policy report convention."
+    },
+
+    "pull_quote_spacing":          { "confidence": 99 },
+    "pull_quote_missing_source":   { "confidence": 30 },
+    "bold_headings":               { "confidence": 90 },
+    "strip_bare_sections":         { "confidence": 95 },
+
+    "et_al_italics": {
+      "confidence": 55,
+      "_comment": "Moderate confidence — policy reports often cite without italics in footnotes."
+    },
+
+    "apostrophe_consistency":       { "confidence": 35 },
+    "pull_quote_style_consistency": { "confidence": 30 }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "_comment": [
+    "academic.json — shared style definition for the Academic style.",
+    "",
+    "Single-column, generous margins, classic serif throughout.",
+    "Minimal colour — black/dark-grey only. Suitable for preprints and papers.",
+    "",
+    "Rendering implementations:",
+    "  engines/typst/styles/academic.typ",
+    "  engines/weasyprint/styles/style_academic.css",
+    "",
+    "md_harden reads 'hardening' when --style academic is passed.",
+    "md2pdf engines read 'design' for reference; rendering is in the .typ/.css files."
+  ],
+
+  "design": {
+    "_comment": "Rendering decisions — implemented in academic.typ and style_academic.css.",
+    "layout": {
+      "columns": 1,
+      "page": "a4",
+      "margins_cm": { "top": 3.5, "bottom": 3.0, "left": 3.5, "right": 3.5 }
+    },
+    "palette": {
+      "dark":       "#111111",
+      "mid_grey":   "#444444",
+      "faint":      "#777777",
+      "rule_grey":  "#bbbbbb",
+      "bg_code":    "#f5f5f5",
+      "link_blue":  "#1a4f8a"
+    },
+    "typography": {
+      "font_body":   ["Palatino", "Palatino Linotype", "Book Antiqua", "Georgia", "serif"],
+      "font_mono":   ["Source Code Pro", "Courier New", "monospace"],
+      "size_body":   "11pt",
+      "size_h1":     "16pt",
+      "first_line_indent": "1.5em"
+    },
+    "branding_defaults": {
+      "pub_name": "Journal",
+      "doc_type": "WORKING PAPER",
+      "author":   "Author Name",
+      "title":    "Article Title"
+    }
+  },
+
+  "hardening": {
+    "_comment": [
+      "Conventions that md_harden enforces when --style academic is passed.",
+      "Academic style uses Source: (capitalised) for pull-quote attribution,",
+      "and italicises et al. consistently per academic citation convention."
+    ],
+
+    "pull_quote_attribution": {
+      "_comment": "Academic style uses capitalised Source: to match citation formality.",
+      "style":      "Source:",
+      "confidence": 90,
+      "action":     "Normalise 'source:' -> 'Source:'. Capitalised form matches academic citation style."
+    },
+
+    "pull_quote_spacing":          { "confidence": 99 },
+    "pull_quote_missing_source":   { "confidence": 30 },
+    "bold_headings":               { "confidence": 90 },
+    "strip_bare_sections":         { "confidence": 95 },
+
+    "et_al_italics": {
+      "_comment": "Higher confidence for academic style — et al. italics is a hard rule in most citation formats.",
+      "confidence": 70,
+      "action":     "Replace plain 'et al.' with '*et al.*'. Standard in academic citation styles (APA, Chicago, etc.)."
+    },
+
+    "apostrophe_consistency":       { "confidence": 35 },
+    "pull_quote_style_consistency": { "confidence": 30 }
+  }
+}

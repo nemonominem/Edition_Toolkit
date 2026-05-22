@@ -28,6 +28,30 @@
 #let font-body   = ("Palatino", "Palatino Linotype", "Book Antiqua", "Georgia", "Times New Roman", "serif")
 #let font-mono   = ("Source Code Pro", "Courier New", "monospace")
 
+// ── Typography tunables ─────────────────────────────────────────────────────
+#let body-size       = 9.5pt    // body text size
+#let body-leading    = 0.65em   // inter-line gap (≈1.6× line height at 9.5pt)
+#let body-spacing    = 1.4em    // inter-paragraph gap (visibly larger than leading)
+#let list-spacing    = 0.9em    // gap between bullet/enum items
+#let header-size     = 11pt     // running header text size
+#let footer-size     = 7.5pt    // running footer text size
+#let h1-size         = 16pt
+#let h1-above        = 1.0em
+#let h1-below        = 0.6em
+#let h2-size         = 11pt
+#let h2-above        = 1.6em
+#let h2-below        = 0.5em
+#let h3-size         = 10.5pt   // visibly larger than body (9.5pt)
+#let h3-above        = 1.4em
+#let h3-below        = 0.5em
+#let h4-size         = 9.5pt
+#let h4-above        = 1.0em
+#let h4-below        = 0.5em
+
+// ── Page geometry ───────────────────────────────────────────────────────────
+#let page-paper      = "a4"
+#let page-margin     = (top: 3.2cm, bottom: 2.5cm, left: 2cm, right: 2cm)
+
 // ── Main template function ──────────────────────────────────────────────────
 #let doc(
   author:   "Author Name",
@@ -40,12 +64,12 @@
 
   // ── Page setup ────────────────────────────────────────────────────────────
   set page(
-    paper:  "a4",
-    margin: (top: 3.2cm, bottom: 2.5cm, left: 2cm, right: 2cm),
+    paper:  page-paper,
+    margin: page-margin,
     header: context {
       // Suppress header on first page
       if counter(page).get().first() == 1 { return }
-      set text(font: font-body, size: 11pt, weight: "bold", fill: navy)
+      set text(font: font-body, size: header-size, weight: "bold", fill: navy)
       grid(
         columns: (1fr, 1fr),
         align: (left, right),
@@ -57,7 +81,7 @@
     },
     footer: context {
       if counter(page).get().first() == 1 { return }
-      set text(font: font-body, size: 7.5pt, fill: faint)
+      set text(font: font-body, size: footer-size, fill: faint)
       let pg     = counter(page).display()
       let total  = counter(page).final().first()
       grid(
@@ -72,59 +96,65 @@
 
   // ── Base typography ───────────────────────────────────────────────────────
   set text(
-    font:   font-body,
-    size:   9.5pt,
-    fill:   body-black,
-    lang:   "en",
+    font:      font-body,
+    size:      body-size,
+    fill:      body-black,
+    lang:      "en",
     hyphenate: true,
   )
   set par(
-    justify:     justify,
-    leading:     0.65em,   // approx 1.6 line-height at 8.5pt
-    spacing:     0.5em,
+    justify: justify,
+    leading: body-leading,
+    spacing: body-spacing,
   )
 
   // ── Heading styles ────────────────────────────────────────────────────────
   // h1 — document/chapter title: 16pt bold navy, full-width, gold rule below
   show heading.where(level: 1): it => {
-    set text(size: 16pt, weight: "bold", fill: navy)
-    block(width: 100%, above: 1em, below: 0.6em)[
+    set text(size: h1-size, weight: "bold", fill: navy)
+    set align(left)
+    block(width: 100%, above: h1-above, below: h1-below)[
       #it.body
       #v(3pt)
       #line(length: 100%, stroke: 2.5pt + navy)
     ]
   }
 
-  // h2 — section heading: 11pt bold navy, navy border-bottom
+  // h2 — section heading: bold navy, navy rule below
   show heading.where(level: 2): it => {
-    set text(size: 11pt, weight: "bold", fill: navy)
-    block(width: 100%, above: 1.4em, below: 0.35em)[
+    set text(size: h2-size, weight: "bold", fill: navy)
+    set align(left)
+    block(width: 100%, above: h2-above, below: h2-below)[
       #it.body
       #v(1pt)
       #line(length: 100%, stroke: 0.8pt + navy)
     ]
   }
 
-  // h3 — sub-section: 9.5pt bold black, no rule
+  // h3 — sub-section: bold navy, no rule
   show heading.where(level: 3): it => {
-    set text(size: 9.5pt, weight: "bold", fill: body-black)
-    block(above: 1.2em, below: 0.25em, it.body)
+    set text(size: h3-size, weight: "bold", fill: navy)
+    set align(left)
+    block(above: h3-above, below: h3-below, it.body)
   }
 
-  // h4 — minor heading: 9.5pt bold italic black
+  // h4 — minor heading: bold italic black
   show heading.where(level: 4): it => {
-    set text(size: 9.5pt, weight: "bold", style: "italic", fill: body-black)
-    block(above: 0.9em, below: 0.2em, it.body)
+    set text(size: h4-size, weight: "bold", style: "italic", fill: body-black)
+    set align(left)
+    block(above: h4-above, below: h4-below, it.body)
   }
 
   // h5/h6 — same as h4
   show heading.where(level: 5): it => {
-    set text(size: 9.5pt, weight: "bold", style: "italic", fill: body-black)
-    block(above: 0.9em, below: 0.2em, it.body)
+    set text(size: h4-size, weight: "bold", style: "italic", fill: body-black)
+    set align(left)
+    block(above: h4-above, below: h4-below, it.body)
   }
   show heading.where(level: 6): it => {
-    set text(size: 9.5pt, weight: "bold", style: "italic", fill: body-black)
-    block(above: 0.9em, below: 0.2em, it.body)
+    set text(size: h4-size, weight: "bold", style: "italic", fill: body-black)
+    set align(left)
+    block(above: h4-above, below: h4-below, it.body)
   }
 
   // ── Code ──────────────────────────────────────────────────────────────────
@@ -167,11 +197,11 @@
   set list(
     marker:  text(fill: navy, weight: "bold")[ • ],
     indent:  1.4em,
-    spacing: 0.3em,
+    spacing: list-spacing,
   )
   set enum(
     indent:  1.4em,
-    spacing: 0.3em,
+    spacing: list-spacing,
   )
 
   // ── Figures / images ──────────────────────────────────────────────────────

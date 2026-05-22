@@ -4,10 +4,11 @@
 
 Suite of publishing utilities for extracting, converting, and typesetting articles into publication-ready documents.
 
-Three independent tools:
+Four independent tools:
 1. **medium_to_md** — Extract Medium articles to Markdown with embedded images
-2. **md_to_pdf** — Convert Markdown to print-ready PDF (Typst default; WeasyPrint fallback)
-3. **md_to_booklet** — Produce typeset booklets with imposition (Pandoc + XeLaTeX)
+2. **md_harden** — Normalize and validate Markdown before conversion (human-reviewed diff)
+3. **md_to_pdf** — Convert Markdown to print-ready PDF (Typst default; WeasyPrint fallback)
+4. **md_to_booklet** — Produce typeset booklets with imposition (Pandoc + XeLaTeX)
 
 ---
 
@@ -51,12 +52,22 @@ head -20 scripts/filename.py  # check imports
 - **Then:** `playwright install chromium` (binary download, one-time)
 - **No requirements.txt needed** — conda handles it
 
+### md_harden
+- **Requires:** Python stdlib only (no extra packages)
+- **Optional:** `anthropic` package for `--claude` semantic review pass
+- **Run from:** anywhere — script uses absolute paths
+- **Style config:** `--style <name>` loads hardening conventions from `md_to_pdf/styles/<name>.json`
+  — pull-quote attribution style, confidence thresholds, et al. italics, etc.
+
 ### md_to_pdf
+- **Expects:** hardened Markdown (run `md_harden` first; no heuristic pre-passes in converter)
 - **Default engine:** Typst — `brew install typst`; Python stdlib only
 - **WeasyPrint engine (optional):** `conda install markdown weasyprint pygments`
 - **System deps for WeasyPrint (macOS):** `brew install pango gdk-pixbuf libffi`
 - **Install package:** `conda develop md_to_pdf/` (puts `md2pdf` on PATH)
 - **Fonts:** `brew install font-libre-baskerville` (intelligence style)
+- **Style JSON files:** `md_to_pdf/styles/<name>.json` — single source of truth for per-style
+  conventions shared between `md_harden` and the rendering engines
 
 ### md_to_booklet
 - **Requires:** `pandoc`, `pypdf`, `requests`
@@ -89,20 +100,28 @@ Edition/
 │   ├── medium-to-md.py
 │   └── approach.md
 │
+├── md_harden/
+│   └── md_harden.py           (Markdown normalizer — run before md2pdf)
+│
 ├── md_to_pdf/                 (unified package — installs md2pdf command)
 │   ├── pyproject.toml
 │   ├── README.md
+│   ├── styles/                (shared per-style JSON — spec + hardening config)
+│   │   ├── intelligence.json  (2-col, navy/gold, source: attribution)
+│   │   ├── academic.json      (1-col, serif, Source: attribution, et al. 70%)
+│   │   ├── magazine.json      (1-col, rust accent, source: attribution)
+│   │   └── thinktank.json     (2-col, green accent, Source: attribution)
 │   ├── etk_md2pdf/
 │   │   ├── __init__.py
 │   │   └── dispatcher.py      (entry point: parses --engine, delegates)
 │   ├── engines/
-│   │   ├── typst/             (DEFAULT engine)
+│   │   ├── typst/             (DEFAULT engine — rendering implementation)
 │   │   │   ├── convert.py
-│   │   │   ├── styles/        (intelligence, magazine, thinktank, academic)
+│   │   │   ├── styles/        (intelligence.typ, magazine.typ, thinktank.typ, academic.typ)
 │   │   │   └── README.md
 │   │   └── weasyprint/        (fallback engine: --engine weasyprint)
 │   │       ├── convert.py
-│   │       ├── styles/        (intelligence, magazine, thinktank, academic)
+│   │       ├── styles/        (style_intelligence.css, style_magazine.css, …)
 │   │       └── README.md
 │   └── tests/
 │       ├── shared/            (test_columns.md, WHO article, images/)
@@ -145,11 +164,20 @@ python medium-to-md.py https://medium.com/path/to/article --debug
 # Save images to disk instead of embedding
 python medium-to-md.py https://medium.com/path/to/article --disk
 
-# Convert Markdown to PDF (Typst, default)
-md2pdf article.md --compile
+# Harden Markdown — review pass (writes article_review.md)
+python md_harden/md_harden.py article.md --review --style intelligence
+# Apply surviving suggestions from reviewed file
+python md_harden/md_harden.py article.md --apply article_review.md
+# Skip ambiguous bold-heading promotion
+python md_harden/md_harden.py article.md --review --skip bold-headings
+# Add Claude API semantic review section
+python md_harden/md_harden.py article.md --review --claude --style intelligence
+
+# Convert hardened Markdown to PDF (Typst, default)
+md2pdf article_hardened.md --style intelligence --compile
 
 # Convert with WeasyPrint engine
-md2pdf article.md --engine weasyprint --css intelligence
+md2pdf article_hardened.md --engine weasyprint --css intelligence
 
 # Ragged-right text
 md2pdf article.md --no-justify

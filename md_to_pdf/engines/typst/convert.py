@@ -37,6 +37,13 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Shared frontmatter parser (engines/__init__.py)
+# Insert the md_to_pdf root so `engines` package is importable from anywhere.
+_MD2PDF_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(_MD2PDF_ROOT) not in sys.path:
+    sys.path.insert(0, str(_MD2PDF_ROOT))
+from engines import parse_frontmatter  # noqa: E402
+
 
 # ---------------------------------------------------------------------------
 # Inline Markdown → Typst conversion
@@ -78,6 +85,14 @@ _LINK_RE   = re.compile(r'\[([^\]]+)\]\(([^)]+)\)')
 _FNREF_RE  = re.compile(r'\[\^([^\]]+)\](?!:)')
 # Pattern: ~~strikethrough~~
 _STRIKE_RE = re.compile(r'~~(.+?)~~')
+
+# Styles that use endnotes (collected at end of document) instead of page footnotes
+_ENDNOTE_STYLES = {'intelligence', 'academic'}
+
+# Per-document endnote state — reset by convert_md_to_typ() before each run
+_fn_endnote_mode: bool = False          # True for intelligence/academic styles
+_fn_index: dict[str, int] = {}         # key → note number (1-based)
+_fn_notes: list[tuple[str, str]] = []  # ordered [(key, definition), ...]
 
 
 def convert_inline(text: str, footnotes: dict[str, str]) -> str:
@@ -152,12 +167,27 @@ def convert_inline(text: str, footnotes: dict[str, str]) -> str:
 
     # 3. Footnote references  [^key]
     def replace_fnref(m: re.Match) -> str:
+        global _fn_endnote_mode, _fn_index, _fn_notes
         key = m.group(1)
-        defn = footnotes.get(key, "")
-        if defn:
-            inner = convert_inline(defn, {})   # no nested footnotes
-            return stash(f"#footnote[{inner}]")
-        return stash(f"#footnote[{key}]")
+        if _fn_endnote_mode:
+            # Endnote mode: assign sequential number, record definition once
+            if key not in _fn_index:
+                n = len(_fn_notes) + 1
+                _fn_index[key] = n
+                defn = footnotes.get(key, key)
+                _fn_notes.append((key, defn))
+            n = _fn_index[key]
+            # Inline: superscript linking to endnote anchor.
+            # Label names use hyphens (Typst rejects underscores in labels).
+            safe_key = key.replace('_', '-')
+            return stash(f'#link(<en-{safe_key}>)[#super[{n}]]')
+        else:
+            # Page-footnote mode (magazine, thinktank)
+            defn = footnotes.get(key, "")
+            if defn:
+                inner = convert_inline(defn, {})
+                return stash(f"#footnote[{inner}]")
+            return stash(f"#footnote[{key}]")
     text = _FNREF_RE.sub(replace_fnref, text)
 
     def _escape_inner(s: str) -> str:
@@ -203,9 +233,11 @@ def convert_inline(text: str, footnotes: dict[str, str]) -> str:
             escaped_parts.append(_escape_typst(part))
     text = ''.join(escaped_parts)
 
-    # 9. Restore placeholders
-    for i, ph in enumerate(placeholders):
-        text = text.replace(f"\x00PH{i}\x00", ph)
+    # 9. Restore placeholders in reverse order so nested stashes resolve correctly.
+    # (A later stash may contain the token of an earlier one inside its content;
+    #  restoring outermost-last ensures inner tokens are already resolved first.)
+    for i in range(len(placeholders) - 1, -1, -1):
+        text = text.replace(f"\x00PH{i}\x00", placeholders[i])
 
     return text
 
@@ -299,12 +331,12 @@ _PULLQUOTE_LINE_RE = re.compile(r'^(?:\| )(?!.*\|\s*$)(.+)$', re.MULTILINE)
 
 def _is_pullquote_block(lines: list[str]) -> bool:
     """Return True if every line in the block starts with '| ' and has no trailing |."""
-    return all(re.match(r'^\| (?!.*\|\s*$)', ln) for ln in lines if ln.strip())
+    return all(re.match(r'^\|[ \t]?(?!.*\|\s*$)', ln) for ln in lines if ln.strip())
 
 
 def convert_pullquote_block(lines: list[str], footnotes: dict[str, str]) -> str:
     """Convert a pull-quote block to a Typst #pull-quote() call."""
-    stripped = [ln[2:] if ln.startswith('| ') else ln for ln in lines]
+    stripped = [re.sub(r'^\|[ \t]?', '', ln) for ln in lines]
 
     source = None
     if stripped and re.match(r'^source:\s*', stripped[-1], re.IGNORECASE):
@@ -503,6 +535,10 @@ def next_mermaid_placeholder() -> str:
 # Main converter
 # ---------------------------------------------------------------------------
 
+# A paragraph consisting solely of **bold text** (no other content) is treated
+# as an implicit H4 — a common authoring shorthand for informal sub-headings.
+_BOLD_ONLY_RE = re.compile(r'^\*\*(.+?)\*\*\.?\s*$')
+
 # Regex patterns for block-level detection
 _HEADING_RE        = re.compile(r'^(#{1,6})\s+(.+?)(?:\s+#+)?\s*$')
 _HR_RE             = re.compile(r'^(?:-{3,}|_{3,}|\*{3,})\s*$')
@@ -510,7 +546,7 @@ _TABLE_LINE_RE     = re.compile(r'^\|')
 _UL_LINE_RE        = re.compile(r'^[ \t]*[-*+]\s+')
 _OL_LINE_RE        = re.compile(r'^[ \t]*\d+\.\s+')
 _CALLOUT_START_RE  = re.compile(r'^> \[!(' + '|'.join(_CALLOUT_LABELS) + r')\]', re.IGNORECASE)
-_PULLQUOTE_RE      = re.compile(r'^(?:\| )(?!.*\|\s*$)')
+_PULLQUOTE_RE      = re.compile(r'^\|[ \t]?(?!.*\|\s*$)')   # | or |<space> but not table rows
 _FENCED_RE         = re.compile(r'^```(\w*)')
 _DIV_OPEN_RE       = re.compile(r'^<div\s+class="([^"]+)">')
 _DIV_CLOSE_RE      = re.compile(r'^</div>')
@@ -536,30 +572,28 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
     Returns:
         Typst source string.
     """
-    # Reset mermaid state for each document
+    # Reset per-document state
     global _mermaid_counter, _mermaid_images_dir, _md_dir
+    global _fn_endnote_mode, _fn_index, _fn_notes
     _mermaid_counter = 0
+    _fn_endnote_mode = style in _ENDNOTE_STYLES
+    _fn_index = {}
+    _fn_notes = []
+    endnote_mode = _fn_endnote_mode
     _mermaid_images_dir = images_dir
     # _md_dir is used by convert_image/_resolve_image_src to turn relative paths absolute
     _md_dir = md_dir if md_dir is not None else (images_dir.parent if images_dir is not None else None)
 
-    # 1. Extract footnote definitions
-    md_text, footnotes = extract_footnotes(md_text)
+    # 1. Pre-processing passes (order matters)
+    # Extract YAML front-matter (if any) — shared parser
+    meta, md_text = parse_frontmatter(md_text)
 
-    # Extract YAML front-matter (if any) for title/author
-    author = "Author Name"
-    title  = "Article Title"
-    fm_match = re.match(r'^---\s*\n(.*?)\n---\s*\n', md_text, re.DOTALL)
-    if fm_match:
-        fm = fm_match.group(1)
-        for key, dest in [('author', 'author'), ('title', 'title')]:
-            km = re.search(rf'^{key}:\s*(.+)$', fm, re.MULTILINE | re.IGNORECASE)
-            if km:
-                if key == 'author':
-                    author = km.group(1).strip().strip('"\'')
-                else:
-                    title = km.group(1).strip().strip('"\'')
-        md_text = md_text[fm_match.end():]
+    # Extract footnote definitions
+    md_text, footnotes = extract_footnotes(md_text)
+    author   = meta["author"]
+    title    = meta["title"]
+    pub_name = meta["pub-name"]
+    doc_type = meta["doc-type"]
 
     # 2. Split into logical lines for processing
     lines = md_text.splitlines()
@@ -579,8 +613,8 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
     header_lines.append(f'#show: doc.with(')
     header_lines.append(f'  author:   "{author}",')
     header_lines.append(f'  title:    "{title}",')
-    header_lines.append(f'  pub-name: "DRASTIC",')
-    header_lines.append(f'  doc-type: "OSINT RESEARCH PRODUCT",')
+    header_lines.append(f'  pub-name: "{pub_name}",')
+    header_lines.append(f'  doc-type: "{doc_type}",')
     header_lines.append(f'  justify:  {justify_val},')
     header_lines.append(f')')
     header_lines.append(f'')
@@ -877,7 +911,37 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
 
     header = '\n'.join(header_lines)
     body   = '\n\n'.join(body_parts)
-    return header + '\n' + body
+
+    # ── Endnotes section (full-width, outside any #columns wrapper) ───────────
+    endnotes_block = ''
+    if endnote_mode and _fn_notes:
+        lines_en: list[str] = []
+        lines_en.append('// ── Endnotes ──────────────────────────────────────────────────────────────')
+        lines_en.append('#v(1em)')
+        lines_en.append('#line(length: 100%, stroke: 1.5pt + rgb("#1d4b7a"))')
+        lines_en.append('#v(0.4em)')
+        lines_en.append('#text(size: 11pt, weight: "bold", fill: rgb("#1d4b7a"))[Notes]')
+        lines_en.append('#v(0.5em)')
+        for key, defn in _fn_notes:
+            n = _fn_index[key]
+            # Typst label syntax: element <label> — label must follow the element
+            # at the same content level, not be nested inside it.
+            # Use a zero-height block as the label target, then the visible entry.
+            safe_key = key.replace('_', '-')  # Typst labels can't contain underscores
+            # Strip cross-references inside note definitions ([^otherkey]) to avoid
+            # cascading label-missing errors when a note references another note.
+            defn_no_xref = _FNREF_RE.sub(
+                lambda m2: f'[{_fn_index.get(m2.group(1), "?")}]',
+                defn
+            )
+            defn_typst = convert_inline(defn_no_xref, {})
+            lines_en.append(
+                f'#block(height: 0pt, above: 0pt, below: 0pt)[] <en-{safe_key}>\n'
+                f'#block(below: 0.5em)[#super[{n}] {defn_typst}]'
+            )
+        endnotes_block = '\n'.join(lines_en)
+
+    return header + '\n' + body + ('\n\n' + endnotes_block if endnotes_block else '')
 
 
 def _convert_block_content(text: str, footnotes: dict[str, str]) -> str:

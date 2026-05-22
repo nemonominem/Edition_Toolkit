@@ -26,6 +26,35 @@
 
 6. `Open` · **Better style differentiation: magazine, thinktank, academic** — Current Typst styles (and WeasyPrint to a lesser extent) are too visually similar. Each style should have a clearly distinct identity: different layout (single vs two-column), font choices, colour palette, spacing rhythm, and header/footer treatment. Typst is the priority since it is the default engine.
 
+7. `Open` · **Apply constants refactor to academic.typ, magazine.typ, thinktank.typ** — `intelligence.typ` was refactored so all tuneable values (font sizes, spacing, colours, page geometry) are named constants at the top of the file. The same pattern must be applied to the other three Typst style files.
+
+---
+
+## Canonical commands
+
+### md_to_pdf — convert and compile
+
+Always use the `md2pdf` entry point, not `typst compile` directly:
+
+```bash
+conda activate python_313x
+
+# Typst engine (default) — convert + compile in one step
+md2pdf WHO_Compromission.md --style intelligence --output WHO_Compromission_intelligence_typst.pdf --compile
+
+# Typst only — other styles
+md2pdf article.md --style academic --output out.pdf --compile
+md2pdf article.md --style magazine --output out.pdf --compile
+
+# WeasyPrint engine
+md2pdf article.md --engine weasyprint --css intelligence
+
+# Ragged-right text
+md2pdf article.md --no-justify --compile
+```
+
+`typst compile` directly is only acceptable when iterating on a `.typ` file in isolation (style-only changes, no Markdown source involved).
+
 ---
 
 ## Implicit (completed this session)

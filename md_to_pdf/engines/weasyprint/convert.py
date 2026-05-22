@@ -13,6 +13,13 @@ import subprocess
 import sys
 import tempfile
 from importlib import resources as _res
+from pathlib import Path as _Path
+
+# Shared frontmatter parser (engines/__init__.py)
+_MD2PDF_ROOT = _Path(__file__).resolve().parent.parent.parent
+if str(_MD2PDF_ROOT) not in sys.path:
+    sys.path.insert(0, str(_MD2PDF_ROOT))
+from engines import parse_frontmatter  # noqa: E402
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
@@ -540,7 +547,8 @@ def md_to_html(md_path: Path) -> str:
     from markdown.extensions.abbr import AbbrExtension
     from markdown.extensions.smarty import SmartyExtension
 
-    text = md_path.read_text(encoding='utf-8')
+    raw = md_path.read_text(encoding='utf-8')
+    meta, text = parse_frontmatter(raw)
     text = convert_gfm_callouts(text)
     text = convert_md_headings(text)
     text = convert_md_images(text)
@@ -619,10 +627,33 @@ def md_to_html(md_path: Path) -> str:
         body_html, flags=re.DOTALL,
     )
 
-    title = md_path.stem.replace('_', ' ').replace('-', ' ')
+    title    = meta["title"]
+    author   = meta["author"]
+    pub_name = meta["pub-name"]
+    doc_type = meta["doc-type"]
+
+    # Inject @page overrides so frontmatter values appear in header/footer
+    # without needing a --custom CSS file.
+    meta_style = (
+        f'<style>\n'
+        f'@page {{\n'
+        f'  @top-left    {{ content: "{pub_name}"; }}\n'
+        f'  @top-right   {{ content: "{doc_type}"; }}\n'
+        f'  @bottom-left {{ content: "{author}"; }}\n'
+        f'  @bottom-right {{ content: "{title}"; }}\n'
+        f'}}\n'
+        f'@page :first {{\n'
+        f'  @top-left    {{ content: none; background: none; }}\n'
+        f'  @top-right   {{ content: none; background: none; }}\n'
+        f'  @bottom-left  {{ content: none; }}\n'
+        f'  @bottom-right {{ content: none; }}\n'
+        f'}}\n'
+        f'</style>\n'
+    )
     return (
         f'<!DOCTYPE html>\n<html lang="en">\n<head>\n'
         f'<meta charset="utf-8">\n<title>{title}</title>\n'
+        f'{meta_style}'
         f'</head>\n<body>\n{body_html}\n</body>\n</html>'
     )
 
