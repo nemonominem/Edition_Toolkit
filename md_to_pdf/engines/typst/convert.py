@@ -290,28 +290,47 @@ def convert_table(block: str, footnotes: dict[str, str]) -> str:
 
     # Column width heuristic:
     #   2-col tables: narrow label col (0.28fr) + wide content col (1fr).
-    #   3-col tables: if the first column header is short (≤ 12 chars) AND
-    #     the first-column data cells are all short (≤ 20 chars), treat it as
-    #     a label/date column and use 0.28fr + 1fr + 1fr.  Otherwise equal.
-    #   4+ col tables: always equal 1fr each.
-    def _first_col_is_narrow() -> bool:
-        """Return True if col 0 looks like a label/date column.
-        Strips basic Markdown bold/italic markers before measuring."""
-        def _plain(s: str) -> str:
-            return re.sub(r'\*+', '', s).strip()
+    #   3-col tables: narrow first col (0.28fr) if col-0 header ≤12 and all
+    #     col-0 data cells ≤25 chars.  Otherwise equal.
+    #   4-col tables: two sub-cases —
+    #     • narrow first col (≤12 hdr, ≤25 data): 0.35fr, 1fr, 1fr, 1fr
+    #     • medium first col (≤20 hdr, ≤40 data, ≥1 cell >25): 0.55fr, 1fr, 1fr, 1fr
+    #     Otherwise equal.
+    #   5+ col tables: always equal 1fr each.
+    def _plain(s: str) -> str:
+        return re.sub(r'\*+', '', s).strip()
+
+    def _first_col_width() -> str | None:
+        """Return the fr width for col 0 if it is narrower than the content cols,
+        or None if equal columns are better."""
         hdr = _plain(header_row[0]) if header_row else ''
-        if len(hdr) > 12:
-            return False
-        for row in data_rows:
-            cell = _plain(row[0]) if row else ''
-            if len(cell) > 25:
-                return False
-        return True
+        data_widths = [len(_plain(row[0])) for row in data_rows if row]
+        max_data = max(data_widths) if data_widths else 0
+        hdr_len   = len(hdr)
+        if hdr_len <= 12 and max_data <= 25:
+            return "narrow"   # very short label
+        if hdr_len <= 20 and max_data <= 40:
+            return "medium"   # date/stage strings up to ~35 chars
+        return None
 
     if n_cols == 2:
         col_spec = "0.28fr, 1fr"
-    elif n_cols == 3 and _first_col_is_narrow():
-        col_spec = "0.28fr, 1fr, 1fr"
+    elif n_cols == 3:
+        fw = _first_col_width()
+        if fw == "narrow":
+            col_spec = "0.28fr, 1fr, 1fr"
+        elif fw == "medium":
+            col_spec = "0.45fr, 1fr, 1fr"
+        else:
+            col_spec = "1fr, 1fr, 1fr"
+    elif n_cols == 4:
+        fw = _first_col_width()
+        if fw == "narrow":
+            col_spec = "0.35fr, 1fr, 1fr, 1fr"
+        elif fw == "medium":
+            col_spec = "0.55fr, 1fr, 1fr, 1fr"
+        else:
+            col_spec = "1fr, 1fr, 1fr, 1fr"
     else:
         col_spec = ", ".join("1fr" for _ in range(n_cols))
 
