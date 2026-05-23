@@ -180,7 +180,7 @@ def convert_inline(text: str, footnotes: dict[str, str]) -> str:
             # Inline: superscript linking to endnote anchor.
             # Label names use hyphens (Typst rejects underscores in labels).
             safe_key = key.replace('_', '-')
-            return stash(f'#link(<en-{safe_key}>)[#super(size: 7pt, baseline: 2pt)[{n}]]')
+            return stash(f'#link(<en-{safe_key}>)[#super(size: 6.5pt, baseline: 2pt)[{n}]]')
         else:
             # Page-footnote mode (magazine, thinktank)
             defn = footnotes.get(key, "")
@@ -1000,7 +1000,9 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
             defn_typst = convert_inline(defn_no_xref, {})
             lines_en.append(
                 f'#block(height: 0pt, above: 0pt, below: 0pt)[] <en-{safe_key}>\n'
-                f'#block(below: 1.2em)[#text(size: 9pt)[#super(size: 7.5pt, baseline: 2pt)[{n}]] #text(size: 8.5pt)[{defn_typst}]]'
+                f'#block(below: 1.2em, inset: (left: 1.8em), clip: false)['
+                f'#pad(left: -1.8em)[#text(size: 8.5pt)[{n}.#h(0.4em){defn_typst}]]'
+                f']'
             )
         endnotes_block = '\n'.join(lines_en)
 
