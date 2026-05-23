@@ -4,16 +4,22 @@
 
 ```
 tests/
-├── shared/                   Inputs used by both engines
-│   ├── test_columns.md       Comprehensive layout test (columns, images, tables, callouts)
-│   ├── WHO_Compromission.md  Real-world article for end-to-end validation
-│   ├── who.css               Per-article CSS override (WeasyPrint engine)
-│   └── images/               Static assets referenced by test files
-├── typst/                    Typst engine outputs
-│   ├── test_columns.typ      Compiled .typ source (reference)
+├── shared/                        Inputs used by both engines
+│   ├── test_columns/              Public test article
+│   │   ├── test_columns.md        Comprehensive layout test (columns, images, tables, callouts)
+│   │   ├── test_columns.json      Sidecar: metadata + typst_overrides
+│   │   └── images/                Static assets
+│   ├── WHO/                       Gitignored — private article (not committed)
+│   │   ├── WHO_Compromission.md
+│   │   ├── WHO_Compromission.json
+│   │   ├── WHO_Compromission_overrides.css
+│   │   └── images/
+│   └── README.md
+├── typst/                         Typst engine outputs
 │   └── test_columns_<style>.pdf   4 styles: intelligence, magazine, thinktank, academic
-├── weasyprint/               WeasyPrint engine outputs
-│   ├── test_columns_<style>.pdf   4 styles: intelligence, magazine, thinktank, academic
+├── weasyprint/                    WeasyPrint engine outputs
+│   ├── test_columns_<style>.pdf   4 styles
+│   ├── test_columns_overrides.css Annotated CSS override template
 │   └── run_large_table_test.sh
 └── README.md
 ```
@@ -26,19 +32,21 @@ cd /Users/gillesdemaneuf/Work/Edition/md_to_pdf
 
 # Typst — all 4 styles
 for STYLE in intelligence magazine thinktank academic; do
-  md2pdf tests/shared/test_columns.md --style $STYLE --output tests/typst/test_columns_${STYLE}.pdf --compile
+  md2pdf tests/shared/test_columns/test_columns.md --style $STYLE --output tests/typst/test_columns_${STYLE}.pdf --compile
 done
 
 # WeasyPrint — all 4 styles
 for STYLE in intelligence magazine thinktank academic; do
-  python engines/weasyprint/convert.py tests/shared/test_columns.md tests/weasyprint/test_columns_${STYLE}.pdf --css $STYLE
+  md2pdf tests/shared/test_columns/test_columns.md --engine weasyprint --css $STYLE \
+         --output tests/weasyprint/test_columns_${STYLE}.pdf
 done
 
-# WHO article — Typst
-md2pdf tests/shared/WHO_Compromission.md --compile
+# WHO article — Typst (sidecar auto-detected)
+md2pdf tests/shared/WHO/WHO_Compromission_hardened.md --style intelligence --compile
 
 # WHO article — WeasyPrint with custom CSS
-python engines/weasyprint/convert.py tests/shared/WHO_Compromission.md tests/weasyprint/WHO_Compromission.pdf --css intelligence --custom tests/shared/who.css
+md2pdf tests/shared/WHO/WHO_Compromission_hardened.md --engine weasyprint --css intelligence \
+       --custom tests/shared/WHO/WHO_Compromission_overrides.css
 ```
 
 ## test_columns.md — section index

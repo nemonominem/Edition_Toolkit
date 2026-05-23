@@ -67,7 +67,7 @@ Create `article.json` alongside `article.md`.  It is auto-detected — no flag r
 }
 ```
 
-`typst_overrides` is Typst-only (WeasyPrint ignores it).  All keys are optional — omit any you don't want to change.  See `tests/shared/test_columns.json` for the full list of supported keys with their intelligence-style defaults.
+`typst_overrides` is Typst-only (WeasyPrint ignores it).  All keys are optional — omit any you don't want to change.  See `tests/shared/test_columns/test_columns.json` for the full list of supported keys with their intelligence-style defaults.
 
 For WeasyPrint visual tweaks, create a companion CSS file (see Step 3b).
 
