@@ -96,6 +96,71 @@ md_to_pdf/
     └── README.md
 ```
 
+## Per-article customisation
+
+Two layers of per-article overrides exist, one for metadata and one for visual tweaks.
+
+### Metadata sidecar (both engines)
+
+Create `<stem>.json` alongside the `.md` file.  It is auto-detected — no flag required.
+
+```json
+{
+  "author":   "G. Demaneuf",
+  "title":    "How Beijing Tamed the WHO",
+  "pub_name": "DRASTIC",
+  "doc_type": "OSINT RESEARCH PRODUCT"
+}
+```
+
+Recognised keys: `author`, `title`, `pub_name` / `pub-name`, `doc_type` / `doc-type`.
+
+Precedence (lowest → highest):
+
+```
+style branding_defaults  (md_to_pdf/styles/<name>.json)
+  ↓  sidecar JSON        (<stem>.json alongside .md)
+     ↓  YAML frontmatter (--- block at top of .md file)
+```
+
+To point at a sidecar at a different path: `md2pdf article.md --style intelligence --meta overrides.json`.
+
+See `tests/shared/test_columns.json` for an annotated example.
+
+### CSS overrides (WeasyPrint engine only)
+
+Visual tweaks — body font, paragraph rhythm, heading alignment, accent colour — go in a per-article CSS file passed with `--custom`.  This file is applied after the core style, so any rule here wins the cascade.
+
+```bash
+md2pdf article.md --engine weasyprint --css intelligence \
+       --custom article_overrides.css
+```
+
+Typical overrides:
+
+```css
+/* Body font */
+body { font-family: 'Source Serif 4', Georgia, serif; font-size: 9pt; }
+
+/* Paragraph spacing and line height */
+body, p, li { line-height: 1.5; }
+p { margin-bottom: 0.4em; }
+
+/* H1 justification (spans full width; default: left) */
+h1 { text-align: center; }
+
+/* H2/H3 justification (default: left) */
+h2, h3 { text-align: justify; }
+
+/* Accent colour */
+h2, h3 { color: #8b0000; }
+div.full-width, div.single-column { border-top-color: #8b0000; }
+```
+
+See `tests/shared/test_columns_overrides.css` for a fully annotated template.
+
+**Typst engine:** visual tweaks beyond metadata require editing the `.typ` style file directly.  Typst has no cascade-override layer equivalent to CSS `--custom`.
+
 ## Per-engine documentation
 
 - [Typst engine](engines/typst/README.md)

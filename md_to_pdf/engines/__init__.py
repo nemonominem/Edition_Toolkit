@@ -87,6 +87,116 @@ def load_sidecar(md_path: Path) -> dict[str, str]:
     return result
 
 
+# ── Typst variable names that are safe to override ───────────────────────────
+#
+# These correspond to the #let variables defined at the top of each .typ style
+# file.  Only variables listed here are emitted as overrides — anything else
+# in a sidecar typst_overrides block is silently ignored (safety guard).
+#
+# Value types:
+#   "pt"  → numeric, emitted as  #let body-size = 10pt
+#   "em"  → numeric, emitted as  #let body-spacing = 1.4em
+#   "str" → string,  emitted as  #let page-paper = "a4"
+#
+_TYPST_OVERRIDE_VARS: dict[str, str] = {
+    # Typography
+    "body_size":     "pt",   # body text size               e.g. "10pt" or 10
+    "body_leading":  "em",   # inter-line gap                e.g. "0.65em" or 0.65
+    "body_spacing":  "em",   # inter-paragraph gap           e.g. "1.4em" or 1.4
+    "list_spacing":  "em",   # gap between list items        e.g. "0.9em" or 0.9
+    # Headings — size and vertical spacing
+    "h1_size":       "pt",
+    "h1_above":      "em",
+    "h1_below":      "em",
+    "h2_size":       "pt",
+    "h2_above":      "em",
+    "h2_below":      "em",
+    "h3_size":       "pt",
+    "h3_above":      "em",
+    "h3_below":      "em",
+    "h4_size":       "pt",
+    "h4_above":      "em",
+    "h4_below":      "em",
+    # Running header / footer
+    "header_size":   "pt",
+    "footer_size":   "pt",
+    # Page geometry
+    "page_paper":    "str",  # "a4" | "us-letter" | "a5" etc.
+}
+
+# Canonical Typst variable name uses hyphens; sidecar keys use underscores.
+# This dict maps sidecar key → typst variable name.
+_TYPST_VAR_NAME: dict[str, str] = {
+    k: k.replace("_", "-") for k in _TYPST_OVERRIDE_VARS
+}
+
+
+def _normalise_typst_value(key: str, raw) -> str | None:
+    """
+    Convert a sidecar value to its Typst literal form.
+
+    raw may be a number (int/float) or a string like "10pt" / "0.65em" / "a4".
+    Returns the Typst literal string, or None if the value cannot be parsed.
+    """
+    vtype = _TYPST_OVERRIDE_VARS.get(key)
+    if vtype is None:
+        return None
+
+    if vtype == "str":
+        return f'"{raw}"'
+
+    # Numeric types: strip unit if already present, then re-attach.
+    unit = vtype  # "pt" or "em"
+    if isinstance(raw, (int, float)):
+        return f"{raw}{unit}"
+    if isinstance(raw, str):
+        s = raw.strip()
+        # Accept "10pt", "10 pt", "0.65em", "0.65 em", or bare "10"
+        m = re.match(r'^([0-9]+(?:\.[0-9]*)?)[ \t]*(?:pt|em)?$', s)
+        if m:
+            return f"{m.group(1)}{unit}"
+    return None
+
+
+def load_typst_overrides(md_path: Path) -> dict[str, str]:
+    """
+    Load the typst_overrides block from <md_path.stem>.json.
+
+    Returns a dict mapping Typst variable name (hyphen form, e.g. "body-size")
+    to its Typst literal value string (e.g. "10pt").
+    Unknown keys and malformed values are silently skipped.
+    Empty dict if no sidecar or no typst_overrides block.
+    """
+    sidecar_path = md_path.with_suffix(".json")
+    if not sidecar_path.exists():
+        return {}
+    try:
+        data = json.loads(sidecar_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+
+    block = data.get("typst_overrides")
+    if not isinstance(block, dict):
+        return {}
+
+    result: dict[str, str] = {}
+    for raw_key, raw_val in block.items():
+        key = raw_key.lower().replace("-", "_")
+        typst_val = _normalise_typst_value(key, raw_val)
+        if typst_val is not None:
+            result[_TYPST_VAR_NAME[key]] = typst_val
+        else:
+            import sys
+            print(
+                f"  [sidecar] Warning: typst_overrides.{raw_key} = {raw_val!r} "
+                f"— unrecognised key or malformed value, skipped.",
+                file=sys.stderr,
+            )
+    return result
+
+
 # ── YAML frontmatter parser ──────────────────────────────────────────────────
 
 _FM_RE = re.compile(r'^---[ \t]*\r?\n(.*?)\r?\n---[ \t]*\r?\n', re.DOTALL)

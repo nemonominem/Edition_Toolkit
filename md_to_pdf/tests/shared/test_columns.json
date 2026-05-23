@@ -1,0 +1,50 @@
+{
+  "_comment": [
+    "test_columns.json — per-article metadata and Typst overrides for test_columns.md.",
+    "",
+    "Precedence for metadata (lowest → highest):",
+    "  style branding_defaults (intelligence.json)",
+    "    ↓  this sidecar (typst_overrides + metadata keys)",
+    "       ↓  YAML frontmatter in the .md file",
+    "",
+    "typst_overrides: per-article Typst variable overrides, injected after",
+    "#import and before #show: doc.with().  They shadow the style's #let",
+    "definitions for this article only.  WeasyPrint ignores this block —",
+    "use test_columns_overrides.css for WeasyPrint visual tweaks instead."
+  ],
+
+  "author":   "G. Demaneuf",
+  "title":    "Test Article",
+  "pub_name": "DRASTIC",
+  "doc_type": "OSINT RESEARCH PRODUCT",
+
+  "typst_overrides": {
+    "_comment": "All values here match intelligence.typ defaults — change what you need.",
+
+    "body_size":    "9.5pt",
+    "body_leading": "0.65em",
+    "body_spacing": "1.4em",
+    "list_spacing": "0.9em",
+
+    "h1_size":  "16pt",
+    "h1_above": "1.0em",
+    "h1_below": "0.6em",
+
+    "h2_size":  "11pt",
+    "h2_above": "1.6em",
+    "h2_below": "0.5em",
+
+    "h3_size":  "10.5pt",
+    "h3_above": "1.4em",
+    "h3_below": "0.5em",
+
+    "h4_size":  "9.5pt",
+    "h4_above": "1.0em",
+    "h4_below": "0.5em",
+
+    "header_size": "11pt",
+    "footer_size": "7.5pt",
+
+    "page_paper": "a4"
+  }
+}

@@ -1,0 +1,104 @@
+/*
+ * test_columns_overrides.css — per-article CSS overrides for WeasyPrint engine.
+ *
+ * Use with:
+ *   md2pdf test_columns.md --engine weasyprint --css intelligence \
+ *          --custom test_columns_overrides.css
+ *
+ * Applied AFTER the core style sheet, so any rule here wins the cascade.
+ * Keep this file focused on per-article deltas only — do not copy rules
+ * from the core style.
+ *
+ * For Typst, per-article metadata (author, title, pub_name, doc_type) is
+ * handled by the JSON sidecar (test_columns.json).  Visual tweaks that go
+ * beyond metadata — custom body font, paragraph rhythm, heading colours —
+ * require editing the .typ style file directly (or a fork of it); Typst has
+ * no equivalent of a CSS cascade override layer.
+ */
+
+
+/* ── Header / footer slot text ──────────────────────────────────────────── */
+/*
+ * These four @page slots map to author / title / pub_name / doc_type.
+ * For metadata-only changes, prefer the JSON sidecar (test_columns.json) —
+ * it applies to both engines.  Use this CSS block only when you also need
+ * visual overrides below in the same file, so everything is in one place.
+ */
+@page {
+    @top-left    { content: "DRASTIC"; }
+    @top-right   { content: "OSINT RESEARCH PRODUCT"; }
+    @bottom-left { content: "G. Demaneuf"; }
+    @bottom-right { content: "Test Article"; }
+}
+
+@page :first {
+    @top-left    { content: none; }
+    @top-right   { content: none; }
+    @bottom-left  { content: none; }
+    @bottom-right { content: none; }
+}
+
+
+/* ── Body font override ──────────────────────────────────────────────────── */
+/*
+ * The intelligence style uses Libre Baskerville by default.
+ * Uncomment to switch to Source Serif 4 (install via Google Fonts or conda).
+ */
+/*
+body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 9pt;
+}
+*/
+
+
+/* ── Paragraph spacing and line height ───────────────────────────────────── */
+/*
+ * Default: line-height 1.6, margin-bottom 0.5em between paragraphs.
+ * Uncomment to tighten or loosen.
+ */
+/*
+body, p, li {
+    line-height: 1.5;
+}
+p {
+    margin-bottom: 0.4em;
+}
+*/
+
+
+/* ── H1 justification ────────────────────────────────────────────────────── */
+/*
+ * H1 spans full width (column-span: all).  Default: left-aligned.
+ * Intelligence style uses left-align to match IC report conventions.
+ * Uncomment to centre the document title instead.
+ */
+/*
+h1 {
+    text-align: center;
+}
+*/
+
+
+/* ── H2 / H3 justification ───────────────────────────────────────────────── */
+/*
+ * Default: left-aligned.  Uncomment to justify section headings.
+ * Justified headings with hyphenation can look awkward at short column width;
+ * test before committing.
+ */
+/*
+h2, h3 {
+    text-align: justify;
+}
+*/
+
+
+/* ── Accent colour override ──────────────────────────────────────────────── */
+/*
+ * Replace navy (#1d4b7a) with a custom accent throughout.
+ * Touch headings, rules, table headers, and box borders together.
+ */
+/*
+h2, h3 { color: #8b0000; }
+div.full-width, div.single-column { border-top-color: #8b0000; }
+*/

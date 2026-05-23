@@ -42,7 +42,7 @@ from pathlib import Path
 _MD2PDF_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(_MD2PDF_ROOT) not in sys.path:
     sys.path.insert(0, str(_MD2PDF_ROOT))
-from engines import parse_frontmatter, load_style_defaults, load_sidecar  # noqa: E402
+from engines import parse_frontmatter, load_style_defaults, load_sidecar, load_typst_overrides  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -559,7 +559,8 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
                       justify: bool = True,
                       images_dir: Path | None = None,
                       md_dir: Path | None = None,
-                      sidecar: dict[str, str] | None = None) -> str:
+                      sidecar: dict[str, str] | None = None,
+                      typst_overrides: dict[str, str] | None = None) -> str:
     """
     Convert Markdown text to a complete Typst source file.
 
@@ -613,6 +614,12 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
     header_lines: list[str] = []
     header_lines.append(f'#import "{style_path}": doc, key-takeaways, insights-box, pull-quote, callout, callout-note, callout-warning, mermaid-placeholder')
     header_lines.append(f'')
+    # Per-article Typst variable overrides (from sidecar typst_overrides block).
+    # Emitted after #import so they shadow the style's #let definitions.
+    if typst_overrides:
+        for var_name, typst_val in typst_overrides.items():
+            header_lines.append(f'#let {var_name} = {typst_val}')
+        header_lines.append(f'')
     justify_val = 'true' if justify else 'false'
     header_lines.append(f'#show: doc.with(')
     header_lines.append(f'  author:   "{author}",')
@@ -1213,8 +1220,29 @@ def main() -> None:
             print(f"Warning: could not load --meta file: {e}", file=sys.stderr)
 
     if sidecar:
-        shown = {k: v for k, v in sidecar.items()}
-        print(f"Meta   : {shown}")
+        print(f"Meta   : {sidecar}")
+
+    # Load per-article Typst variable overrides (typst_overrides block in sidecar JSON)
+    typst_overrides = load_typst_overrides(md_path)
+    if args.meta and not typst_overrides:
+        # Also check explicit --meta file for typst_overrides
+        import json as _json2
+        try:
+            raw2 = _json2.loads(Path(args.meta).resolve().read_text(encoding='utf-8'))
+            from engines import load_typst_overrides as _lto
+            # Re-use the loader logic by temporarily writing to a temp path... simpler:
+            # just call _normalise_typst_value directly inline
+            from engines import _TYPST_OVERRIDE_VARS, _TYPST_VAR_NAME, _normalise_typst_value
+            block = raw2.get("typst_overrides", {})
+            for raw_key, raw_val in block.items():
+                key = raw_key.lower().replace("-", "_")
+                typst_val = _normalise_typst_value(key, raw_val)
+                if typst_val is not None:
+                    typst_overrides[_TYPST_VAR_NAME[key]] = typst_val
+        except Exception:
+            pass
+    if typst_overrides:
+        print(f"Typst  : {typst_overrides}")
 
     # Convert
     md_text = md_path.read_text(encoding='utf-8')
@@ -1227,7 +1255,8 @@ def main() -> None:
                                  justify=not args.no_justify,
                                  images_dir=images_dir,
                                  md_dir=md_path.parent,
-                                 sidecar=sidecar)
+                                 sidecar=sidecar,
+                                 typst_overrides=typst_overrides)
     typ_path.write_text(typ_text, encoding='utf-8')
     print(f"Written: {typ_path}")
 

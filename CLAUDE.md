@@ -68,6 +68,12 @@ head -20 scripts/filename.py  # check imports
 - **Fonts:** `brew install font-libre-baskerville` (intelligence style)
 - **Style JSON files:** `md_to_pdf/styles/<name>.json` — single source of truth for per-style
   conventions shared between `md_harden` and the rendering engines
+- **Per-article metadata sidecar:** `<stem>.json` alongside the `.md` file — overrides
+  `author`, `title`, `pub_name`, `doc_type` for both engines without editing the style JSON.
+  Auto-detected; use `--meta path/to/file.json` to point at a different path.
+- **Per-article CSS overrides (WeasyPrint only):** `--custom overrides.css` — applied after
+  the core style for font, spacing, heading alignment, or colour tweaks.
+  See `md_to_pdf/tests/shared/test_columns_overrides.css` for an annotated template.
 
 ### md_to_booklet
 - **Requires:** `pandoc`, `pypdf`, `requests`
@@ -124,7 +130,11 @@ Edition/
 │   │       ├── styles/        (style_intelligence.css, style_magazine.css, …)
 │   │       └── README.md
 │   └── tests/
-│       ├── shared/            (test_columns.md, WHO article, images/)
+│       ├── shared/            (test inputs used by both engines)
+│       │   ├── test_columns.md           (public test article)
+│       │   ├── test_columns.json         (example metadata sidecar)
+│       │   ├── test_columns_overrides.css (example WeasyPrint CSS overrides)
+│       │   └── images/
 │       ├── typst/             (output PDFs + .typ sources, 4 styles)
 │       ├── weasyprint/        (output PDFs, 4 styles)
 │       └── README.md
@@ -173,14 +183,28 @@ python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns.md --apply md_
 # Skip ambiguous bold-heading promotion
 python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns.md --review --skip bold-headings
 
-# Convert hardened Markdown to PDF (Typst, default)
-md2pdf article_hardened.md --style intelligence --compile
+# Full pipeline: harden → convert (Typst, default engine)
+# Step 1: harden (writes test_columns_review.md)
+python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns.md \
+       --review --claude --style intelligence
+# Step 2: review test_columns_review.md, delete unwanted suggestions
+# Step 3: apply surviving suggestions
+python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns.md \
+       --style intelligence --apply md_to_pdf/tests/shared/test_columns_review.md
+# Step 4: convert (sidecar test_columns.json auto-detected)
+md2pdf md_to_pdf/tests/shared/test_columns.md --style intelligence --compile
 
-# Convert with WeasyPrint engine
-md2pdf article_hardened.md --engine weasyprint --css intelligence
+# Full pipeline: harden → convert (WeasyPrint engine)
+# Steps 1-3 identical; step 4:
+md2pdf md_to_pdf/tests/shared/test_columns.md --engine weasyprint \
+       --css intelligence \
+       --custom md_to_pdf/tests/shared/test_columns_overrides.css
 
-# Ragged-right text
-md2pdf article.md --no-justify
+# Explicit metadata sidecar (when .json is not adjacent to the .md)
+md2pdf article.md --style intelligence --meta /path/to/overrides.json --compile
+
+# Ragged-right text (Typst only)
+md2pdf article.md --style intelligence --no-justify --compile
 
 # Build booklet (Res Gestae example)
 cd ../md_to_booklet
