@@ -709,6 +709,7 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
     global _mermaid_counter, _mermaid_images_dir, _md_dir
     global _fn_endnote_mode, _fn_index, _fn_notes
     _mermaid_counter = 0
+    convert_md_to_typ._h1_seen = False   # reset page-break-before-H1 flag
     _fn_endnote_mode = style in _ENDNOTE_STYLES
     _fn_index = {}
     _fn_notes = []
@@ -787,10 +788,20 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
             equals  = '=' * level
             content_typst = convert_inline(content, footnotes)
             if level == 1:
-                # h1 must always span full page width — emit as full-width block
-                output.append('\x00FULLWIDTH_START\x00')
-                output.append(f'{equals} {content_typst}')
-                output.append('\x00FULLWIDTH_END\x00')
+                # h1 must always span full page width.
+                # All H1s after the first get an automatic page-break
+                # (the first H1 is the document title — no break before it).
+                h1_seen = getattr(convert_md_to_typ, '_h1_seen', False)
+                if h1_seen:
+                    output.append('\x00FULLWIDTH_START\x00')
+                    output.append('#pagebreak()')
+                    output.append(f'{equals} {content_typst}')
+                    output.append('\x00FULLWIDTH_END\x00')
+                else:
+                    convert_md_to_typ._h1_seen = True
+                    output.append('\x00FULLWIDTH_START\x00')
+                    output.append(f'{equals} {content_typst}')
+                    output.append('\x00FULLWIDTH_END\x00')
             else:
                 output.append(f'{equals} {content_typst}')
             i += 1
@@ -960,28 +971,30 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
                     body_text = inner_text[scope_match.end():].strip()
 
                 inner_typst = _convert_block_content(body_text, footnotes)
+                output.append('\x00FULLWIDTH_START\x00')
                 if scope_note_typst:
                     output.append(f'#key-takeaways(scope-note: [{scope_note_typst}])[')
                 else:
                     output.append(f'#key-takeaways[')
                 output.append(inner_typst)
                 output.append(f']')
+                output.append('\x00FULLWIDTH_END\x00')
 
             elif div_class in ('insights', 'key-insights', 'insight-box'):
-                # Extract optional first heading as the box heading
+                # insights-box always renders full-width (breaks out of two-column).
+                # Wrap in FULLWIDTH sentinels so the post-processing pass places it
+                # outside #columns(2)[...].
                 heading_match = re.match(r'^#{1,4}\s+(.+?)(?:\s+#+)?\s*$',
                                          inner_text.lstrip(), re.MULTILINE)
                 if heading_match:
                     heading_text = convert_inline(heading_match.group(1).strip(), footnotes)
-                    # Strip the heading line from inner content
                     inner_no_heading = inner_text[heading_match.end():].strip()
                     inner_typst = _convert_block_content(inner_no_heading, footnotes)
-                    output.append(f'#insights-box(heading: [{heading_text}])[')
+                    box_call = f'#insights-box(heading: [{heading_text}])[\n{inner_typst}\n]'
                 else:
                     inner_typst = _convert_block_content(inner_text, footnotes)
-                    output.append(f'#insights-box[')
-                output.append(inner_typst)
-                output.append(f']')
+                    box_call = f'#insights-box[\n{inner_typst}\n]'
+                output.append(box_call)
 
             elif div_class in ('single-column', 'full-width'):
                 # Full-width block — use sentinel markers so the post-processing
