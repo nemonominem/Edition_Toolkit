@@ -180,7 +180,7 @@ def convert_inline(text: str, footnotes: dict[str, str]) -> str:
             # Inline: superscript linking to endnote anchor.
             # Label names use hyphens (Typst rejects underscores in labels).
             safe_key = key.replace('_', '-')
-            return stash(f'#link(<en-{safe_key}>)[#super[{n}]]')
+            return stash(f'#link(<en-{safe_key}>)[#super(size: 7pt, baseline: 2pt)[{n}]]')
         else:
             # Page-footnote mode (magazine, thinktank)
             defn = footnotes.get(key, "")
@@ -514,6 +514,55 @@ _mermaid_images_dir: Path | None = None  # set per-document in convert_md_to_typ
 _md_dir: Path | None = None              # directory of the source .md file; used to resolve relative image paths
 
 
+def _render_mermaid_to_png(code_lines: list[str]) -> None:
+    """
+    Render a Mermaid diagram to a PNG using mmdc (mermaid-cli) if available.
+    The PNG is written to _mermaid_images_dir/_mermaid_<n+1>.png, where n is
+    the current _mermaid_counter (before increment — next_mermaid_placeholder
+    will increment it and look for the same file).
+    Silently skips if mmdc is not on PATH.
+    """
+    import shutil, tempfile, os
+    if _mermaid_images_dir is None:
+        return
+    mmdc = shutil.which('mmdc')
+    if mmdc is None:
+        # Try common npm global install locations
+        for candidate in [
+            '/usr/local/bin/mmdc',
+            '/opt/homebrew/bin/mmdc',
+            os.path.expanduser('~/.npm-global/bin/mmdc'),
+            os.path.expanduser('~/.nvm/versions/node/current/bin/mmdc'),
+        ]:
+            if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+                mmdc = candidate
+                break
+    if mmdc is None:
+        return  # placeholder will be used instead
+
+    n = _mermaid_counter + 1  # next_mermaid_placeholder will use this number
+    out_png = _mermaid_images_dir / f'_mermaid_{n}.png'
+    if out_png.exists():
+        return  # already rendered (e.g. from a previous run)
+
+    _mermaid_images_dir.mkdir(parents=True, exist_ok=True)
+    mmd_src = '\n'.join(code_lines)
+    with tempfile.NamedTemporaryFile(suffix='.mmd', mode='w', encoding='utf-8', delete=False) as f:
+        f.write(mmd_src)
+        tmp_path = f.name
+    try:
+        result = subprocess.run(
+            [mmdc, '-i', tmp_path, '-o', str(out_png), '-b', 'white', '-w', '1200'],
+            capture_output=True, text=True, timeout=30,
+        )
+        if result.returncode != 0:
+            print(f"  mmdc warning (diagram {n}): {result.stderr.strip()}", file=sys.stderr)
+    except Exception as e:
+        print(f"  mmdc error (diagram {n}): {e}", file=sys.stderr)
+    finally:
+        os.unlink(tmp_path)
+
+
 def next_mermaid_placeholder() -> str:
     global _mermaid_counter
     _mermaid_counter += 1
@@ -685,6 +734,7 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
                 i += 1
             i += 1  # consume closing ```
             if lang.lower() == 'mermaid':
+                _render_mermaid_to_png(code_lines)
                 output.append(next_mermaid_placeholder())
             else:
                 code_body = '\n'.join(code_lines)
@@ -729,9 +779,11 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
                 else:
                     bq_lines.append('')
                 i += 1
-            bq_text = ' '.join(bq_lines).strip()
-            bq_typst = convert_inline(bq_text, footnotes)
-            output.append(f'#quote(block: true)[{bq_typst}]')
+            # Use _convert_block_content so images/figures inside blockquotes
+            # are handled correctly, not flattened into inline text.
+            bq_text = '\n'.join(bq_lines).strip()
+            bq_typst = _convert_block_content(bq_text, footnotes)
+            output.append(f'#quote(block: true)[\n{bq_typst}\n]')
             continue
 
         # ── Pull-quote  | "text" ... ──────────────────────────────────────────
@@ -948,7 +1000,7 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
             defn_typst = convert_inline(defn_no_xref, {})
             lines_en.append(
                 f'#block(height: 0pt, above: 0pt, below: 0pt)[] <en-{safe_key}>\n'
-                f'#block(below: 1.0em)[#text(size: 8.5pt)[#super[{n}] {defn_typst}]]'
+                f'#block(below: 1.2em)[#text(size: 9pt)[#super(size: 7.5pt, baseline: 2pt)[{n}]] #text(size: 8.5pt)[{defn_typst}]]'
             )
         endnotes_block = '\n'.join(lines_en)
 
@@ -1007,6 +1059,7 @@ def _convert_block_content(text: str, footnotes: dict[str, str]) -> str:
                 i += 1
             i += 1
             if lang.lower() == 'mermaid':
+                _render_mermaid_to_png(code_lines)
                 output.append(next_mermaid_placeholder())
             else:
                 code_body = '\n'.join(code_lines).replace('`', '\\`')

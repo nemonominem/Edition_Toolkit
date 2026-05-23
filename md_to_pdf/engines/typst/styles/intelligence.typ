@@ -45,8 +45,8 @@
 #let h3-above        = 1.4em
 #let h3-below        = 0.5em
 #let h4-size         = 9.5pt
-#let h4-above        = 1.0em
-#let h4-below        = 0.5em
+#let h4-above        = 1.4em
+#let h4-below        = 0.7em
 
 // ── Page geometry ───────────────────────────────────────────────────────────
 #let page-paper      = "a4"
@@ -297,9 +297,9 @@
     {
       text(style: "italic", body)
       if source != none {
-        v(3pt)
+        v(1pt)
         line(length: 100%, stroke: 0.5pt + gold)
-        v(2pt)
+        v(1pt)
         text(size: 8pt, style: "normal", fill: faint, source)
       }
     },
