@@ -24,6 +24,9 @@ conda develop .
 # Typst engine (default) — install the typst binary
 brew install typst
 
+# Mermaid diagrams (optional) — install mmdc to render diagrams to PNG
+npm install -g @mermaid-js/mermaid-cli
+
 # WeasyPrint engine (optional)
 conda install markdown weasyprint pygments
 brew install pango gdk-pixbuf libffi

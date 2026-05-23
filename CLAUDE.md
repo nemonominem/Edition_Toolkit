@@ -62,6 +62,7 @@ head -20 scripts/filename.py  # check imports
 ### md_to_pdf
 - **Expects:** hardened Markdown (run `md_harden` first; no heuristic pre-passes in converter)
 - **Default engine:** Typst — `brew install typst`; Python stdlib only
+- **Mermaid diagrams (optional):** `npm install -g @mermaid-js/mermaid-cli` — renders diagrams to PNG; without it a placeholder is emitted
 - **WeasyPrint engine (optional):** `conda install markdown weasyprint pygments`
 - **System deps for WeasyPrint (macOS):** `brew install pango gdk-pixbuf libffi`
 - **Install package:** `conda develop md_to_pdf/` (puts `md2pdf` on PATH)
