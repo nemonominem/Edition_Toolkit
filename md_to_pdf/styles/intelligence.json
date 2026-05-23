@@ -18,43 +18,56 @@
     "Two-column serif body, navy + gold accent palette.",
     "Defaults to DRASTIC / OSINT RESEARCH PRODUCT branding."
   ],
-
   "design": {
     "_comment": "Rendering decisions — implemented in intelligence.typ and style_intelligence.css.",
     "layout": {
       "columns": 2,
       "page": "a4",
-      "margins_cm": { "top": 3.2, "bottom": 2.5, "left": 2.0, "right": 2.0 }
+      "margins_cm": {
+        "top": 3.2,
+        "bottom": 2.5,
+        "left": 2.0,
+        "right": 2.0
+      }
     },
     "palette": {
-      "navy":        "#1d4b7a",
-      "gold":        "#c8a84b",
-      "box_blue":    "#d0dce8",
-      "box_cream":   "#f5f0dc",
-      "stripe":      "#e8eef4",
-      "faint":       "#555555",
-      "body_black":  "#1a1a1a",
-      "highlight":   "#c0392b",
-      "bg_code":     "#f2f2f2"
+      "navy": "#1d4b7a",
+      "gold": "#c8a84b",
+      "box_blue": "#d0dce8",
+      "box_cream": "#f5f0dc",
+      "stripe": "#e8eef4",
+      "faint": "#555555",
+      "body_black": "#1a1a1a",
+      "highlight": "#c0392b",
+      "bg_code": "#f2f2f2"
     },
     "typography": {
-      "font_body":   ["Palatino", "Palatino Linotype", "Book Antiqua", "Georgia", "serif"],
-      "font_mono":   ["Source Code Pro", "Courier New", "monospace"],
-      "size_body":   "9.5pt",
-      "size_h1":     "16pt",
-      "size_h2":     "11pt",
-      "size_h3":     "10.5pt",
-      "size_h4":     "9.5pt",
+      "font_body": [
+        "Palatino",
+        "Palatino Linotype",
+        "Book Antiqua",
+        "Georgia",
+        "serif"
+      ],
+      "font_mono": [
+        "Source Code Pro",
+        "Courier New",
+        "monospace"
+      ],
+      "size_body": "9.5pt",
+      "size_h1": "16pt",
+      "size_h2": "11pt",
+      "size_h3": "10.5pt",
+      "size_h4": "9.5pt",
       "size_footer": "7.5pt"
     },
     "branding_defaults": {
-      "pub_name":  "DRASTIC",
-      "doc_type":  "OSINT RESEARCH PRODUCT",
-      "author":    "Author Name",
-      "title":     "Article Title"
+      "pub_name": "DRASTIC",
+      "doc_type": "OSINT RESEARCH PRODUCT",
+      "author": "Author Name",
+      "title": "Article Title"
     }
   },
-
   "hardening": {
     "_comment": [
       "Conventions that md_harden enforces when --style intelligence is passed.",
@@ -62,26 +75,22 @@
       "review document) and an 'action' explaining what the transform does.",
       "Rules with confidence >= 50 get Treatment: Apply; below 50 get Treatment: Review."
     ],
-
     "pull_quote_attribution": {
       "_comment": "The attribution line following a pull-quote block (| text).",
-      "style":      "source:",
+      "style": "source:",
       "confidence": 90,
-      "action":     "Normalise 'Source:' → 'source:'. Lowercase is the house style — less intrusive than a capital label."
+      "action": "Normalise 'Source:' → 'source:'. Lowercase is the house style — less intrusive than a capital label."
     },
-
     "pull_quote_spacing": {
       "_comment": "A pipe immediately followed by a non-space character.",
       "confidence": 99,
-      "action":     "Insert space after leading pipe: |\"text\" → | \"text\"."
+      "action": "Insert space after leading pipe: |\"text\" → | \"text\"."
     },
-
     "pull_quote_missing_source": {
       "_comment": "Pull-quote block with no following | source: line.",
       "confidence": 30,
-      "action":     "Flag for review — missing attribution is often intentional (paraphrase, narrative)."
+      "action": "Flag for review — missing attribution is often intentional (paraphrase, narrative)."
     },
-
     "bold_headings": {
       "_comment": [
         "Standalone bold-only paragraph (** text **) on its own line, followed",
@@ -90,31 +99,27 @@
         "        skip if next line is non-blank (definition term or lead-in)."
       ],
       "confidence": 90,
-      "action":     "Replace **text** paragraph with #### text."
+      "action": "Replace **text** paragraph with #### text."
     },
-
     "strip_bare_sections": {
-      "_comment": "Bare ## Notes or ## References headings with no body content.",
-      "confidence": 95,
-      "action":     "Remove the heading line; it adds no information in print layout."
+      "_comment": "Only strip if footnotes render per-page (Typst default). If notes are collected at end of document, the heading is required navigation — change Treatment to Apply only if you are using per-page footnotes.",
+      "confidence": 40,
+      "action": "Remove bare ## Notes / ## References heading. Safe only when footnotes render inline per-page, not when collected as an end section."
     },
-
     "et_al_italics": {
       "_comment": "et al. in in-text citations should be italicised per academic convention.",
       "confidence": 40,
-      "action":     "Flag all plain 'et al.' for possible replacement with '*et al.*'. Low confidence — review before applying."
+      "action": "Flag all plain 'et al.' for possible replacement with '*et al.*'. Low confidence — review before applying."
     },
-
     "apostrophe_consistency": {
       "_comment": "Document mixes straight and curly apostrophes.",
       "confidence": 35,
-      "action":     "Advisory only — one example shown. Apply globally in editor with regex."
+      "action": "Advisory only — one example shown. Apply globally in editor with regex."
     },
-
     "pull_quote_style_consistency": {
       "_comment": "Pull-quote lines that open without a quotation mark (possible unquoted paraphrase).",
       "confidence": 30,
-      "action":     "Advisory only — verify each is intentional before adding quotes."
+      "action": "Advisory only — verify each is intentional before adding quotes."
     }
   }
 }

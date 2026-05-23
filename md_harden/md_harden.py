@@ -70,7 +70,7 @@ _DEFAULT_HARDENING: dict = {
     "pull_quote_spacing":          {"confidence": 99},
     "pull_quote_missing_source":   {"confidence": 30},
     "bold_headings":               {"confidence": 90},
-    "strip_bare_sections":         {"confidence": 95},
+    "strip_bare_sections":         {"confidence": 40},
     "et_al_italics":               {"confidence": 40},
     "apostrophe_consistency":      {"confidence": 35},
     "pull_quote_style_consistency": {"confidence": 30},

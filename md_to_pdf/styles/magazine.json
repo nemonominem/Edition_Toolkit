@@ -13,39 +13,57 @@
     "md_harden reads 'hardening' when --style magazine is passed.",
     "md2pdf engines read 'design' for reference; rendering is in the .typ/.css files."
   ],
-
   "design": {
     "_comment": "Rendering decisions — implemented in magazine.typ and style_magazine.css.",
     "layout": {
       "columns": 1,
       "page": "a4",
-      "margins_cm": { "top": 3.0, "bottom": 2.5, "left": 3.0, "right": 3.0 }
+      "margins_cm": {
+        "top": 3.0,
+        "bottom": 2.5,
+        "left": 3.0,
+        "right": 3.0
+      }
     },
     "palette": {
-      "rust":        "#b94a2c",
-      "dark_rust":   "#7a2e18",
-      "warm_grey":   "#4a4a4a",
-      "light_grey":  "#e8e4df",
-      "faint":       "#777777",
-      "body_black":  "#1a1a1a",
-      "bg_code":     "#f2f2f2",
-      "rule_light":  "#cccccc"
+      "rust": "#b94a2c",
+      "dark_rust": "#7a2e18",
+      "warm_grey": "#4a4a4a",
+      "light_grey": "#e8e4df",
+      "faint": "#777777",
+      "body_black": "#1a1a1a",
+      "bg_code": "#f2f2f2",
+      "rule_light": "#cccccc"
     },
     "typography": {
-      "font_body":    ["Palatino", "Palatino Linotype", "Book Antiqua", "Georgia", "serif"],
-      "font_heading": ["Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
-      "font_mono":    ["Source Code Pro", "Courier New", "monospace"],
-      "size_body":    "10.5pt",
-      "size_h1":      "26pt"
+      "font_body": [
+        "Palatino",
+        "Palatino Linotype",
+        "Book Antiqua",
+        "Georgia",
+        "serif"
+      ],
+      "font_heading": [
+        "Helvetica Neue",
+        "Helvetica",
+        "Arial",
+        "sans-serif"
+      ],
+      "font_mono": [
+        "Source Code Pro",
+        "Courier New",
+        "monospace"
+      ],
+      "size_body": "10.5pt",
+      "size_h1": "26pt"
     },
     "branding_defaults": {
       "pub_name": "Edition",
       "doc_type": "FEATURE",
-      "author":   "Author Name",
-      "title":    "Article Title"
+      "author": "Author Name",
+      "title": "Article Title"
     }
   },
-
   "hardening": {
     "_comment": [
       "Conventions that md_harden enforces when --style magazine is passed.",
@@ -53,28 +71,37 @@
       "Bold-heading promotion confidence is slightly lower — magazine prose",
       "uses bold lead-ins more freely than IC reports."
     ],
-
     "pull_quote_attribution": {
       "_comment": "Magazine style uses lowercase source: — editorial convention.",
-      "style":      "source:",
+      "style": "source:",
       "confidence": 90,
-      "action":     "Normalise 'Source:' -> 'source:'. Lowercase matches editorial house style."
+      "action": "Normalise 'Source:' -> 'source:'. Lowercase matches editorial house style."
     },
-
-    "pull_quote_spacing":          { "confidence": 99 },
-    "pull_quote_missing_source":   { "confidence": 20,
+    "pull_quote_spacing": {
+      "confidence": 99
+    },
+    "pull_quote_missing_source": {
+      "confidence": 20,
       "_comment": "Lower than default — magazine pull-quotes often intentionally lack attribution."
     },
-
     "bold_headings": {
       "_comment": "Slightly lower confidence — magazine prose uses bold lead-ins more freely.",
       "confidence": 75,
-      "action":     "Replace **text** paragraph with #### text."
+      "action": "Replace **text** paragraph with #### text."
     },
-
-    "strip_bare_sections":          { "confidence": 95 },
-    "et_al_italics":                { "confidence": 40 },
-    "apostrophe_consistency":       { "confidence": 35 },
-    "pull_quote_style_consistency": { "confidence": 30 }
+    "strip_bare_sections": {
+      "_comment": "Only strip if footnotes render per-page (Typst default). If notes are collected at end of document, the heading is required navigation — change Treatment to Apply only if you are using per-page footnotes.",
+      "confidence": 40,
+      "action": "Remove bare ## Notes / ## References heading. Safe only when footnotes render inline per-page, not when collected as an end section."
+    },
+    "et_al_italics": {
+      "confidence": 40
+    },
+    "apostrophe_consistency": {
+      "confidence": 35
+    },
+    "pull_quote_style_consistency": {
+      "confidence": 30
+    }
   }
 }
