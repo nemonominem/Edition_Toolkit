@@ -212,12 +212,16 @@
   }
 
   // ── Footnotes ─────────────────────────────────────────────────────────────
+  // Inline superscript marker — make it visible at body size
+  show footnote: it => {
+    text(size: 7pt, baseline: -3pt, it)
+  }
   set footnote.entry(
-    gap:    0.4em,
+    gap:    0.8em,
     indent: 1em,
   )
   show footnote.entry: it => {
-    set text(size: 7.5pt, fill: faint)
+    set text(size: 8.5pt, fill: faint)
     it
   }
 

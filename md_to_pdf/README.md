@@ -110,6 +110,27 @@ See `tests/weasyprint/test_columns_overrides.css` for a fully annotated template
 
 ---
 
+## Tweaking layout in the Markdown
+
+Between hardening and conversion you will sometimes need to adjust layout directly
+in the `.md` file.  Common operations:
+
+| What | Syntax |
+|------|--------|
+| Force section to full page width | `<div class="single-column">…</div>` |
+| Wide table or figure inside two-column flow | `<div class="full-width">…</div>` |
+| Start a new page | `<div class="page-break"></div>` |
+| New page + full-width (Notes, Annexes, Further Reading) | page-break div followed by single-column div |
+| Key Takeaways box (navy/blue) | `<div class="key-takeaways">…</div>` |
+| Insights box (cream/gold) | `<div class="insights">…</div>` |
+| Note / Warning callout | `> [!NOTE]` or `> [!WARNING]` |
+| Pull-quote | `\| quote text` / `\| source: Name` |
+| Mermaid diagram (renders if `mmdc` on PATH) | ` ```mermaid … ``` ` |
+
+Full syntax examples and Mermaid setup: [engines/typst/README.md](engines/typst/README.md).
+
+---
+
 ## Style configuration
 
 Each style has a shared JSON definition in `styles/`:

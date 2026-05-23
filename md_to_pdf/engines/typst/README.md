@@ -59,7 +59,115 @@ and the helpers `key-takeaways`, `insights-box`, `pull-quote`, `callout`, `callo
 | `<div class="page-break">` | `#pagebreak()` |
 | `<div class="key-takeaways">` | Blue callout box with "Key Takeaways" label + rule |
 | `<div class="insights">` | Cream sidebar box, gold borders |
-| `<div class="single-column">` / `<div class="full-width">` | Full-width block |
+| `<div class="single-column">` / `<div class="full-width">` | Full-width block (breaks out of two-column) |
 | `\| pull-quote` | `#pull-quote[...]` |
 | `> [!NOTE]` / `> [!WARNING]` | `#callout[...]` |
 | `---` | `#line(...)` |
+
+## Tweaking layout in the Markdown
+
+These are the common manual adjustments you will make directly in the `.md` file
+before conversion. All use standard HTML `<div>` wrappers that the converter
+recognises by `class` name.
+
+### Force a section to one column (full page width)
+
+Use `single-column` for any content that should span the full page — introductory
+notes, annexes, wide diagrams, the Further Reading section, etc.
+
+```html
+<div class="single-column">
+
+Your content here — headings, paragraphs, lists, images.
+
+</div>
+```
+
+`full-width` is an alias; use it for individual wide tables or figures inside
+an otherwise two-column flow.
+
+### Start a new page
+
+```html
+<div class="page-break"></div>
+```
+
+Combine with `single-column` for sections that must both break to a new page
+and run full-width (e.g. Notes, Further Reading, each Annex):
+
+```html
+<div class="page-break"></div>
+
+<div class="single-column">
+
+## Further Reading
+
+…
+
+</div>
+```
+
+For annexes that stay two-column, the page-break alone is enough:
+
+```html
+<div class="page-break"></div>
+
+## Annex 1 — Title
+
+…
+```
+
+### Highlighted boxes
+
+**Key Takeaways** — navy label, blue tint, gold rule:
+
+```html
+<div class="key-takeaways">
+
+Scope Note: *Optional one-line framing sentence.*
+
+- Point one
+- Point two
+
+</div>
+```
+
+**Insights / Key Insights** — cream box, gold borders. Optional heading:
+
+```html
+<div class="insights">
+
+### Box heading
+
+Body text here.
+
+</div>
+```
+
+### Callouts (GFM alert syntax)
+
+```markdown
+> [!NOTE]
+> Text of the note.
+
+> [!WARNING]
+> Text of the warning.
+```
+
+### Pull-quotes
+
+```markdown
+| This is the pull-quote text — pipe-prefixed, no closing pipe.
+| source: Author Name
+```
+
+### Mermaid diagrams
+
+Diagrams render as PNGs if `mmdc` (mermaid-cli) is on PATH:
+
+```bash
+npm install -g @mermaid-js/mermaid-cli
+```
+
+Without it, a placeholder is emitted. Mermaid sections inside `single-column`
+divs render at full page width — recommended for network graphs and flow charts.

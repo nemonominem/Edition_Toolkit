@@ -948,7 +948,7 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
             defn_typst = convert_inline(defn_no_xref, {})
             lines_en.append(
                 f'#block(height: 0pt, above: 0pt, below: 0pt)[] <en-{safe_key}>\n'
-                f'#block(below: 0.5em)[#super[{n}] {defn_typst}]'
+                f'#block(below: 1.0em)[#text(size: 8.5pt)[#super[{n}] {defn_typst}]]'
             )
         endnotes_block = '\n'.join(lines_en)
 
