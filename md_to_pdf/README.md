@@ -165,9 +165,10 @@ md_to_pdf/
 │       └── README.md
 └── tests/
     ├── shared/                 Engine-agnostic inputs (see shared/README.md)
-    │   ├── test_columns.md     Public test article
-    │   ├── test_columns.json   Sidecar: metadata + typst_overrides example
-    │   ├── images/
+    │   ├── test_columns/       Public test article
+    │   │   ├── test_columns.md
+    │   │   ├── test_columns.json   Sidecar: metadata + typst_overrides example
+    │   │   └── images/
     │   └── README.md
     ├── typst/                  Typst outputs: PDFs, .typ sources, test scripts
     ├── weasyprint/             WeasyPrint outputs: PDFs, CSS overrides

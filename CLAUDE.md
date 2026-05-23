@@ -73,7 +73,7 @@ head -20 scripts/filename.py  # check imports
   Auto-detected; use `--meta path/to/file.json` to point at a different path.
 - **Per-article CSS overrides (WeasyPrint only):** `--custom overrides.css` — applied after
   the core style for font, spacing, heading alignment, or colour tweaks.
-  See `md_to_pdf/tests/shared/test_columns_overrides.css` for an annotated template.
+  See `md_to_pdf/tests/weasyprint/test_columns_overrides.css` for an annotated template.
 
 ### md_to_booklet
 - **Requires:** `pandoc`, `pypdf`, `requests`
@@ -131,12 +131,14 @@ Edition/
 │   │       └── README.md
 │   └── tests/
 │       ├── shared/            (test inputs used by both engines)
-│       │   ├── test_columns.md           (public test article)
-│       │   ├── test_columns.json         (example metadata sidecar)
-│       │   ├── test_columns_overrides.css (example WeasyPrint CSS overrides)
-│       │   └── images/
+│       │   ├── test_columns/  (public test article)
+│       │   │   ├── test_columns.md
+│       │   │   ├── test_columns.json   (example metadata sidecar)
+│       │   │   └── images/
+│       │   └── README.md
 │       ├── typst/             (output PDFs + .typ sources, 4 styles)
-│       ├── weasyprint/        (output PDFs, 4 styles)
+│       ├── weasyprint/        (output PDFs, CSS overrides)
+│       │   └── test_columns_overrides.css  (annotated WeasyPrint CSS template)
 │       └── README.md
 │
 └── md_to_booklet/
@@ -175,30 +177,30 @@ python medium-to-md.py https://medium.com/path/to/article --debug
 python medium-to-md.py https://medium.com/path/to/article --disk
 
 # Harden Markdown — review pass (writes <stem>_review.md alongside the source)
-python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns.md --review --style intelligence
+python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns/test_columns.md --review --style intelligence
 # With Claude semantic review (recommended)
-python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns.md --review --claude --style intelligence
+python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns/test_columns.md --review --claude --style intelligence
 # Apply surviving suggestions from reviewed file
-python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns.md --apply md_to_pdf/tests/shared/test_columns_review.md
+python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns/test_columns.md --apply md_to_pdf/tests/shared/test_columns/test_columns_review.md
 # Skip ambiguous bold-heading promotion
-python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns.md --review --skip bold-headings
+python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns/test_columns.md --review --skip bold-headings
 
 # Full pipeline: harden → convert (Typst, default engine)
 # Step 1: harden (writes test_columns_review.md)
-python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns.md \
+python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns/test_columns.md \
        --review --claude --style intelligence
 # Step 2: review test_columns_review.md, delete unwanted suggestions
 # Step 3: apply surviving suggestions
-python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns.md \
-       --style intelligence --apply md_to_pdf/tests/shared/test_columns_review.md
+python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns/test_columns.md \
+       --style intelligence --apply md_to_pdf/tests/shared/test_columns/test_columns_review.md
 # Step 4: convert (sidecar test_columns.json auto-detected)
-md2pdf md_to_pdf/tests/shared/test_columns.md --style intelligence --compile
+md2pdf md_to_pdf/tests/shared/test_columns/test_columns.md --style intelligence --compile
 
 # Full pipeline: harden → convert (WeasyPrint engine)
 # Steps 1-3 identical; step 4:
-md2pdf md_to_pdf/tests/shared/test_columns.md --engine weasyprint \
+md2pdf md_to_pdf/tests/shared/test_columns/test_columns.md --engine weasyprint \
        --css intelligence \
-       --custom md_to_pdf/tests/shared/test_columns_overrides.css
+       --custom md_to_pdf/tests/weasyprint/test_columns_overrides.css
 
 # Explicit metadata sidecar (when .json is not adjacent to the .md)
 md2pdf article.md --style intelligence --meta /path/to/overrides.json --compile

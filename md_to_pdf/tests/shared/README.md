@@ -7,11 +7,18 @@ engines. Nothing here is engine-specific.
 
 ```
 shared/
-├── test_columns.md          Public test article — exercises two-column layout,
-│                            pull-quotes, footnotes, tables, callouts, images.
-├── test_columns.json        Per-article sidecar (metadata + Typst overrides).
-│                            Auto-detected by md2pdf alongside the .md file.
-├── images/                  Images embedded in test_columns.md.
+├── test_columns/            Public test article and its inputs.
+│   ├── test_columns.md      Exercises two-column layout, pull-quotes, footnotes,
+│   │                        tables, callouts, images.
+│   ├── test_columns.json    Per-article sidecar (metadata + Typst overrides).
+│   │                        Auto-detected by md2pdf alongside the .md file.
+│   └── images/              Images embedded in test_columns.md.
+│
+├── WHO/                     Gitignored — private article inputs. Not committed.
+│   ├── WHO_Compromission.md
+│   ├── WHO_Compromission.json
+│   ├── WHO_Compromission_overrides.css
+│   └── images/
 │
 └── README.md                This file.
 ```
@@ -19,13 +26,11 @@ shared/
 ## What does NOT belong here
 
 - Engine-specific CSS override files → `tests/weasyprint/`
-- Engine-specific `.typ` sources or output PDFs → `tests/typst/`
-- Per-article files for private/gitignored articles (e.g. WHO_*) — those live
-  here alongside their `.md` but are excluded from the repository via `.gitignore`.
+- Engine output PDFs or `.typ` sources → `tests/typst/` or `tests/weasyprint/`
 
 ## Per-article sidecar schema
 
-`test_columns.json` (and any `<stem>.json` sidecar) supports two blocks:
+`test_columns/test_columns.json` (and any `<stem>.json` sidecar) supports two blocks:
 
 **Metadata** — applies to both engines, overridden by YAML frontmatter:
 
@@ -67,21 +72,21 @@ annotated template.
 
 ```bash
 # Step 1 — harden (run from project root)
-python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns.md \
+python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns/test_columns.md \
        --review --claude --style intelligence
 
 # Step 2 — review test_columns_review.md, delete unwanted suggestions
 
 # Step 3 — apply
-python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns.md \
+python md_harden/md_harden.py md_to_pdf/tests/shared/test_columns/test_columns.md \
        --style intelligence \
-       --apply md_to_pdf/tests/shared/test_columns_review.md
+       --apply md_to_pdf/tests/shared/test_columns/test_columns_review.md
 
 # Step 4a — convert with Typst (sidecar auto-detected)
-md2pdf md_to_pdf/tests/shared/test_columns.md --style intelligence --compile
+md2pdf md_to_pdf/tests/shared/test_columns/test_columns.md --style intelligence --compile
 
 # Step 4b — convert with WeasyPrint
-md2pdf md_to_pdf/tests/shared/test_columns.md \
+md2pdf md_to_pdf/tests/shared/test_columns/test_columns.md \
        --engine weasyprint --css intelligence \
        --custom md_to_pdf/tests/weasyprint/test_columns_overrides.css
 ```
