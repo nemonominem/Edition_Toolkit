@@ -19,10 +19,11 @@ Edition Markdown conventions handled:
   - Fenced code blocks (``` lang ... ```)
   - ```mermaid``` diagrams → placeholder
   - [^key] / [^key]: footnotes
-  - <div class="single-column">  full-width section
-  - <div class="full-width">     full-width block (tables)
-  - <div class="page-break">     explicit page break
-  - <div class="key-takeaways">  highlighted box
+  - <div class="single-column">    full-width section
+  - <div class="full-width">       full-width block (tables)
+  - <div class="further-reading">  full-width, body text at 8.5pt (matches Notes size)
+  - <div class="page-break">       explicit page break
+  - <div class="key-takeaways">    highlighted box (full-width)
   - | pull-quote / | source: ... lines (no trailing |)
   - > [!NOTE] / > [!WARNING]  GFM callouts
   - Horizontal rules ---
@@ -301,16 +302,18 @@ def convert_table(block: str, footnotes: dict[str, str]) -> str:
         return re.sub(r'\*+', '', s).strip()
 
     def _first_col_width() -> str | None:
-        """Return the fr width for col 0 if it is narrower than the content cols,
-        or None if equal columns are better."""
+        """Classify col 0 as narrow / medium / wide-label / None (equal).
+        Strips bold/italic markers before measuring."""
         hdr = _plain(header_row[0]) if header_row else ''
         data_widths = [len(_plain(row[0])) for row in data_rows if row]
         max_data = max(data_widths) if data_widths else 0
         hdr_len   = len(hdr)
         if hdr_len <= 12 and max_data <= 25:
-            return "narrow"   # very short label
-        if hdr_len <= 20 and max_data <= 40:
-            return "medium"   # date/stage strings up to ~35 chars
+            return "narrow"       # short labels: "Date", "Actor", blank
+        if hdr_len <= 20 and max_data <= 50:
+            return "medium"       # stage/date strings up to ~45 chars
+        if hdr_len <= 20 and max_data <= 80:
+            return "wide-label"   # long stage strings (e.g. full mission names)
         return None
 
     if n_cols == 2:
@@ -319,7 +322,7 @@ def convert_table(block: str, footnotes: dict[str, str]) -> str:
         fw = _first_col_width()
         if fw == "narrow":
             col_spec = "0.28fr, 1fr, 1fr"
-        elif fw == "medium":
+        elif fw in ("medium", "wide-label"):
             col_spec = "0.45fr, 1fr, 1fr"
         else:
             col_spec = "1fr, 1fr, 1fr"
@@ -328,7 +331,9 @@ def convert_table(block: str, footnotes: dict[str, str]) -> str:
         if fw == "narrow":
             col_spec = "0.35fr, 1fr, 1fr, 1fr"
         elif fw == "medium":
-            col_spec = "0.55fr, 1fr, 1fr, 1fr"
+            col_spec = "0.6fr, 1fr, 1fr, 1fr"
+        elif fw == "wide-label":
+            col_spec = "0.85fr, 0.75fr, 1fr, 1fr"
         else:
             col_spec = "1fr, 1fr, 1fr, 1fr"
     else:
@@ -1022,6 +1027,14 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
                 inner_typst = _convert_block_content(inner_text, footnotes)
                 output.append('\x00FULLWIDTH_START\x00')
                 output.append(inner_typst)
+                output.append('\x00FULLWIDTH_END\x00')
+
+            elif div_class == 'further-reading':
+                # Further Reading section — full-width, body text at 8.5pt
+                # (matching the Notes/endnotes section size).
+                inner_typst = _convert_block_content(inner_text, footnotes)
+                output.append('\x00FULLWIDTH_START\x00')
+                output.append(f'#block[#set text(size: 8.5pt)\n{inner_typst}\n]')
                 output.append('\x00FULLWIDTH_END\x00')
 
             else:
