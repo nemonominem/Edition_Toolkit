@@ -16,7 +16,8 @@ Pass 1 — Generate a review document:
 Pass 2 — Apply the approved suggestions:
     python md_harden.py article.md --apply article_review.md
     → reads back the (edited) review file, applies surviving suggestions,
-      writes article_hardened.md
+      writes article_hardened.md + article.md.bak
+      prints the md2pdf command to run next
 
 Direct mode (no review step):
     python md_harden.py article.md
@@ -496,7 +497,7 @@ def build_review_document(src_path: Path, hunks: list[tuple[str, str, str, int, 
         "- To adjust a suggestion: edit the `After` block.\n"
         "- To reject a suggestion: delete the entire block (from `## Suggestion` to `---`).\n\n"
         f"When done:\n"
-        f"```\npython md_harden/md_harden.py {src_path.name} --apply {src_path.stem}_review.md\n```\n",
+        f"```\npython md_harden/md_harden.py {src_path} --apply {src_path.with_name(src_path.stem + '_review.md')}\n```\n",
     ]
 
     if not hunks:
@@ -920,7 +921,8 @@ def main() -> None:
                  → writes article_review.md (open in VSCode Preview)
               2. Delete/edit suggestions; advisory blocks are informational only
               3. python md_harden.py article.md --apply article_review.md
-                 → writes article_hardened.md
+                 → writes article_hardened.md + article.md.bak
+                 → prints md2pdf command to run next
 
             Direct mode (apply all transforms immediately):
               python md_harden.py article.md
@@ -1021,6 +1023,11 @@ def main() -> None:
             Path(args.output) if args.output
             else src.with_name(f"{src.stem}_hardened.md")
         )
+
+        # Always back up the original source alongside the hardened output.
+        bak_path = src.with_suffix(".md.bak")
+        bak_path.write_text(original, encoding="utf-8")
+
         out_path.write_text(hardened, encoding="utf-8")
 
         diff = list(difflib.unified_diff(
@@ -1034,7 +1041,16 @@ def main() -> None:
             print("".join(diff))
         else:
             print("md_harden: no changes applied (all suggestions were removed).")
-        print(f"\n→  Written: {out_path}  ({len(suggestions)} suggestion(s) applied)")
+
+        print(f"\n→  Backup:  {bak_path}")
+        print(f"→  Written: {out_path}  ({len(suggestions)} suggestion(s) applied)")
+
+        # Print the next command to run.
+        style_flag = f" --style {args.style}" if args.style else ""
+        sidecar = src.with_suffix(".json")
+        sidecar_note = " (sidecar auto-detected)" if sidecar.exists() else ""
+        print(f"\nNext step — convert to PDF:")
+        print(f"  md2pdf {out_path}{style_flag} --compile{sidecar_note}")
         return
 
     # ── Direct mode ───────────────────────────────────────────────────────────
