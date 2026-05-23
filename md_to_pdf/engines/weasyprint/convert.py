@@ -19,7 +19,7 @@ from pathlib import Path as _Path
 _MD2PDF_ROOT = _Path(__file__).resolve().parent.parent.parent
 if str(_MD2PDF_ROOT) not in sys.path:
     sys.path.insert(0, str(_MD2PDF_ROOT))
-from engines import parse_frontmatter  # noqa: E402
+from engines import parse_frontmatter, load_style_defaults, load_sidecar  # noqa: E402
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
@@ -535,8 +535,15 @@ def resolve_image_paths(html: str, base_dir: Path) -> str:
     return re.sub(r'src="([^"]+)"', rewrite, html)
 
 
-def md_to_html(md_path: Path) -> str:
-    """Run all pre-processing steps and convert Markdown to a full HTML document."""
+def md_to_html(md_path: Path, sidecar: dict[str, str] | None = None) -> str:
+    """
+    Run all pre-processing steps and convert Markdown to a full HTML document.
+
+    Args:
+        md_path:  Path to the source .md file.
+        sidecar:  Pre-merged metadata (style defaults + sidecar JSON + explicit
+                  --meta values).  YAML frontmatter in the file wins over these.
+    """
     import markdown
     from markdown.extensions.tables import TableExtension
     from markdown.extensions.footnotes import FootnoteExtension
@@ -548,7 +555,7 @@ def md_to_html(md_path: Path) -> str:
     from markdown.extensions.smarty import SmartyExtension
 
     raw = md_path.read_text(encoding='utf-8')
-    meta, text = parse_frontmatter(raw)
+    meta, text = parse_frontmatter(raw, sidecar=sidecar)
     text = convert_gfm_callouts(text)
     text = convert_md_headings(text)
     text = convert_md_images(text)
@@ -803,7 +810,8 @@ def _mark_oversized_spans(
 
 
 def convert_weasyprint(md_path: Path, pdf_path: Path, css_path: Path,
-                       custom_css_path: Path | None = None) -> None:
+                       custom_css_path: Path | None = None,
+                       sidecar: dict[str, str] | None = None) -> None:
     """Primary pipeline: Markdown → HTML → PDF via WeasyPrint."""
     from weasyprint import HTML, CSS
     from weasyprint.text.fonts import FontConfiguration
@@ -817,7 +825,7 @@ def convert_weasyprint(md_path: Path, pdf_path: Path, css_path: Path,
 
     print(f"  [weasyprint] Converting {md_path.name} ...")
 
-    html_str = md_to_html(md_path)
+    html_str = md_to_html(md_path, sidecar=sidecar)
     html_str = resolve_image_paths(html_str, md_path.parent)
 
     # Pre-mark spanning elements whose content exceeds one page worth of text.
@@ -989,6 +997,16 @@ def main():
                         choices=['weasyprint', 'pandoc', 'auto'],
                         default='auto',
                         help='Rendering engine (default: auto)')
+    parser.add_argument(
+        '--meta', '-m',
+        metavar='JSON',
+        default=None,
+        help=(
+            'Path to a per-article JSON sidecar file (default: <input>.json '
+            'alongside the .md).  Keys: author, title, pub_name / pub-name, '
+            'doc_type / doc-type.'
+        ),
+    )
     parser.add_argument('--list-styles', action='store_true',
                         help='List available bundled styles and exit.')
     args = parser.parse_args()
@@ -1032,11 +1050,40 @@ def main():
     if custom_css_path:
         print(f"Custom : {custom_css_path}")
 
+    # Build sidecar metadata: style defaults → auto-detected sidecar → explicit --meta
+    # Derive the bare style name from the resolved CSS path for loading style defaults.
+    css_stem = css_path.stem  # e.g. 'style_intelligence'
+    bare_style = css_stem[len('style_'):] if css_stem.startswith('style_') else css_stem
+    sidecar: dict[str, str] = load_style_defaults(bare_style)
+    sidecar.update(load_sidecar(md_path))
+    if args.meta:
+        import json as _json
+        meta_path = Path(args.meta).resolve()
+        if not meta_path.exists():
+            print(f"Error: --meta file not found: {meta_path}", file=sys.stderr)
+            sys.exit(1)
+        _KEY_MAP = {
+            "author": "author", "title": "title",
+            "pub-name": "pub-name", "pub_name": "pub-name", "pubname": "pub-name",
+            "doc-type": "doc-type", "doc_type": "doc-type", "doctype": "doc-type",
+        }
+        try:
+            raw_meta = _json.loads(meta_path.read_text(encoding='utf-8'))
+            for k, v in raw_meta.items():
+                canonical = _KEY_MAP.get(k.lower())
+                if canonical and isinstance(v, str):
+                    sidecar[canonical] = v
+        except Exception as e:
+            print(f"Warning: could not load --meta file: {e}", file=sys.stderr)
+    if sidecar:
+        print(f"Meta   : {sidecar}")
+
     engine = args.engine
 
     if engine in ('weasyprint', 'auto'):
         try:
-            convert_weasyprint(md_path, pdf_path, css_path, custom_css_path)
+            convert_weasyprint(md_path, pdf_path, css_path, custom_css_path,
+                               sidecar=sidecar)
             return
         except ImportError:
             if engine == 'weasyprint':

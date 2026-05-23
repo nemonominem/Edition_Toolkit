@@ -1002,7 +1002,8 @@ def main() -> None:
         print(f"   Deterministic — Apply: {n_det_apply}  Review: {n_det_review}")
         if args.claude:
             print(f"   Claude        — Apply: {n_cl_apply}  Review: {n_cl_review}")
-        print(f"   Run: python md_harden/md_harden.py {src.name} --apply {out_path.name}")
+        style_flag = f" --style {args.style}" if args.style else ""
+        print(f"   Run: python md_harden/md_harden.py {src}{style_flag} --apply {out_path}")
         return
 
     # ── --apply mode ─────────────────────────────────────────────────────────

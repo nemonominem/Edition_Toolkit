@@ -42,7 +42,7 @@ from pathlib import Path
 _MD2PDF_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(_MD2PDF_ROOT) not in sys.path:
     sys.path.insert(0, str(_MD2PDF_ROOT))
-from engines import parse_frontmatter  # noqa: E402
+from engines import parse_frontmatter, load_style_defaults, load_sidecar  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -558,7 +558,8 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
                       styles_dir: Path | None = None,
                       justify: bool = True,
                       images_dir: Path | None = None,
-                      md_dir: Path | None = None) -> str:
+                      md_dir: Path | None = None,
+                      sidecar: dict[str, str] | None = None) -> str:
     """
     Convert Markdown text to a complete Typst source file.
 
@@ -568,6 +569,9 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
         styles_dir: Absolute path to the styles/ directory.  Used to emit an
                     absolute #import path so the .typ file can be compiled from
                     any working directory.
+        sidecar:    Pre-merged metadata overrides (style defaults + sidecar JSON
+                    + explicit --meta values).  YAML frontmatter in md_text still
+                    wins over sidecar values.
 
     Returns:
         Typst source string.
@@ -586,7 +590,7 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
 
     # 1. Pre-processing passes (order matters)
     # Extract YAML front-matter (if any) — shared parser
-    meta, md_text = parse_frontmatter(md_text)
+    meta, md_text = parse_frontmatter(md_text, sidecar=sidecar)
 
     # Extract footnote definitions
     md_text, footnotes = extract_footnotes(md_text)
@@ -1130,6 +1134,12 @@ def main() -> None:
     parser.add_argument('--no-justify',
                         action='store_true',
                         help='Disable text justification (ragged right).')
+    parser.add_argument('--meta', '-m',
+                        default=None,
+                        metavar='JSON',
+                        help='Path to a per-article JSON sidecar file (default: '
+                             '<input>.json alongside the .md).  Keys: author, title, '
+                             'pub_name / pub-name, doc_type / doc-type, style.')
     parser.add_argument('--list-styles',
                         action='store_true',
                         help='List available styles and exit.')
@@ -1177,6 +1187,35 @@ def main() -> None:
     print(f"Output : {typ_path}")
     print(f"Style  : {args.style}")
 
+    # Build sidecar metadata: style defaults → auto-detected sidecar → explicit --meta
+    sidecar: dict[str, str] = load_style_defaults(args.style)
+    sidecar.update(load_sidecar(md_path))
+    if args.meta:
+        meta_path = Path(args.meta).resolve()
+        if not meta_path.exists():
+            print(f"Error: --meta file not found: {meta_path}", file=sys.stderr)
+            sys.exit(1)
+        explicit = load_sidecar(meta_path.with_suffix('').with_name(meta_path.stem))
+        # load_sidecar expects a .md path and appends .json; work around by loading directly
+        import json as _json
+        try:
+            raw = _json.loads(meta_path.read_text(encoding='utf-8'))
+            _KEY_MAP = {
+                "author": "author", "title": "title",
+                "pub-name": "pub-name", "pub_name": "pub-name", "pubname": "pub-name",
+                "doc-type": "doc-type", "doc_type": "doc-type", "doctype": "doc-type",
+            }
+            for k, v in raw.items():
+                canonical = _KEY_MAP.get(k.lower())
+                if canonical and isinstance(v, str):
+                    sidecar[canonical] = v
+        except Exception as e:
+            print(f"Warning: could not load --meta file: {e}", file=sys.stderr)
+
+    if sidecar:
+        shown = {k: v for k, v in sidecar.items()}
+        print(f"Meta   : {shown}")
+
     # Convert
     md_text = md_path.read_text(encoding='utf-8')
     # Look for pre-rendered Mermaid PNGs in images/ adjacent to the input file
@@ -1187,7 +1226,8 @@ def main() -> None:
     typ_text = convert_md_to_typ(md_text, style=args.style, styles_dir=styles_dir,
                                  justify=not args.no_justify,
                                  images_dir=images_dir,
-                                 md_dir=md_path.parent)
+                                 md_dir=md_path.parent,
+                                 sidecar=sidecar)
     typ_path.write_text(typ_text, encoding='utf-8')
     print(f"Written: {typ_path}")
 
