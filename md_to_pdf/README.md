@@ -29,20 +29,86 @@ conda install markdown weasyprint pygments
 brew install pango gdk-pixbuf libffi
 ```
 
-## Usage
+## Typical workflow
+
+A complete article goes through three steps: harden, customise, convert.
+
+### Step 1 — Harden the Markdown
 
 ```bash
-# Typst engine (default)
-md2pdf article.md
-md2pdf article.md --style intelligence --compile
+# Generate a review file listing all suggested fixes
+python md_harden/md_harden.py article.md --review --claude --style intelligence
 
-# WeasyPrint engine
-md2pdf article.md --engine weasyprint
-md2pdf article.md --engine weasyprint --css intelligence --custom overrides.css
-
-# Ragged-right text (Typst only)
-md2pdf article.md --no-justify
+# Edit article_review.md — delete any suggestion you disagree with
+# Then apply what remains
+python md_harden/md_harden.py article.md \
+       --style intelligence --apply article_review.md
 ```
+
+### Step 2 — Create the per-article sidecar
+
+Create `article.json` alongside `article.md`.  It is auto-detected — no flag required.
+
+```json
+{
+  "author":   "G. Demaneuf",
+  "title":    "My Article Title",
+  "pub_name": "DRASTIC",
+  "doc_type": "OSINT RESEARCH PRODUCT",
+
+  "typst_overrides": {
+    "body_size":    "9.5pt",
+    "body_leading": "0.65em",
+    "body_spacing": "1.4em",
+    "h1_size": "16pt",
+    "h2_size": "11pt",
+    "h3_size": "10.5pt"
+  }
+}
+```
+
+`typst_overrides` is Typst-only (WeasyPrint ignores it).  All keys are optional — omit any you don't want to change.  See `tests/shared/test_columns.json` for the full list of supported keys with their intelligence-style defaults.
+
+For WeasyPrint visual tweaks, create a companion CSS file (see Step 3b).
+
+### Step 3a — Convert with Typst (recommended for complex pieces)
+
+```bash
+# Sidecar auto-detected; --compile produces the PDF directly
+md2pdf article.md --style intelligence --compile
+```
+
+Typst is faster, more layout-stable, and handles long documents without crashing.  Use it by default.
+
+### Step 3b — Convert with WeasyPrint
+
+```bash
+md2pdf article.md --engine weasyprint --css intelligence \
+       --custom article_overrides.css
+```
+
+The `--custom` CSS file handles WeasyPrint visual tweaks.  Typical contents:
+
+```css
+/* Body font and size */
+body { font-family: 'Source Serif 4', Georgia, serif; font-size: 9pt; }
+
+/* Paragraph spacing */
+body, p, li { line-height: 1.5; }
+p { margin-bottom: 0.4em; }
+
+/* Heading alignment */
+h1 { text-align: center; }
+h2, h3 { text-align: justify; }
+
+/* Accent colour */
+h2, h3 { color: #8b0000; }
+div.full-width, div.single-column { border-top-color: #8b0000; }
+```
+
+See `tests/weasyprint/test_columns_overrides.css` for a fully annotated template.
+
+---
 
 ## Style configuration
 
@@ -58,18 +124,27 @@ styles/
 
 These files are the **single source of truth** for per-style conventions shared across the pipeline:
 
-- `md_harden --style <name>` reads the `hardening` object to know what to flag and how (pull-quote attribution style, confidence thresholds, et al. italics, etc.)
-- The `design` object documents the rendering intent; the `.typ` and `.css` files are the implementations.
+- `md_harden --style <name>` reads the `hardening` object (pull-quote attribution style, confidence thresholds, et al. italics, etc.)
+- `md2pdf` reads `design.branding_defaults` as the baseline for author, title, pub_name, doc_type — overridden by sidecar JSON, then by YAML frontmatter.
+- The `.typ` and `.css` engine files implement `design`; update JSON first when a convention changes.
 
-When a convention changes, update the JSON first, then the engine file(s).
+## Metadata precedence
+
+```
+style branding_defaults  (styles/<name>.json)
+  ↓  sidecar JSON        (<stem>.json alongside .md)
+     ↓  YAML frontmatter (--- block at top of .md)
+```
+
+Use `--meta path/to/file.json` to point at a sidecar at a non-default path.
 
 ## Structure
 
 ```
 md_to_pdf/
-├── pyproject.toml              Package definition
-├── README.md                   This file
-├── styles/                     Shared per-style JSON definitions (spec + hardening config)
+├── pyproject.toml
+├── README.md
+├── styles/                     Shared per-style JSON (spec + hardening config)
 │   ├── intelligence.json
 │   ├── academic.json
 │   ├── magazine.json
@@ -78,88 +153,27 @@ md_to_pdf/
 │   ├── __init__.py
 │   └── dispatcher.py           md2pdf entry point — parses --engine, delegates
 ├── engines/
-│   ├── typst/                  Typst engine
+│   ├── __init__.py             Shared: parse_frontmatter, load_sidecar,
+│   │                           load_typst_overrides, load_style_defaults
+│   ├── typst/
 │   │   ├── convert.py
 │   │   ├── styles/             intelligence.typ, magazine.typ, thinktank.typ, academic.typ
 │   │   └── README.md
-│   └── weasyprint/             WeasyPrint engine
+│   └── weasyprint/
 │       ├── convert.py
 │       ├── styles/             style_intelligence.css, style_magazine.css, …
 │       └── README.md
 └── tests/
-    ├── shared/                 Input files used by both engines
-    │   ├── test_columns.md
-    │   ├── WHO_Compromission.md
-    │   └── images/
-    ├── typst/                  Typst output PDFs + .typ sources (4 styles)
-    ├── weasyprint/             WeasyPrint output PDFs (4 styles)
+    ├── shared/                 Engine-agnostic inputs (see shared/README.md)
+    │   ├── test_columns.md     Public test article
+    │   ├── test_columns.json   Sidecar: metadata + typst_overrides example
+    │   ├── images/
+    │   └── README.md
+    ├── typst/                  Typst outputs: PDFs, .typ sources, test scripts
+    ├── weasyprint/             WeasyPrint outputs: PDFs, CSS overrides
+    │   └── test_columns_overrides.css  WeasyPrint CSS override template
     └── README.md
 ```
-
-## Per-article customisation
-
-Two layers of per-article overrides exist, one for metadata and one for visual tweaks.
-
-### Metadata sidecar (both engines)
-
-Create `<stem>.json` alongside the `.md` file.  It is auto-detected — no flag required.
-
-```json
-{
-  "author":   "G. Demaneuf",
-  "title":    "How Beijing Tamed the WHO",
-  "pub_name": "DRASTIC",
-  "doc_type": "OSINT RESEARCH PRODUCT"
-}
-```
-
-Recognised keys: `author`, `title`, `pub_name` / `pub-name`, `doc_type` / `doc-type`.
-
-Precedence (lowest → highest):
-
-```
-style branding_defaults  (md_to_pdf/styles/<name>.json)
-  ↓  sidecar JSON        (<stem>.json alongside .md)
-     ↓  YAML frontmatter (--- block at top of .md file)
-```
-
-To point at a sidecar at a different path: `md2pdf article.md --style intelligence --meta overrides.json`.
-
-See `tests/shared/test_columns.json` for an annotated example.
-
-### CSS overrides (WeasyPrint engine only)
-
-Visual tweaks — body font, paragraph rhythm, heading alignment, accent colour — go in a per-article CSS file passed with `--custom`.  This file is applied after the core style, so any rule here wins the cascade.
-
-```bash
-md2pdf article.md --engine weasyprint --css intelligence \
-       --custom article_overrides.css
-```
-
-Typical overrides:
-
-```css
-/* Body font */
-body { font-family: 'Source Serif 4', Georgia, serif; font-size: 9pt; }
-
-/* Paragraph spacing and line height */
-body, p, li { line-height: 1.5; }
-p { margin-bottom: 0.4em; }
-
-/* H1 justification (spans full width; default: left) */
-h1 { text-align: center; }
-
-/* H2/H3 justification (default: left) */
-h2, h3 { text-align: justify; }
-
-/* Accent colour */
-h2, h3 { color: #8b0000; }
-div.full-width, div.single-column { border-top-color: #8b0000; }
-```
-
-See `tests/shared/test_columns_overrides.css` for a fully annotated template.
-
-**Typst engine:** visual tweaks beyond metadata require editing the `.typ` style file directly.  Typst has no cascade-override layer equivalent to CSS `--custom`.
 
 ## Per-engine documentation
 
