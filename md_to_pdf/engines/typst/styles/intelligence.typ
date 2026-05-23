@@ -123,38 +123,38 @@
   // h2 — section heading: bold navy, navy rule below
   show heading.where(level: 2): it => {
     set text(size: h2-size, weight: "bold", fill: navy)
-    set align(left)
-    block(width: 100%, above: h2-above, below: h2-below)[
+    set par(justify: false)
+    align(left, block(width: 100%, above: h2-above, below: h2-below)[
       #it.body
       #v(1pt)
       #line(length: 100%, stroke: 0.8pt + navy)
-    ]
+    ])
   }
 
   // h3 — sub-section: bold navy, no rule
   show heading.where(level: 3): it => {
     set text(size: h3-size, weight: "bold", fill: navy)
-    set align(left)
-    block(above: h3-above, below: h3-below, it.body)
+    set par(justify: false)
+    align(left, block(above: h3-above, below: h3-below, it.body))
   }
 
   // h4 — minor heading: bold italic black
   show heading.where(level: 4): it => {
     set text(size: h4-size, weight: "bold", style: "italic", fill: body-black)
-    set align(left)
-    block(above: h4-above, below: h4-below, it.body)
+    set par(justify: false)
+    align(left, block(above: h4-above, below: h4-below, it.body))
   }
 
   // h5/h6 — same as h4
   show heading.where(level: 5): it => {
     set text(size: h4-size, weight: "bold", style: "italic", fill: body-black)
-    set align(left)
-    block(above: h4-above, below: h4-below, it.body)
+    set par(justify: false)
+    align(left, block(above: h4-above, below: h4-below, it.body))
   }
   show heading.where(level: 6): it => {
     set text(size: h4-size, weight: "bold", style: "italic", fill: body-black)
-    set align(left)
-    block(above: h4-above, below: h4-below, it.body)
+    set par(justify: false)
+    align(left, block(above: h4-above, below: h4-below, it.body))
   }
 
   // ── Code ──────────────────────────────────────────────────────────────────
@@ -203,6 +203,10 @@
     indent:  1.4em,
     spacing: list-spacing,
   )
+  // Lists are ragged-right by convention — justified bullets look bad,
+  // and Further Reading / reference lists with long URLs need this.
+  show list: set par(justify: false)
+  show enum: set par(justify: false)
 
   // ── Figures / images ──────────────────────────────────────────────────────
   set figure(gap: 0.5em)
@@ -264,22 +268,26 @@
   },
 )
 
-// Insights box: warm cream bg, gold top+bottom border, bold black heading,
-// gold rule under the heading.
+// Insights box: NIC-style callout — cream fill, thick gold left border.
+// The heading (if any) is prefixed with a bold gold "Insight: " label inline.
+// No top/bottom rule: the left bar is the only accent.
 // Usage: #insights-box(heading: [Title])[body content]
 #let insights-box(heading: none, body) = block(
   width:    100%,
   fill:     box-cream,
-  stroke:   (top: 3pt + gold, bottom: 1.5pt + gold),
-  inset:    (x: 1em, top: 0.8em, bottom: 0.8em),
-  above:    0.9em,
+  stroke:   (left: 4pt + gold),
+  inset:    (left: 0.9em, right: 1em, top: 0.75em, bottom: 0.75em),
+  above:    1em,
   below:    1em,
   {
     if heading != none {
-      text(size: 9.5pt, weight: "bold", fill: body-black, heading)
-      v(2pt)
-      line(length: 100%, stroke: 0.6pt + gold)
-      v(5pt)
+      // "Insight: Heading text" — label in gold, heading in bold body-black
+      // Both on the same line, wrapping naturally if long.
+      block(below: 0.5em,
+        text(size: 9.5pt, weight: "bold")[
+          #text(fill: gold)[Insight: ]#text(fill: body-black, heading)
+        ]
+      )
     }
     body
   },

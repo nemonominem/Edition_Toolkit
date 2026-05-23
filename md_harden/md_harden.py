@@ -33,6 +33,13 @@ Transforms (in order):
   4. consistency     Advisory: et al. → *et al.*, mixed apostrophe styles, etc.
                      These appear in the review as suggestions to inspect; they
                      are never applied blindly.
+  5. layout-table-gap  Advisory (confidence 25%): flags prose paragraphs that
+                     flow directly into a pipe table without a single-column
+                     wrapper. In two-column Typst styles this produces a white-
+                     space gap before the table. Suggests wrapping both the
+                     lead-in and the table in <div class="single-column">.
+                     Only relevant when the table lands mid-page; safe to ignore
+                     when it falls at a page top.
 
 Single-column div injection is NOT done automatically — images are fine in
 two-column layout by default. Use <div class="single-column"> explicitly in
@@ -75,6 +82,7 @@ _DEFAULT_HARDENING: dict = {
     "et_al_italics":               {"confidence": 40},
     "apostrophe_consistency":      {"confidence": 35},
     "pull_quote_style_consistency": {"confidence": 30},
+    "layout_table_gap":            {"confidence": 25},
 }
 
 
@@ -415,10 +423,89 @@ def _advisory_pull_quote_style(text: str) -> list[tuple[str, str, str, int, str]
     )
     return [("consistency-pullquote-style", example, after, confidence, note)]
 
+def _advisory_table_before_section(text: str) -> list[tuple[str, str, str, int, str]]:
+    """
+    Detect prose paragraphs that flow directly into a full-width Markdown table
+    without a <div class="single-column"> wrapper.
+
+    In two-column Typst layouts, Typst must flush open columns before placing a
+    full-width block, which produces a visible gap of unused white space.
+    The fix is to wrap the lead-in paragraph(s) and the table together in a
+    single-column div so everything runs at full width with no gap.
+
+    We flag every occurrence where a non-div, non-blank paragraph is immediately
+    followed (within 1 blank line) by a pipe-table header row, and neither the
+    paragraph nor the table is already inside a single-column wrapper.
+    Confidence is low because the layout impact depends on where on the page the
+    table falls — gaps only matter when the table starts mid-page.
+    """
+    confidence = 25   # advisory only — not in style JSON, always low
+
+    lines   = text.splitlines()
+    n       = len(lines)
+    hits    = []
+    in_div  = False
+
+    for i, line in enumerate(lines):
+        # Track whether we're inside a single-column / full-width div
+        if re.match(r'<div\s+class=["\'](?:single-column|full-width)["\']', line):
+            in_div = True
+        if re.match(r'</div>', line) and in_div:
+            in_div = False
+            continue
+
+        if in_div:
+            continue
+
+        # A pipe-table header: line with at least two | separated by content
+        if not re.match(r'^\|.+\|', line):
+            continue
+
+        # Check next line is a separator row (---|---|...)
+        if i + 1 >= n or not re.match(r'^\|[\s\-:|]+\|', lines[i + 1]):
+            continue
+
+        # Look backwards for the nearest non-blank line
+        j = i - 1
+        while j >= 0 and lines[j].strip() == '':
+            j -= 1
+        if j < 0:
+            continue
+
+        prev = lines[j]
+        # Skip if previous line is itself a table row, a div tag, a heading, or a page-break
+        if (re.match(r'^\|', prev)
+                or re.match(r'</?div', prev)
+                or re.match(r'^#{1,6}\s', prev)
+                or prev.strip() == ''):
+            continue
+
+        # We have prose → table with no single-column wrapper — flag it
+        excerpt = prev.strip()[:80]
+        suggestion = (
+            f'<div class="single-column">\n\n'
+            f'{prev.rstrip()}\n\n'
+            f'*(…table follows…)*\n\n'
+            f'</div>'
+        )
+        note = (
+            "A prose paragraph flows directly into a full-width table without a "
+            "single-column wrapper. In two-column styles this produces a white-space "
+            "gap before the table. Consider wrapping the lead-in paragraph(s) and the "
+            "table together in <div class=\"single-column\">…</div>. "
+            "Only necessary when the table lands mid-page — safe to ignore if it starts "
+            "at a page top."
+        )
+        hits.append(("layout-table-gap", excerpt, suggestion, confidence, note))
+
+    return hits
+
+
 ADVISORY_FNS = [
     _advisory_et_al,
     _advisory_mixed_apostrophes,
     _advisory_pull_quote_style,
+    _advisory_table_before_section,
 ]
 
 

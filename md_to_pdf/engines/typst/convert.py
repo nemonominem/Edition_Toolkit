@@ -287,7 +287,33 @@ def convert_table(block: str, footnotes: dict[str, str]) -> str:
         return "left"
 
     aligns = [align_str(sep_cells[i] if i < len(sep_cells) else '') for i in range(n_cols)]
-    col_spec = ", ".join(f"1fr" for _ in range(n_cols))
+
+    # Column width heuristic:
+    #   2-col tables: narrow label col (0.28fr) + wide content col (1fr).
+    #   3-col tables: if the first column header is short (≤ 12 chars) AND
+    #     the first-column data cells are all short (≤ 20 chars), treat it as
+    #     a label/date column and use 0.28fr + 1fr + 1fr.  Otherwise equal.
+    #   4+ col tables: always equal 1fr each.
+    def _first_col_is_narrow() -> bool:
+        """Return True if col 0 looks like a label/date column.
+        Strips basic Markdown bold/italic markers before measuring."""
+        def _plain(s: str) -> str:
+            return re.sub(r'\*+', '', s).strip()
+        hdr = _plain(header_row[0]) if header_row else ''
+        if len(hdr) > 12:
+            return False
+        for row in data_rows:
+            cell = _plain(row[0]) if row else ''
+            if len(cell) > 25:
+                return False
+        return True
+
+    if n_cols == 2:
+        col_spec = "0.28fr, 1fr"
+    elif n_cols == 3 and _first_col_is_narrow():
+        col_spec = "0.28fr, 1fr, 1fr"
+    else:
+        col_spec = ", ".join("1fr" for _ in range(n_cols))
 
     lines_out: list[str] = []
     lines_out.append(f"#block(width: 100%)[")
@@ -476,33 +502,86 @@ def convert_paragraph_text(text: str, footnotes: dict[str, str]) -> str:
 # ---------------------------------------------------------------------------
 
 def convert_list_block(lines: list[str], footnotes: dict[str, str], ordered: bool) -> str:
-    """Convert a list block (already split into item lines) to Typst."""
-    items = []
-    current: list[str] = []
+    """Convert a list block to Typst, preserving nesting up to any depth.
 
+    Markdown uses 2- or 4-space indent per level.  We detect the indent unit
+    from the first indented item and map indent depth → Typst nesting via
+    repeated list markers (Typst nests lists by simply indenting the marker).
+
+    Each item may span multiple continuation lines (indented but no marker).
+    """
     marker_re = re.compile(r'^(\s*)(\d+\.|[-*+])\s+(.*)$')
 
-    for ln in lines:
+    # ── Parse into a flat list of (raw_indent, text) tuples ──────────────
+    raw_parsed: list[tuple[int, str]] = []   # (raw_indent, text)
+
+    i = 0
+    while i < len(lines):
+        ln = lines[i]
         m = marker_re.match(ln)
         if m:
-            if current:
-                items.append(' '.join(current))
-            current = [m.group(3)]
-        elif ln.startswith('  ') and current:
-            current.append(ln.strip())
+            raw_indent = len(m.group(1))
+            text = m.group(3)
+            # Collect continuation lines (indented, no marker)
+            i += 1
+            while i < len(lines) and not marker_re.match(lines[i]) and lines[i].strip():
+                text += ' ' + lines[i].strip()
+                i += 1
+            raw_parsed.append((raw_indent, text))
         else:
-            if current:
-                items.append(' '.join(current))
-            current = []
-    if current:
-        items.append(' '.join(current))
+            i += 1  # blank or unrecognised — skip
+
+    # ── Normalise indent to 0-based levels ────────────────────────────────
+    # Determine indent unit from the smallest non-zero indent seen.
+    # Then shift so the minimum indent maps to level 0.
+    parsed: list[tuple[int, str]] = []
+    if raw_parsed:
+        all_indents = sorted({ri for ri, _ in raw_parsed})
+        min_indent  = all_indents[0]
+        # Detect indent unit: smallest gap between consecutive distinct indents
+        indent_unit = 2  # default
+        for a, b in zip(all_indents, all_indents[1:]):
+            indent_unit = b - a
+            break  # first gap is enough
+        for ri, text in raw_parsed:
+            level = (ri - min_indent) // indent_unit if indent_unit else 0
+            parsed.append((level, text))
+
+    # ── Emit Typst list syntax ─────────────────────────────────────────────
+    # Typst nesting: indent child items inside the parent with a nested list.
+    # We do this by emitting indented `- ` / `+ ` markers; Typst treats
+    # indented markers as nested lists automatically.
+    def _render(items: list[tuple[int, str]], base_level: int, list_type: str) -> list[str]:
+        out: list[str] = []
+        idx = 0
+        while idx < len(items):
+            lvl, text = items[idx]
+            if lvl < base_level:
+                break   # back up to parent caller
+            if lvl == base_level:
+                content = convert_inline(text, footnotes)
+                # Peek ahead: does the next item go deeper?
+                child_items = []
+                j = idx + 1
+                while j < len(items) and items[j][0] > base_level:
+                    child_items.append(items[j])
+                    j += 1
+                if child_items:
+                    child_typst = '\n'.join(_render(child_items, base_level + 1, list_type))
+                    out.append(f"{list_type} {content}\n  {child_typst.replace(chr(10), chr(10) + '  ')}")
+                    idx = j
+                else:
+                    out.append(f"{list_type} {content}")
+                    idx += 1
+            else:
+                # Deeper item with no parent at this base_level — promote
+                content = convert_inline(text, footnotes)
+                out.append(f"{list_type} {content}")
+                idx += 1
+        return out
 
     list_type = "+" if ordered else "-"
-    out_lines = []
-    for item in items:
-        content = convert_inline(item, footnotes)
-        out_lines.append(f"{list_type} {content}")
-    return '\n'.join(out_lines)
+    return '\n'.join(_render(parsed, 0, list_type))
 
 
 # ---------------------------------------------------------------------------
@@ -954,6 +1033,31 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
         para_text = _IMG_RE.sub(convert_image, para_text)
         output.append(convert_inline(para_text, footnotes))
 
+    # ── Endnotes: append to output before post-processing so sentinels work ────
+    if endnote_mode and _fn_notes:
+        output.append('\x00FULLWIDTH_START\x00')
+        output.append('#pagebreak()')
+        output.append('// ── Endnotes ──────────────────────────────────────────────────────────────')
+        output.append('#text(size: 11pt, weight: "bold", fill: rgb("#1d4b7a"))[Notes]')
+        output.append('#v(2pt)')
+        output.append('#line(length: 100%, stroke: 0.8pt + rgb("#1d4b7a"))')
+        output.append('#v(0.5em)')
+        for key, defn in _fn_notes:
+            n = _fn_index[key]
+            safe_key = key.replace('_', '-')
+            defn_no_xref = _FNREF_RE.sub(
+                lambda m2: f'[{_fn_index.get(m2.group(1), "?")}]',
+                defn
+            )
+            defn_typst = convert_inline(defn_no_xref, {})
+            output.append(
+                f'#block(height: 0pt, above: 0pt, below: 0pt)[] <en-{safe_key}>\n'
+                f'#block(below: 1.2em, inset: (left: 1.8em), clip: false)['
+                f'#pad(left: -1.8em)[#text(size: 8.5pt)[{n}.#h(0.4em){defn_typst}]]'
+                f']'
+            )
+        output.append('\x00FULLWIDTH_END\x00')
+
     # ── Post-process: wrap column segments in #columns(2)[...] ───────────────
     # Split body on FULLWIDTH sentinels and wrap alternating segments.
     raw = '\n'.join(output)
@@ -975,38 +1079,7 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
     header = '\n'.join(header_lines)
     body   = '\n\n'.join(body_parts)
 
-    # ── Endnotes section (full-width, outside any #columns wrapper) ───────────
-    endnotes_block = ''
-    if endnote_mode and _fn_notes:
-        lines_en: list[str] = []
-        lines_en.append('// ── Endnotes ──────────────────────────────────────────────────────────────')
-        lines_en.append('#v(1em)')
-        lines_en.append('#line(length: 100%, stroke: 1.5pt + rgb("#1d4b7a"))')
-        lines_en.append('#v(0.4em)')
-        lines_en.append('#text(size: 11pt, weight: "bold", fill: rgb("#1d4b7a"))[Notes]')
-        lines_en.append('#v(0.5em)')
-        for key, defn in _fn_notes:
-            n = _fn_index[key]
-            # Typst label syntax: element <label> — label must follow the element
-            # at the same content level, not be nested inside it.
-            # Use a zero-height block as the label target, then the visible entry.
-            safe_key = key.replace('_', '-')  # Typst labels can't contain underscores
-            # Strip cross-references inside note definitions ([^otherkey]) to avoid
-            # cascading label-missing errors when a note references another note.
-            defn_no_xref = _FNREF_RE.sub(
-                lambda m2: f'[{_fn_index.get(m2.group(1), "?")}]',
-                defn
-            )
-            defn_typst = convert_inline(defn_no_xref, {})
-            lines_en.append(
-                f'#block(height: 0pt, above: 0pt, below: 0pt)[] <en-{safe_key}>\n'
-                f'#block(below: 1.2em, inset: (left: 1.8em), clip: false)['
-                f'#pad(left: -1.8em)[#text(size: 8.5pt)[{n}.#h(0.4em){defn_typst}]]'
-                f']'
-            )
-        endnotes_block = '\n'.join(lines_en)
-
-    return header + '\n' + body + ('\n\n' + endnotes_block if endnotes_block else '')
+    return header + '\n' + body
 
 
 def _convert_block_content(text: str, footnotes: dict[str, str]) -> str:

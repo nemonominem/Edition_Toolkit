@@ -129,8 +129,10 @@ in the `.md` file.  Common operations:
 | Note / Warning callout | `> [!NOTE]` or `> [!WARNING]` |
 | Pull-quote | `\| quote text` / `\| source: Name` |
 | Mermaid diagram (renders if `mmdc` on PATH) | ` ```mermaid … ``` ` |
+| Fix unbalanced 2-column table (wide label col) | wrap in `single-column` — 2-col tables auto-get 22%/78% split |
+| Prevent gap before a full-width table | wrap lead-in paragraph + table together in `single-column` |
 
-Full syntax examples and Mermaid setup: [engines/typst/README.md](engines/typst/README.md).
+Full syntax examples, column-width details, and known limitations: [engines/typst/README.md](engines/typst/README.md).
 
 ---
 

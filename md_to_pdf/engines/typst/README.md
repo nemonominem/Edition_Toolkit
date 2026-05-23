@@ -48,7 +48,7 @@ and the helpers `key-takeaways`, `insights-box`, `pull-quote`, `callout`, `callo
 
 | Syntax | Typst output |
 |--------|-------------|
-| `# H1` … `###### H6` | `=` … `======` (h1 always full-width) |
+| `# H1` … `###### H6` | `=` … `======` (all heading levels always left-aligned, regardless of column context) |
 | `**bold**`, `*italic*` | `*bold*`, `_italic_` |
 | `` `code` `` | `` `code` `` |
 | `[text](url)` | `#link("url")[text]` |
@@ -56,6 +56,7 @@ and the helpers `key-takeaways`, `insights-box`, `pull-quote`, `callout`, `callo
 | `[^key]` footnotes | `#footnote[...]` inline |
 | Pipe tables | `#table(...)` navy header, stripe rows, full-width |
 | ` ```mermaid ``` ` | pre-rendered PNG if available, else placeholder |
+| Bullet lists, numbered lists | always ragged-right (not justified) — standard for lists and avoids ugly spacing on URL-heavy items such as Further Reading |
 | `<div class="page-break">` | `#pagebreak()` |
 | `<div class="key-takeaways">` | Blue callout box with "Key Takeaways" label + rule |
 | `<div class="insights">` | Cream sidebar box, gold borders |
@@ -171,3 +172,57 @@ npm install -g @mermaid-js/mermaid-cli
 
 Without it, a placeholder is emitted. Mermaid sections inside `single-column`
 divs render at full page width — recommended for network graphs and flow charts.
+
+### Table column widths
+
+By default, all table columns share equal width (`1fr` each).  For **2-column
+tables** the converter automatically applies a `0.28fr / 1fr` split (roughly
+22% / 78%), which suits label-plus-content layouts (actor/role, key/value,
+comparison tables).
+
+For **3- or 4-column tables** all columns remain equal.  If you need a
+different split — e.g. a wide first column or a narrow index column — wrap
+the table in a `<div class="single-column">` and note the desired widths in a
+comment above it so the next editor knows what to adjust in `convert.py`:
+
+```html
+<!-- table-col-widths: 0.5fr 1fr 1fr -->
+<div class="single-column">
+
+| Col A | Col B | Col C |
+| ----- | ----- | ----- |
+| …     | …     | …     |
+
+</div>
+```
+
+*(Custom per-table width injection is not yet implemented; the comment is a
+human reminder for now.)*
+
+---
+
+## Known Limitations
+
+### No two-column flow above a full-width table on the same page
+
+Typst's multi-column model is grid-based: you are either inside a column flow
+or outside it.  There is no mechanism to run two columns for the upper half of
+a page and then place a full-width block on the lower half of the same page.
+
+**Consequence:** when a bare table (or any `single-column` / `full-width`
+block) appears in the middle of a two-column section, Typst flushes the open
+columns and starts the full-width block on a fresh baseline.  This produces a
+visible gap — unused white space at the bottom of one column before the table.
+
+**Workarounds:**
+
+1. **Wrap the lead-in paragraph and the table together in `single-column`.**
+   The prose runs full-width immediately above the table — no gap.  This is
+   the recommended fix when the lead-in is short (one or two sentences).
+
+2. **Insert a `page-break` before the table.**  The gap moves to the bottom of
+   the previous page, which is less noticeable.  Use this when the table is
+   large enough to fill most of a new page on its own.
+
+3. **Accept the gap.**  For tables that land near the bottom of a page the
+   gap is often small and unremarkable.
