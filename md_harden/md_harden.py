@@ -1027,30 +1027,41 @@ def main() -> None:
         # Always back up the original source alongside the hardened output.
         bak_path = src.with_suffix(".md.bak")
         bak_path.write_text(original, encoding="utf-8")
-
         out_path.write_text(hardened, encoding="utf-8")
 
-        diff = list(difflib.unified_diff(
-            original.splitlines(keepends=True),
-            hardened.splitlines(keepends=True),
-            fromfile=str(src),
-            tofile=str(out_path),
-            lineterm="",
-        ))
-        if diff:
-            print("".join(diff))
-        else:
-            print("md_harden: no changes applied (all suggestions were removed).")
+        # Count applied vs ignored per section.
+        _SEC_RE = re.compile(
+            r'^# \d+\. (Deterministic — Apply|Deterministic — Review'
+            r'|Claude — Apply|Claude — Review)',
+            re.MULTILINE,
+        )
+        sections = _SEC_RE.split(review_text)
+        # sections[0] = preamble; then alternating: section_name, section_body
+        sec_parts = list(zip(sections[1::2], sections[2::2]))
+        for sec_name, sec_body in sec_parts:
+            blocks = [b for b in re.split(r'\n---\n', sec_body)
+                      if _SUGGESTION_HEADER_RE.search(b)]
+            applied  = sum(1 for b in blocks
+                           if not (_TREATMENT_RE.search(b) and
+                                   _TREATMENT_RE.search(b).group(1) == "Review")
+                           and not (_CONFIDENCE_RE.search(b) and
+                                    int(_CONFIDENCE_RE.search(b).group(1)) < APPLY_THRESHOLD))
+            ignored  = len(blocks) - applied
+            print(f"  {sec_name}: {applied} applied, {ignored} ignored")
 
         print(f"\n→  Backup:  {bak_path}")
-        print(f"→  Written: {out_path}  ({len(suggestions)} suggestion(s) applied)")
+        print(f"→  Written: {out_path}")
 
         # Print the next command to run.
         style_flag = f" --style {args.style}" if args.style else ""
         sidecar = src.with_suffix(".json")
-        sidecar_note = " (sidecar auto-detected)" if sidecar.exists() else ""
-        print(f"\nNext step — convert to PDF:")
-        print(f"  md2pdf {out_path}{style_flag} --compile{sidecar_note}")
+        sidecar_exists = sidecar.exists()
+        print(f"\nNext — convert to PDF:")
+        print(f"  md2pdf {out_path}{style_flag} --compile", end="")
+        if sidecar_exists:
+            print(f"  # sidecar {sidecar.name} auto-detected")
+        else:
+            print()
         return
 
     # ── Direct mode ───────────────────────────────────────────────────────────
