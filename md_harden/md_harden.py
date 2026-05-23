@@ -1055,13 +1055,16 @@ def main() -> None:
         # Print the next command to run.
         style_flag = f" --style {args.style}" if args.style else ""
         sidecar = src.with_suffix(".json")
-        sidecar_exists = sidecar.exists()
+        # Auto-detection looks for <hardened_stem>.json — that won't exist.
+        # Use --meta to point at the original sidecar if it exists.
+        auto_sidecar = out_path.with_suffix(".json")
         print(f"\nNext — convert to PDF:")
-        print(f"  md2pdf {out_path}{style_flag} --compile", end="")
-        if sidecar_exists:
-            print(f"  # sidecar {sidecar.name} auto-detected")
+        if sidecar.exists() and not auto_sidecar.exists():
+            print(f"  md2pdf {out_path}{style_flag} --meta {sidecar} --compile")
+        elif auto_sidecar.exists():
+            print(f"  md2pdf {out_path}{style_flag} --compile  # sidecar {auto_sidecar.name} auto-detected")
         else:
-            print()
+            print(f"  md2pdf {out_path}{style_flag} --compile")
         return
 
     # ── Direct mode ───────────────────────────────────────────────────────────

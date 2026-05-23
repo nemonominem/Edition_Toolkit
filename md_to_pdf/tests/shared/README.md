@@ -15,10 +15,13 @@ shared/
 │   └── images/              Images embedded in test_columns.md.
 │
 ├── WHO/                     Gitignored — private article inputs. Not committed.
-│   ├── WHO_Compromission.md
-│   ├── WHO_Compromission.json
-│   ├── WHO_Compromission_overrides.css
-│   └── images/
+│   ├── WHO_Compromission.md          Original extracted article
+│   ├── WHO_Compromission.md.bak      Backup before --apply
+│   ├── WHO_Compromission_hardened.md Hardened source — convert this one
+│   ├── WHO_Compromission.json        Sidecar (metadata + Typst overrides)
+│   ├── WHO_Compromission_overrides.css  WeasyPrint CSS overrides
+│   ├── WHO_Compromission_review.md   Hardening review file
+│   └── images/                       Article images + pre-rendered mermaid PNGs
 │
 └── README.md                This file.
 ```
