@@ -53,7 +53,7 @@ and the helpers `key-takeaways`, `insights-box`, `pull-quote`, `callout`, `callo
 | `` `code` `` | `` `code` `` |
 | `[text](url)` | `#link("url")[text]` |
 | `![alt](src){width=60%}` | `#figure(image(...), caption: [...])` |
-| `[^key]` footnotes | `#footnote[...]` inline |
+| `[^key]` footnotes | `#footnote[...]` inline (see caveat below) |
 | Pipe tables | `#table(...)` navy header, stripe rows, full-width |
 | ` ```mermaid ``` ` | pre-rendered PNG if available, else placeholder |
 | Bullet lists, numbered lists | always ragged-right (not justified) — standard for lists and avoids ugly spacing on URL-heavy items such as Further Reading |
@@ -155,6 +155,16 @@ Body text here.
 > Text of the warning.
 ```
 
+Use `<br>` for explicit line breaks inside a callout block — a bare newline
+inside a `>` block is treated as a paragraph continuation:
+
+```markdown
+> [!NOTE]
+> First line.<br>
+> Second line.<br>
+> Third line.
+```
+
 ### Pull-quotes
 
 ```markdown
@@ -198,6 +208,19 @@ comment above it so the next editor knows what to adjust in `convert.py`:
 
 *(Custom per-table width injection is not yet implemented; the comment is a
 human reminder for now.)*
+
+### Footnote reference collision with URLs
+
+If a footnote key appears immediately before `:` elsewhere in the text — for
+example inside a URL like `https://example.com/path[^ref]:more` or in a
+sentence ending `…as shown[^ref]:` — the converter's footnote-definition
+regex may consume it as a definition line, stripping the reference from the
+output.
+
+**Workaround:** add a space before the colon in the *reference* (not the
+definition): write `[^someref] :` instead of `[^someref]:` anywhere in the
+main body or notes text other than the actual `[^someref]: definition` line.
+The definition line itself must keep the colon flush.
 
 ---
 
