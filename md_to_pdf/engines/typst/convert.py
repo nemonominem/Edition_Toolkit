@@ -181,7 +181,7 @@ def convert_inline(text: str, footnotes: dict[str, str]) -> str:
             # Inline: superscript linking to endnote anchor.
             # Label names use hyphens (Typst rejects underscores in labels).
             safe_key = key.replace('_', '-')
-            return stash(f'#link(<en-{safe_key}>)[#super(size: 6.5pt, baseline: 2pt)[{n}]]')
+            return stash(f'#link(<en-{safe_key}>)[#text(size: 6pt, baseline: -5pt)[{n}]]')
         else:
             # Page-footnote mode (magazine, thinktank)
             defn = footnotes.get(key, "")
@@ -476,7 +476,7 @@ def _resolve_image_src(src: str) -> str:
     return src
 
 
-def convert_image(m: re.Match) -> str:
+def convert_image(m: re.Match, footnotes: dict[str, str] | None = None) -> str:
     alt   = m.group(1)
     src   = _resolve_image_src(m.group(2))
     width = m.group(3)
@@ -492,12 +492,13 @@ def convert_image(m: re.Match) -> str:
     else:
         width_arg = "width: 100%"
 
-    alt_escaped = alt.replace('"', '\\"')
     if alt:
+        # Process inline markup (bold, italic, footnote refs) in alt/caption text
+        alt_typst = convert_inline(alt, footnotes or {})
         return (
             f'#figure(\n'
             f'  image("{src}", {width_arg}),\n'
-            f'  caption: [{alt_escaped}],\n'
+            f'  caption: [{alt_typst}],\n'
             f')'
         )
     return f'#image("{src}", {width_arg})'
@@ -516,7 +517,7 @@ def convert_paragraph_text(text: str, footnotes: dict[str, str]) -> str:
     result_paras = []
     for para in paras:
         # Inline images within paragraph text
-        para = _IMG_RE.sub(convert_image, para)
+        para = _IMG_RE.sub(lambda m, fn=footnotes: convert_image(m, fn), para)
         result_paras.append(convert_inline(para, footnotes))
     return '\n\n'.join(result_paras)
 
@@ -1049,7 +1050,7 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
             # Collect any continuation (unlikely but safe)
             img_m = _IMG_RE.match(line)
             if img_m:
-                output.append(convert_image(img_m))
+                output.append(convert_image(img_m, footnotes))
             else:
                 output.append(convert_inline(line, footnotes))
             i += 1
@@ -1068,14 +1069,14 @@ def convert_md_to_typ(md_text: str, style: str = "intelligence",
                     _UL_LINE_RE.match(ln) or _OL_LINE_RE.match(ln) or
                     _DIV_OPEN_RE.match(ln) or _DIV_CLOSE_RE.match(ln) or
                     _CALLOUT_START_RE.match(ln) or _PULLQUOTE_RE.match(ln) or
-                    _FN_DEF_LINE_RE.match(ln)):
+                    _FN_DEF_LINE_RE.match(ln) or _IMG_STANDALONE_RE.match(ln)):
                 break
             para_lines.append(ln)
             i += 1
 
         para_text = ' '.join(para_lines)
         # Handle inline images in paragraph
-        para_text = _IMG_RE.sub(convert_image, para_text)
+        para_text = _IMG_RE.sub(lambda m, fn=footnotes: convert_image(m, fn), para_text)
         output.append(convert_inline(para_text, footnotes))
 
     # ── Endnotes: append to output before post-processing so sentinels work ────
@@ -1252,7 +1253,7 @@ def _convert_block_content(text: str, footnotes: dict[str, str]) -> str:
         if _IMG_STANDALONE_RE.match(line):
             img_m = _IMG_RE.match(line)
             if img_m:
-                output.append(convert_image(img_m))
+                output.append(convert_image(img_m, footnotes))
             else:
                 output.append(convert_inline(line, footnotes))
             i += 1
@@ -1275,7 +1276,7 @@ def _convert_block_content(text: str, footnotes: dict[str, str]) -> str:
             para_lines.append(ln)
             i += 1
 
-        para_text = _IMG_RE.sub(convert_image, ' '.join(para_lines))
+        para_text = _IMG_RE.sub(lambda m, fn=footnotes: convert_image(m, fn), ' '.join(para_lines))
         output.append(convert_inline(para_text, footnotes))
 
     return '\n'.join(output)
