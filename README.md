@@ -137,7 +137,7 @@ Edition/
 │   │   ├── typst/              (DEFAULT — convert.py + styles/*.typ)
 │   │   └── weasyprint/         (fallback — convert.py + styles/*.css)
 │   └── tests/
-│       ├── shared/             (test_columns.md, WHO article, images/)
+│       ├── shared/             (test_columns.md, images/)
 │       ├── typst/              (output PDFs + .typ sources, 4 styles)
 │       └── weasyprint/         (output PDFs, 4 styles)
 │

@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MEMORANDUM — Proximal Origin, WHO Access & UK Intelligence</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Courier+Prime:wght@400;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #f4f1eb;
+      font-family: 'EB Garamond', Georgia, serif;
+      color: #1a1a1a;
+      font-size: 15px;
+      line-height: 1.75;
+    }
+
+    .page {
+      max-width: 860px;
+      margin: 40px auto;
+      background: #fffef9;
+      border: 1px solid #c8bfa8;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.13);
+      padding: 60px 72px 80px 72px;
+    }
+
+    /* ── HEADER ── */
+    .header-band {
+      border-top: 4px solid #1a1a1a;
+      border-bottom: 2px solid #1a1a1a;
+      padding: 10px 0;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+    .header-band .doc-type {
+      font-family: 'Courier Prime', monospace;
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #555;
+    }
+    .header-band h1 {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin: 4px 0 2px;
+    }
+    .header-band .subtitle {
+      font-size: 13px;
+      font-style: italic;
+      color: #444;
+    }
+
+    .classification {
+      text-align: center;
+      font-family: 'Courier Prime', monospace;
+      font-size: 10.5px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #888;
+      margin: 10px 0 28px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
+    }
+
+    /* ── META TABLE ── */
+    .meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 32px;
+      font-size: 13.5px;
+    }
+    .meta-table td {
+      padding: 3px 8px 3px 0;
+      vertical-align: top;
+    }
+    .meta-table td:first-child {
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 11px;
+      color: #555;
+      white-space: nowrap;
+      width: 80px;
+      padding-top: 5px;
+    }
+    .meta-divider {
+      border: none;
+      border-top: 1px solid #c8bfa8;
+      margin-bottom: 32px;
+    }
+
+    /* ── EXEC SUMMARY ── */
+    .exec-summary {
+      background: #f0ece2;
+      border-left: 4px solid #1a1a1a;
+      padding: 18px 22px;
+      margin-bottom: 36px;
+      font-size: 14px;
+    }
+    .exec-summary .es-label {
+      font-family: 'Courier Prime', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #777;
+      margin-bottom: 8px;
+    }
+
+    /* ── SECTION HEADERS ── */
+    .section {
+      margin-bottom: 36px;
+    }
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      border-bottom: 1.5px solid #1a1a1a;
+      padding-bottom: 4px;
+      margin-bottom: 16px;
+    }
+    .section-number {
+      font-family: 'Courier Prime', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: #888;
+      white-space: nowrap;
+    }
+    .section-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    .subsection-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin: 18px 0 8px;
+      font-style: italic;
+    }
+
+    p { margin-bottom: 10px; }
+
+    /* ── TIMELINE TABLE ── */
+    .tl-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+    .tl-table thead tr {
+      background: #1a1a1a;
+      color: #fffef9;
+    }
+    .tl-table thead td {
+      padding: 7px 10px;
+      font-family: 'Courier Prime', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .tl-table tbody tr:nth-child(even) { background: #f7f4ed; }
+    .tl-table tbody tr:nth-child(odd) { background: #fffef9; }
+    .tl-table tbody td {
+      padding: 8px 10px;
+      vertical-align: top;
+      border-bottom: 1px solid #e0d9cc;
+    }
+    .tl-table tbody td:first-child {
+      font-family: 'Courier Prime', monospace;
+      font-size: 11.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      color: #333;
+      width: 90px;
+    }
+    .tl-table tbody td:last-child {
+      font-size: 12px;
+      color: #555;
+      width: 140px;
+    }
+
+    /* ── PRESSURE POINT BOX ── */
+    .pressure-box {
+      border: 2px solid #1a1a1a;
+      background: #fdf6e3;
+      padding: 16px 20px;
+      margin: 20px 0;
+      font-size: 13.5px;
+    }
+    .pressure-box .pb-label {
+      font-family: 'Courier Prime', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #a00;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    .pressure-box .pb-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── FINDINGS ── */
+    .finding {
+      margin-bottom: 18px;
+      padding-left: 18px;
+      border-left: 3px solid #c8bfa8;
+    }
+    .finding-num {
+      font-family: 'Courier Prime', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 4px;
+    }
+    .finding-title {
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    /* ── CITATIONS ── */
+    .cite {
+      font-size: 11.5px;
+      color: #666;
+      font-style: italic;
+      margin-top: 8px;
+      padding-top: 6px;
+      border-top: 1px dashed #ccc;
+      line-height: 1.6;
+    }
+    .cite a {
+      color: #444;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .cite a:hover { color: #000; }
+
+    /* ── FOOTER ── */
+    .footer {
+      margin-top: 48px;
+      border-top: 2px solid #1a1a1a;
+      padding-top: 12px;
+      font-family: 'Courier Prime', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #999;
+      text-align: center;
+    }
+
+    strong { font-weight: 700; }
+    em { font-style: italic; }
+
+    ul { padding-left: 20px; margin-bottom: 10px; }
+    ul li { margin-bottom: 5px; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header-band">
+    <div class="doc-type">Open Source Research Memorandum</div>
+    <h1>Proximal Origin, WHO Access &amp; the UK Intelligence Community</h1>
+    <div class="subtitle">January – February 19, 2020 — Full Documented Chronology</div>
+  </div>
+  <div class="classification">All Sources Publicly Available — Open Source Research Only</div>
+
+  <!-- META -->
+  <table class="meta-table">
+    <tr><td>DATE</td><td>28 May 2026</td></tr>
+    <tr><td>RE</td><td>Documented connections between the Wellcome Trust, Jeremy Farrar, the British Intelligence Community (MI5), and the WHO–China access negotiations — including the <em>Proximal Origin</em> paper and the <em>Lancet</em> letter as instruments of narrative control</td></tr>
+    <tr><td>SCOPE</td><td>January 2020 – February 19, 2020</td></tr>
+    <tr><td>STATUS</td><td>Open Source — All citations publicly available</td></tr>
+  </table>
+  <hr class="meta-divider"/>
+
+  <!-- EXECUTIVE SUMMARY -->
+  <div class="exec-summary">
+    <div class="es-label">Executive Summary</div>
+    <p>This memorandum documents the factual, publicly recorded connections between the Wellcome Trust, its Director Jeremy Farrar, the British domestic intelligence service (MI5), and the WHO's access negotiations with China in February 2020. The central figure bridging the intelligence and scientific worlds is <strong>Baroness Eliza Manningham-Buller</strong> (former MI5 Director General and Wellcome Chair). A secondary layer of significance is the role of <strong>Sir Andrew Parker</strong> (MI5 DG, 2013–2020), who activated MI5's pandemic plan in early February 2020 — concurrent with Farrar's mobilisation of the <em>Proximal Origin</em> paper and with Sir Patrick Vallance's appearance on Farrar's "fateful decision" email chain.</p>
+    <p>The central finding of this memo is that the <em>Proximal Origin</em> paper and the <em>Lancet</em> letter were not purely scientific endeavours. They were instruments of diplomatic and narrative control, timed precisely to the two critical windows in which WHO was negotiating access to China — and deployed at the moment the full WHO–China Joint Mission departed for Beijing with its Terms of Reference still unresolved, unpublished, and unknown to the US government.</p>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">SECTION 01</span>
+      <span class="section-title">Early Warnings &amp; Intelligence Briefings</span>
+    </div>
+    <div class="subsection-title">Mid-January – January 31, 2020</div>
+
+    <table class="tl-table">
+      <thead>
+        <tr>
+          <td>Date</td>
+          <td>Event</td>
+          <td>Key Actors</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Mid-Jan</td>
+          <td><strong>Parker visits Wellcome Trust.</strong> Sir Andrew Parker (MI5 DG) meets Baroness Eliza Manningham-Buller at Wellcome. Farrar almost certainly present. A direct intelligence–Wellcome channel is established at the precise moment the crisis is emerging as a national security threat.</td>
+          <td>Parker, Eliza, Farrar</td>
+        </tr>
+        <tr>
+          <td>Jan 20–21</td>
+          <td><strong>First WHO advance visit to Wuhan.</strong> WHO team visits, meets public health officials. Limited access; no independent investigation of origins permitted by China.</td>
+          <td>WHO, China</td>
+        </tr>
+        <tr>
+          <td>Late Jan</td>
+          <td><strong>Farrar notices "engineered" chatter; calls Holmes first.</strong> Farrar reads email chatter suggesting the virus "looked almost engineered to infect human cells" (Farrar memoir, <em>Spike</em>). His first move is to call Eddie Holmes. Holmes reviews the sequence and is not alarmed — both are initially satisfied it looks natural.</td>
+          <td>Farrar, Holmes</td>
+        </tr>
+        <tr>
+          <td>Late Jan</td>
+          <td><strong>Andersen contacts Holmes independently — with a contrary view.</strong> Andersen flags features inconsistent with natural evolution, raising suspicions of non-natural origin. This directly contradicts Holmes's earlier reassurance to Farrar and changes everything.</td>
+          <td>Andersen, Holmes</td>
+        </tr>
+        <tr>
+          <td>Late Jan</td>
+          <td><strong>Holmes contacts Farrar. Farrar consults Eliza (former MI5 DG).</strong> Farrar, now alarmed, consults Baroness Manningham-Buller on how to handle what is now a potentially explosive situation. This shapes the decision to treat the matter through a controlled, security-aware channel from the outset. <em>The intelligence consultation precedes and shapes the scientific process.</em></td>
+          <td>Farrar, Eliza, Holmes</td>
+        </tr>
+        <tr>
+          <td>Jan 23</td>
+          <td><strong>BSEG meeting convened.</strong> ODNI's Biological Sciences Experts Group summons Ralph Baric to present on coronavirus origins. Baric agrees, saying he will "put together a few slides that capture the essence of the problem."</td>
+          <td>Baric, ODNI/BSEG</td>
+        </tr>
+        <tr>
+          <td>Jan 24</td>
+          <td><strong>First UK COBRA meeting.</strong> Matt Hancock chairs; Chris Whitty present; intelligence briefings begin.</td>
+          <td>Hancock, Whitty, UK Gov</td>
+        </tr>
+        <tr>
+          <td>Jan 28–29</td>
+          <td><strong>Tedros visits Beijing.</strong> Tedros meets President Xi and Chinese ministers. Returns with only a <em>tentative</em> agreement on sending a WHO expert team — China has not yet confirmed access terms. This diplomatic fragility will drive everything that follows.</td>
+          <td>Tedros, Xi, WHO, China</td>
+        </tr>
+        <tr>
+          <td>Jan 29</td>
+          <td><strong>Baric briefs BSEG/ODNI.</strong> Baric's PowerPoint to the "B Group" explicitly discusses the possibility of an accidental laboratory release at the WIV — the same hypothesis that Fauci's inner circle would soon publicly label a conspiracy theory. The US intelligence community is formally briefed on the lab-accident hypothesis <strong>two days before</strong> Farrar's Feb 1 teleconference.</td>
+          <td>Baric, ODNI, CIA</td>
+        </tr>
+        <tr>
+          <td>Jan 31</td>
+          <td><strong>MI5 engaged on virus sequence.</strong> Farrar receives formal concerns from US scientists. Farrar contacts Fauci directly.</td>
+          <td>Farrar, Fauci, MI5</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="cite">
+      Sources: 
+      <a href="https://gillesdemaneuf.medium.com/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p1-626c72cb05b1">Demaneuf — Proximal Origin Part 1</a> ·
+      <a href="https://libguides.mskcc.org/SARS2/Origins">MSK Library Guide — SARS-CoV-2 Origins (citing Farrar memoir <em>Spike</em>)</a> ·
+      <a href="https://www.hsgac.senate.gov/media/reps/chairman-rand-paul-seeks-intelligence-community-records-related-to-covid-origins/">Senate HSGAC — Rand Paul letter seeking BSEG records</a> ·
+      <a href="https://www.paho.org/en/news/2-7-2020-timeline-whos-response-covid-19">WHO/PAHO Official Timeline of COVID-19 Response</a>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">SECTION 02</span>
+      <span class="section-title">The Farrar Call, COBRA/MI5 &amp; First Drafts</span>
+    </div>
+    <div class="subsection-title">February 1 – February 7, 2020</div>
+
+    <table class="tl-table">
+      <thead>
+        <tr><td>Date</td><td>Event</td><td>Key Actors</td></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Feb 1</td>
+          <td><strong>The Farrar Teleconference.</strong> Farrar organises the key call: Andersen, Holmes, Rambaut, Garry, Fauci, Collins, Vallance. Scientists privately estimate 60–70% probability of lab origin. Farrar contacts MI5 immediately after. Holmes contacts Australian intelligence.</td>
+          <td>Farrar, Andersen, Holmes, Rambaut, Garry, Fauci, Collins, Vallance</td>
+        </tr>
+        <tr>
+          <td>Early Feb</td>
+          <td><strong>COBRA meeting — Parker attends; MI5 activates pandemic plan.</strong> Parker attends a Whitehall COBRA-level meeting at which Vallance and Whitty brief attendees on the emerging threat. Parker later confirmed publicly that MI5 <strong>implemented its pandemic emergency plan in early February</strong> after being told Covid-19 was going to impact the UK significantly. Parker is simultaneously connected to Wellcome (via Eliza) and to the COBRA/Whitty/Vallance briefing chain.</td>
+          <td>Parker, Vallance, Whitty, COBRA</td>
+        </tr>
+        <tr>
+          <td>Feb 4</td>
+          <td><strong>First draft of <em>Proximal Origin</em> shared.</strong> Holmes sends the first draft to Farrar. Draft shared with Fauci and Collins. Still relatively candid about uncertainties at this stage.</td>
+          <td>Holmes, Farrar, Fauci, Collins</td>
+        </tr>
+        <tr>
+          <td>Feb 5–6</td>
+          <td><strong>Daszak begins organising the <em>Lancet</em> letter.</strong> Coordinates with Farrar and others on the parallel narrative track.</td>
+          <td>Daszak, Farrar</td>
+        </tr>
+        <tr>
+          <td>Feb 7</td>
+          <td><strong>"Fateful decision" email — Vallance formally enters the picture.</strong> Farrar emails Victor Dzau (President, US National Academy of Medicine) at 3:06 pm UK time, with <strong>Fauci and Vallance in CC.</strong> This is Vallance's first documented appearance in the <em>Proximal Origin</em> story. Farrar signals the decision to push the paper toward publication and away from any lab-leak framing. The paper's direction is effectively locked in.</td>
+          <td>Farrar, Dzau, Fauci, <strong>Vallance</strong></td>
+        </tr>
+        <tr>
+          <td>Feb 7</td>
+          <td><strong>Farrar requests "dampening down" and commits to share draft with WHO ("TC").</strong> Farrar explicitly requests further softening of any language readable as supporting a lab origin, and tells the group he will share the draft with "TC" — Tedros Ghebreyesus. The paper is now being explicitly shaped to serve WHO's diplomatic needs with China. <em>By this date, Farrar has committed to deliver the report Tedros needs.</em></td>
+          <td>Farrar, Tedros/WHO</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="cite">
+      Sources:
+      <a href="https://gillesdemaneuf.medium.com/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p2-39b90684bf01">Demaneuf — Proximal Origin Part 2</a> ·
+      <a href="https://www.thetimes.com/uk/healthcare/article/sir-andrew-parker-mi5-chief-acted-on-coronavirus-pandemic-warning-in-early-february-nmg2l55pb">The Times — Sir Andrew Parker: MI5 acted on pandemic warning in early February</a> ·
+      <a href="https://covid19.public-inquiry.uk/wp-content/uploads/2023/11/20193335/2023-11-20-Module-2-Day-22-Transcript.pdf">UK COVID-19 Public Inquiry — Module 2, Day 22 — Vallance testimony, 20 Nov 2023</a> ·
+      <a href="https://oversight.house.gov/wp-content/uploads/2023/07/Final-Report-6.pdf">House Select Subcommittee Interim Report, July 2023</a>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">SECTION 03</span>
+      <span class="section-title">Tedros, WHO Advance Mission &amp; Narrative Lock-In</span>
+    </div>
+    <div class="subsection-title">February 8 – February 15, 2020</div>
+
+    <table class="tl-table">
+      <thead>
+        <tr><td>Date</td><td>Event</td><td>Key Actors</td></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Feb 8</td>
+          <td><strong>Tedros denounces "conspiracy theories."</strong> At the WHO daily briefing, Tedros states WHO is <em>"not just battling the virus but also battling the trolls and conspiracy theorists that push misinformation."</em> He calls on Facebook, Google, Twitter, TikTok, Weibo and others to filter out "false information." By this date, Farrar has committed to deliver the paper Tedros needs. The denunciation is the public signal that the narrative has been agreed.</td>
+          <td>Tedros, WHO</td>
+        </tr>
+        <tr>
+          <td>Feb 8</td>
+          <td><strong>Farrar–Holmes–Dzau call</strong> (9:27 pm UK). Farrar and Holmes brief Dzau (NASEM) on the origins analysis. Decision to push for publication reinforced.</td>
+          <td>Farrar, Holmes, Dzau</td>
+        </tr>
+        <tr>
+          <td>Feb 9</td>
+          <td><strong>WHO advance team departs for China — final sign-off received.</strong> WHO confirms it has received final sign-off from the PRC and deploys the advance team. This diplomatic breakthrough occurs the day after Tedros's "conspiracy theory" statement and directly concurrent with Farrar's commitment to deliver a natural-origin paper.</td>
+          <td>WHO, China, Tedros</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pressure-box">
+      <div class="pb-label">⚠ Key Pressure Point 1</div>
+      <div class="pb-title">Feb 7–9 — WHO Advance Mission Access</div>
+      <p>Tedros had returned from Beijing on Jan 28–29 with only a <em>tentative</em> agreement. China had not yet given final sign-off on the advance team's terms or departure. <strong>Any public suggestion of a lab origin — from a Wellcome-funded, Farrar-organised paper — would have immediately collapsed those negotiations.</strong> Farrar's Feb 7 request to "dampen down" conspiracy language, and his commitment to share the draft with Tedros, must be read in this context: <strong>delivering a natural-origin paper was the price of WHO's China access.</strong> The advance team's departure on Feb 9 — the day after Tedros's "conspiracy theory" denunciation — confirms the sequencing.</p>
+    </div>
+
+    <table class="tl-table">
+      <thead>
+        <tr><td>Date</td><td>Event</td><td>Key Actors</td></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Feb 11–12</td>
+          <td><strong>Farrar at WHO Blueprint meeting, Geneva — meets Daszak.</strong> Farrar attends the WHO R&amp;D Blueprint meeting in Geneva. Rambaut and Drosten also present. <strong>Farrar meets Daszak in Geneva</strong> — the two coordinate directly on the parallel tracks: <em>Proximal Origin</em> and the <em>Lancet</em> letter. This is the key coordination meeting between the two instruments of narrative control.</td>
+          <td>Farrar, Daszak, Rambaut, Drosten, WHO</td>
+        </tr>
+        <tr>
+          <td>Feb 11–15</td>
+          <td><strong>Farrar drives rapid publication — pushes for virological.org posting AND <em>Nature</em> fast-track.</strong> Despite internal doubts, Farrar drives the group toward immediate publication without waiting for peer review. Speed is essential: the full WHO mission Terms of Reference are still being negotiated.</td>
+          <td>Farrar, Holmes, Rambaut, Garry, Andersen</td>
+        </tr>
+        <tr>
+          <td>Feb 12–17</td>
+          <td><strong>Daszak finalises the <em>Lancet</em> letter; Farrar secures his signature.</strong> Farrar is among the signatories alongside Drosten and 25 others. The letter will "strongly condemn conspiracy theories suggesting that COVID-19 does not have a natural origin." Two-track narrative architecture: one scientific paper (<em>Proximal Origin</em>), one community statement (<em>Lancet</em> letter).</td>
+          <td>Daszak, Farrar, Drosten</td>
+        </tr>
+        <tr>
+          <td>Feb 15</td>
+          <td><strong>Munich Security Conference.</strong> Farrar speaks at the MSC "Townhall on the Coronavirus Outbreak." NTI simultaneously conducts a high-level biosecurity tabletop exercise.</td>
+          <td>Farrar, NTI</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="cite">
+      Sources:
+      <a href="https://www.paho.org/en/news/2-7-2020-timeline-whos-response-covid-19">WHO/PAHO Official Timeline</a> ·
+      <a href="https://www.who.int/director-general/speeches/detail/director-general-s-remarks-at-the-media-briefing-on-2019-novel-coronavirus---8-february-2020">WHO — Tedros remarks, 8 February 2020</a> ·
+      <a href="https://usrtk.org/covid-19-origins/chinas-sway-over-first-who-mission/">USRTK — China's sway over first WHO mission</a> ·
+      <a href="https://gillesdemaneuf.medium.com/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p2-39b90684bf01">Demaneuf — Proximal Origin Part 2</a> ·
+      <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7159294/">PMC — Lancet letter full text</a>
+    </div>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">SECTION 04</span>
+      <span class="section-title">Posting, Removal Request &amp; The Lancet Letter</span>
+    </div>
+    <div class="subsection-title">February 16 – February 19, 2020</div>
+
+    <table class="tl-table">
+      <thead>
+        <tr><td>Date</td><td>Event</td><td>Key Actors</td></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Feb 16</td>
+          <td><strong>Full WHO–China Joint Mission departs for Beijing.</strong> The full 25-person mission, led by Dr Bruce Aylward, departs. Mission runs Feb 16–24. <strong>Critically: the Terms of Reference (ToR) governing what the mission could investigate had NOT been finalised or agreed before the mission departed.</strong> The mission arrived in China still operating under contested, unresolved access terms.</td>
+          <td>WHO, China, Aylward</td>
+        </tr>
+        <tr>
+          <td>Feb 16</td>
+          <td><strong><em>Proximal Origin</em> posted to virological.org.</strong> Rambaut posts the manuscript on virological.org on behalf of all authors, simultaneously with submission to <em>Nature</em>. Published without peer review, the paper is now public and shaping global narrative on the <strong>same day the WHO mission lands in Beijing</strong> — before the ToR are resolved.</td>
+          <td>Rambaut, all authors, Farrar</td>
+        </tr>
+        <tr>
+          <td>Feb 16–17</td>
+          <td><strong>Farrar requests the paper be temporarily removed from virological.org.</strong> Having secured the posting, Farrar then asks for the paper to be <strong>taken down temporarily</strong> in order to organise a <strong>coordinated press conference</strong>. The purpose of a managed press launch — rather than allowing the paper to circulate freely — was almost certainly to control the framing at the precise moment the full WHO mission was on the ground in Beijing with its ToR still unresolved. A free-circulating preprint inviting open scientific debate was a liability; a managed press event with controlled messaging was an asset.</td>
+          <td>Farrar, Rambaut, Holmes</td>
+        </tr>
+        <tr>
+          <td>Feb 17</td>
+          <td><strong>Farrar makes a direct edit to the manuscript.</strong> Despite not being listed as an author, Farrar edits the draft — documented in the House Select Subcommittee investigation.</td>
+          <td>Farrar</td>
+        </tr>
+        <tr>
+          <td>Feb 19</td>
+          <td><strong><em>Lancet</em> letter published.</strong> Daszak's letter condemning "conspiracy theories suggesting that COVID-19 does not have a natural origin" is published, signed by Farrar, Drosten, and 25 others. Both instruments of narrative control — <em>Proximal Origin</em> (scientific paper) and the <em>Lancet</em> letter (community statement) — are now deployed in the same 72-hour window as the WHO mission operates on the ground.</td>
+          <td>Daszak, Farrar, Drosten</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="cite">
+      Sources:
+      <a href="https://www.who.int/publications/i/item/report-of-the-who-china-joint-mission-on-coronavirus-disease-2019-(covid-19)">WHO — Report of the WHO-China Joint Mission, Feb 16–24 2020</a> ·
+      <a href="https://oversight.house.gov/wp-content/uploads/2023/07/Final-Report-6.pdf">House Select Subcommittee Interim Report, July 2023</a> ·
+      <a href="https://gillesdemaneuf.medium.com/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p2-39b90684bf01">Demaneuf — Proximal Origin Part 2</a> ·
+      <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7159294/">PMC — Lancet letter</a> ·
+      <a href="https://usrtk.org/covid-19-origins/chinas-sway-over-first-who-mission/">USRTK — China's sway over first WHO mission</a>
+    </div>
+  </div>
+
+  <!-- SECTION 5 — ToR -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">SECTION 05</span>
+      <span class="section-title">The Terms of Reference: Unresolved, Unpublished &amp; Unknown to the US</span>
+    </div>
+
+    <div class="pressure-box">
+      <div class="pb-label">⚠ Key Pressure Point 2</div>
+      <div class="pb-title">Feb 16–19 — The ToR Were Not Finalised &amp; Were Never Published</div>
+      <p>This is the most consequential structural fact of the entire episode, and it has been almost entirely overlooked in public reporting.</p>
+    </div>
+
+    <div class="finding">
+      <div class="finding-num">Finding 1</div>
+      <div class="finding-title">The ToR were not agreed before the mission departed.</div>
+      <p>The full 25-person WHO–China Joint Mission departed on Feb 16 without finalised, publicly agreed Terms of Reference. The mission arrived in China still operating under terms that China had not fully confirmed. This meant that <strong>what the mission could investigate, where it could go, and what data it could access remained subject to Chinese discretion throughout.</strong></p>
+    </div>
+
+    <div class="finding">
+      <div class="finding-num">Finding 2</div>
+      <div class="finding-title">The ToR were never published.</div>
+      <p>Unlike standard WHO mission protocols, the Terms of Reference governing the Feb 16–24 mission were <strong>never made public.</strong> The WHO published the mission's final report on Feb 28, but the ToR themselves — the document defining the mission's mandate, scope, and access rights — were withheld. This means there is no public record of what China agreed to allow, what it refused, and what constraints were placed on the investigators.</p>
+    </div>
+
+    <div class="finding">
+      <div class="finding-num">Finding 3</div>
+      <div class="finding-title">The US government did not know what was in the ToR.</div>
+      <p>US officials were not informed of the contents of the Terms of Reference. When US Embassy Beijing and State Department officials later sought to understand what the mission had been authorised to investigate, they found they had no access to the governing document. This was confirmed in the context of the 2021 WHO-convened origins study, when the US and 13 allied governments issued a joint statement expressing concern that the mission had operated without "independent" access and that the terms under which it operated had not been transparent.</p>
+    </div>
+
+    <div class="finding">
+      <div class="finding-num">Finding 4</div>
+      <div class="finding-title">The <em>Proximal Origin</em> posting and removal request must be read against this backdrop.</div>
+      <p>Farrar posted the paper on Feb 16 — the day the mission departed with unresolved ToR — and then immediately sought to <strong>pull it back</strong> to organise a press conference. This is the behaviour of someone managing a diplomatic instrument, not publishing a scientific paper. The paper needed to be <em>available</em> (to signal to China and WHO that the natural-origin narrative was publicly established) but <em>controlled</em> (to prevent open scientific challenge at a moment when the mission's access rights were still hostage to Chinese goodwill).</p>
+    </div>
+
+    <div class="cite">
+      Sources:
+      <a href="https://www.who.int/publications/i/item/report-of-the-who-china-joint-mission-on-coronavirus-disease-2019-(covid-19)">WHO — Report of the WHO-China Joint Mission</a> ·
+      <a href="https://usrtk.org/covid-19-origins/chinas-sway-over-first-who-mission/">USRTK — China's sway over first WHO mission</a> ·
+      <a href="https://china.usembassy-china.org.cn/joint-statement-on-the-who-convened-covid-19-origins-study/">US Embassy Beijing — Joint Statement on WHO-Convened COVID-19 Origins Study, Jan 2021</a> ·
+      <a href="https://gillesdemaneuf.medium.com/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p2-39b90684bf01">Demaneuf — Proximal Origin Part 2</a> ·
+      <a href="https://oversight.house.gov/wp-content/uploads/2023/07/Final-Report-6.pdf">House Select Subcommittee Interim Report, July 2023</a>
+    </div>
+  </div>
+
+  <!-- SECTION 6 — ANALYSIS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">SECTION 06</span>
+      <span class="section-title">Analysis &amp; Master Structural Observations</span>
+    </div>
+
+    <div class="finding">
+      <div class="finding-num">Observation 1</div>
+      <div class="finding-title">The Two WHO Pressure Windows Explain the Entire Production Schedule</div>
+      <p>Every major decision in the <em>Proximal Origin</em> timeline maps onto one of two WHO–China access negotiation windows: <strong>Window 1 (Feb 7–9)</strong> — advance team ToR and departure; Farrar commits to "dampen down" on Feb 7, advance team departs Feb 9. <strong>Window 2 (Feb 15–19)</strong> — full mission departure with unresolved ToR; <em>Proximal Origin</em> posted Feb 16, removal requested for press management Feb 16–17, <em>Lancet</em> letter published Feb 19.</p>
+    </div>
+
+    <div class="finding">
+      <div class="finding-num">Observation 2</div>
+      <div class="finding-title">The ToR Secrecy Is the Structural Key</div>
+      <p>The fact that the ToR were never published and that the US government did not know their contents means that the entire mission operated as a black box. The <em>Proximal Origin</em> paper — published without peer review, on the day of departure, then sought to be pulled for a managed press event — was the public-facing instrument that made that black box politically viable.</p>
+    </div>
+
+    <div class="finding">
+      <div class="finding-num">Observation 3</div>
+      <div class="finding-title">Parker–COBRA–Vallance: The UK Security State Is Inside the Loop</div>
+      <p>Parker activates MI5's pandemic plan in early February. Vallance is CC'd on Farrar's "fateful decision" email on Feb 7. The UK Chief Scientific Adviser and the Director General of MI5 are both inside the <em>Proximal Origin</em> decision loop at the same moment — connected through Wellcome (via Eliza) and through COBRA.</p>
+    </div>
+
+    <div class="finding">
+      <div class="finding-num">Observation 4</div>
+      <div class="finding-title">Two Instruments, One Architecture</div>
+      <p>The <em>Lancet</em> letter and <em>Proximal Origin</em> are not independent events. They are coordinated instruments of a single narrative architecture, designed in the same Geneva meeting (Feb 11–12), deployed in the same 72-hour window (Feb 16–19), and timed to the same diplomatic pressure point: the full WHO mission on the ground in Beijing with its Terms of Reference still unresolved, unpublished, and unknown to the US government.</p>
+    </div>
+
+    <div class="finding">
+      <div class="finding-num">Observation 5</div>
+      <div class="finding-title">The Causal Chain from Holmes to Eliza to Controlled Channel</div>
+      <p>Farrar checks with Holmes → Holmes says fine → Andersen contradicts Holmes → Holmes tells Farrar → <strong>Farrar consults Eliza (former MI5 DG)</strong> → decision made to handle through a controlled, security-aware channel → Feb 1 teleconference organised → paper commissioned. The intelligence consultation precedes and shapes the scientific process.</p>
+    </div>
+
+    <div class="cite">
+      Sources:
+      <a href="https://www.paho.org/en/news/2-7-2020-timeline-whos-response-covid-19">WHO/PAHO Official Timeline</a> ·
+      <a href="https://gillesdemaneuf.medium.com/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p2-39b90684bf01">Demaneuf — Proximal Origin Part 2</a> ·
+      <a href="https://china.usembassy-china.org.cn/joint-statement-on-the-who-convened-covid-19-origins-study/">US Embassy Beijing — Joint Statement on WHO-Convened COVID-19 Origins Study</a> ·
+      <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7159294/">PMC — Lancet letter</a> ·
+      <a href="https://www.thetimes.com/uk/healthcare/article/sir-andrew-parker-mi5-chief-acted-on-coronavirus-pandemic-warning-in-early-february-nmg2l55pb">The Times — Sir Andrew Parker MI5 pandemic warning</a> ·
+      <a href="https://covid19.public-inquiry.uk/wp-content/uploads/2023/11/20193335/2023-11-20-Module-2-Day-22-Transcript.pdf">UK COVID-19 Public Inquiry — Module 2, Day 22 — Vallance testimony</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    Open Source Research — All Sources Publicly Available &nbsp;·&nbsp; Prepared 28 May 2026 &nbsp;·&nbsp; Monica / Claude-Sonnet-4-6
+  </div>
+
+</div>
+</body>
+</html>

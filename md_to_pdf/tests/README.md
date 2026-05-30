@@ -9,18 +9,9 @@ tests/
 │   │   ├── test_columns.md        Comprehensive layout test (columns, images, tables, callouts)
 │   │   ├── test_columns.json      Sidecar: metadata + typst_overrides
 │   │   └── images/                Static assets
-│   ├── WHO/                       Gitignored — private article inputs (not committed)
-│   │   ├── WHO_Compromission.md          Original
-│   │   ├── WHO_Compromission_hardened.md Convert this one
-│   │   ├── WHO_Compromission.json        Sidecar
-│   │   ├── WHO_Compromission_overrides.css
-│   │   └── images/
 │   └── README.md
 ├── typst/                         Typst engine outputs
 │   ├── test_columns_<style>.pdf   4 styles: intelligence, magazine, thinktank, academic
-│   └── WHO/                       Gitignored — WHO article Typst outputs
-│       ├── WHO_Compromission_hardened.typ
-│       └── WHO_Compromission_hardened.pdf
 ├── weasyprint/                    WeasyPrint engine outputs
 │   ├── test_columns_<style>.pdf   4 styles
 │   ├── test_columns_overrides.css Annotated CSS override template
@@ -44,13 +35,6 @@ for STYLE in intelligence magazine thinktank academic; do
   md2pdf tests/shared/test_columns/test_columns.md --engine weasyprint --css $STYLE \
          --output tests/weasyprint/test_columns_${STYLE}.pdf
 done
-
-# WHO article — Typst (sidecar auto-detected; .typ and .pdf written to shared/WHO/)
-md2pdf tests/shared/WHO/WHO_Compromission_hardened.md --style intelligence --compile
-
-# WHO article — WeasyPrint with custom CSS
-md2pdf tests/shared/WHO/WHO_Compromission_hardened.md --engine weasyprint --css intelligence \
-       --custom tests/shared/WHO/WHO_Compromission_overrides.css
 ```
 
 ## test_columns.md — section index

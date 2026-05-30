@@ -3,5 +3,4 @@
 .conda/
 **/build/
 medium_to_md/examples/
-**/WHO*
 tests/images*
