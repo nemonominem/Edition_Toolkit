@@ -36,15 +36,16 @@ Pass `--style <name>` to load per-style conventions (pull-quote attribution form
 conda activate python_313x
 
 # Generate review document (open in VSCode Preview, edit, then apply)
-# Run from the Edition/ root; path to source file is relative to cwd
-python md_harden/md_harden.py path/to/article.md --review --claude --style intelligence
+md_harden path/to/article.md --review --claude --style intelligence
 
 # Apply surviving suggestions from reviewed file
-python md_harden/md_harden.py path/to/article.md --apply path/to/article_review.md
+md_harden path/to/article.md --apply path/to/article_review.md
 
 # Skip the bold-heading promotion (ambiguous — needs human judgement)
-python md_harden/md_harden.py path/to/article.md --review --skip bold-headings
+md_harden path/to/article.md --review --skip bold-headings
 ```
+
+> If `md_harden` is not yet installed as a command, use `python md_harden/md_harden.py` instead (run from `Edition/` root), or run `pip install -e md_harden/` once.
 
 ---
 
@@ -62,17 +63,24 @@ Two rendering engines behind a single `md2pdf` command.
 
 ```bash
 conda activate python_313x
-cd md_to_pdf
-conda develop .            # installs md2pdf command
-brew install typst         # default engine
-brew install font-libre-baskerville
-
-# Use it
 md2pdf article.md --compile
 md2pdf article.md --engine weasyprint --css intelligence
 ```
 
 📖 [Full documentation](md_to_pdf/README.md)
+
+---
+
+### 2b. md_harden — Command Install
+
+`md_harden` can also be run as a console command (`md_harden`) instead of `python md_harden/md_harden.py`. One-time setup:
+
+```bash
+conda activate python_313x
+pip install -e md_harden/
+```
+
+After this, `md_harden article.md --review --style intelligence` works from anywhere.
 
 ---
 
@@ -101,9 +109,9 @@ cd medium_to_md
 python medium-to-md.py https://medium.com/path/to/article -o ../articles/
 
 # 2. Harden the Markdown — generate review, approve, apply
-python md_harden/md_harden.py ../articles/article.md --review --claude --style intelligence
+md_harden ../articles/article.md --review --claude --style intelligence
 # → open article_review.md in VSCode Preview, delete/edit suggestions
-python md_harden/md_harden.py ../articles/article.md --apply ../articles/article_review.md
+md_harden ../articles/article.md --apply ../articles/article_review.md
 # → produces articles/article_hardened.md
 
 # 3. Convert hardened file to PDF
@@ -148,14 +156,47 @@ Edition/
 
 ---
 
+## Dev Install: How `md2pdf` and `md_harden` Are Wired Up
+
+Both tools are installed as **editable installs** into the `python_313x` conda environment using `pip install -e`. Here is what that means in practice:
+
+**Editable install = the command runs directly from source.** There is no copy of the code in the conda environment. When you run `md2pdf` or `md_harden`, Python reads the `.py` files in `Edition/md_to_pdf/` and `Edition/md_harden/` at that moment. Any change you save to those files is live immediately — no reinstall needed.
+
+**One-time setup** (already done for `md2pdf`; run once for `md_harden`):
+
+```bash
+conda activate python_313x
+pip install -e md_to_pdf/   # registers the md2pdf command — already done
+pip install -e md_harden/   # registers the md_harden command — run once
+```
+
+**When you do need to reinstall** (rare):
+
+| Situation | Action |
+|-----------|--------|
+| Added a new console script to `pyproject.toml` | `pip install -e md_to_pdf/` again |
+| Added a new package directory (e.g. a new `engines/` subfolder with `__init__.py`) | `pip install -e md_to_pdf/` again |
+| Changed `pyproject.toml` version number | `pip install -e md_to_pdf/` again (updates metadata only) |
+| Edited any `.py` file | Nothing — changes are live immediately |
+
+**To verify the current state:**
+
+```bash
+conda activate python_313x
+pip show etk-md2pdf       # should show "Editable project location: …/Edition/md_to_pdf"
+pip show etk-md-harden    # should show "Editable project location: …/Edition/md_harden"
+```
+
+---
+
 ## Quick Reference
 
 | Task | Command |
 |------|---------|
 | Extract Medium article | `python medium-to-md.py <url>` |
-| Harden — generate review | `python md_harden/md_harden.py article.md --review --style intelligence` |
-| Harden — apply review | `python md_harden/md_harden.py article.md --apply article_review.md` |
-| Harden + Claude review | `python md_harden/md_harden.py article.md --review --claude --style intelligence` |
+| Harden — generate review | `md_harden article.md --review --style intelligence` |
+| Harden — apply review | `md_harden article.md --apply article_review.md` |
+| Harden + Claude review | `md_harden article.md --review --claude --style intelligence` |
 | Convert to PDF (Typst) | `md2pdf article_hardened.md --style intelligence --compile` |
 | Convert to PDF (WeasyPrint) | `md2pdf article_hardened.md --engine weasyprint --css intelligence` |
 | Ragged-right text | `md2pdf article.md --no-justify` |

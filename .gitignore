@@ -2,5 +2,6 @@
 **/.DS_Store
 .conda/
 **/build/
+**/*.egg-info/
 medium_to_md/examples/
 tests/images*
