@@ -2,6 +2,8 @@
 
 A suite of utilities for extracting, converting, and typesetting articles into publication-ready documents.
 
+📖 **[View the interactive landing page](manuals/Edition%20Toolkit%20–%20Apple%20Style%20Landing%20Page.html)** for a visual overview and workflow diagram.
+
 ---
 
 ## Tools

@@ -3,5 +3,6 @@
 .conda/
 **/build/
 **/*.egg-info/
+.md4h/
 medium_to_md/examples/
 tests/images*
