@@ -25,8 +25,8 @@
 #let bg-code     = rgb("#f2f2f2")
 
 // ── Font families ───────────────────────────────────────────────────────────
-#let font-body   = ("Palatino", "Palatino Linotype", "Book Antiqua", "Georgia", "Times New Roman", "serif")
-#let font-mono   = ("Source Code Pro", "Courier New", "monospace")
+#let font-body   = ("Palatino", "Georgia", "Times New Roman")
+#let font-mono   = ("Menlo", "Courier New")
 
 // ── Typography tunables ─────────────────────────────────────────────────────
 #let body-size       = 9.5pt    // body text size

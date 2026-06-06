@@ -15,8 +15,8 @@
 #let stripe      = rgb("#e8eeeb")
 
 // ── Font families ───────────────────────────────────────────────────────────
-#let font-body   = ("Palatino", "Palatino Linotype", "Book Antiqua", "Georgia", "Times New Roman", "serif")
-#let font-mono   = ("Source Code Pro", "Courier New", "monospace")
+#let font-body   = ("Palatino", "Georgia", "Times New Roman")
+#let font-mono   = ("Menlo", "Courier New")
 
 // ── Main template function ──────────────────────────────────────────────────
 #let doc(

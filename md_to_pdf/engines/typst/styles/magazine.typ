@@ -14,9 +14,9 @@
 #let rule-light  = rgb("#cccccc")
 
 // ── Font families ───────────────────────────────────────────────────────────
-#let font-body    = ("Palatino", "Palatino Linotype", "Book Antiqua", "Georgia", "Times New Roman", "serif")
-#let font-heading = ("Helvetica Neue", "Helvetica", "Arial", "sans-serif")
-#let font-mono    = ("Source Code Pro", "Courier New", "monospace")
+#let font-body    = ("Palatino", "Georgia", "Times New Roman")
+#let font-heading = ("Helvetica Neue", "Helvetica", "Arial")
+#let font-mono    = ("Menlo", "Courier New")
 
 // ── Main template function ──────────────────────────────────────────────────
 #let doc(
@@ -141,7 +141,7 @@
   inset: (x: 1.2em, top: 0.8em, bottom: 0.9em),
   above: 1em, below: 1.2em,
   {
-    text(size: 10pt, weight: "bold", font: ("Helvetica Neue", "Helvetica", "Arial", "sans-serif"), fill: rust)[Key Takeaways]
+    text(size: 10pt, weight: "bold", font: ("Helvetica Neue", "Helvetica", "Arial"), fill: rust)[Key Takeaways]
     v(3pt)
     line(length: 100%, stroke: 0.6pt + rust)
     v(5pt)
