@@ -21,9 +21,5 @@ claude = [
 [project.scripts]
 md_harden = "md_harden:main"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["md_harden*"]
-
-[tool.setuptools.package-data]
-md_harden = []
+[tool.setuptools]
+py-modules = ["md_harden"]
