@@ -1,0 +1,91 @@
+{
+  "_comment": [
+    "vanity_fair.json — Vanity Fair long-form investigative feature style.",
+    "",
+    "Warm cream page, Didot display, Palatino body, VF red accent.",
+    "Single column, generous margins — print magazine register.",
+    "",
+    "Rendering implementations:",
+    "  engines/typst/styles/vanity_fair.typ",
+    "  engines/weasyprint/styles/style_vanity_fair.css"
+  ],
+  "design": {
+    "_comment": "Rendering decisions — implemented in vanity_fair.typ and style_vanity_fair.css.",
+    "layout": {
+      "columns": 1,
+      "page": "a4",
+      "margins_cm": {
+        "top": 2.8,
+        "bottom": 2.6,
+        "left": 2.9,
+        "right": 2.9
+      }
+    },
+    "palette": {
+      "vf_red": "#c41230",
+      "vf_black": "#111111",
+      "warm_grey": "#4a4a4a",
+      "faint": "#666666",
+      "page_cream": "#faf8f5",
+      "quote_fill": "#f3f0eb"
+    },
+    "typography": {
+      "font_body": [
+        "Palatino",
+        "Palatino Linotype",
+        "Georgia",
+        "serif"
+      ],
+      "font_display": [
+        "Didot",
+        "Bodoni 72",
+        "Baskerville",
+        "serif"
+      ],
+      "font_sans": [
+        "Helvetica Neue",
+        "Helvetica",
+        "Arial",
+        "sans-serif"
+      ],
+      "size_body": "11pt",
+      "size_h1": "28pt"
+    },
+    "branding_defaults": {
+      "pub_name": "DRASTIC",
+      "doc_type": "INVESTIGATION",
+      "author": "G. Demaneuf",
+      "title": "Access Without Forensics"
+    }
+  },
+  "hardening": {
+    "_comment": [
+      "Conventions for md_harden when --style vanity_fair is passed.",
+      "Magazine investigative register: lowercase source: attribution."
+    ],
+    "pull_quote_attribution": {
+      "style": "source:",
+      "confidence": 90,
+      "action": "Normalise 'Source:' -> 'source:'."
+    },
+    "pull_quote_spacing": {
+      "confidence": 99
+    },
+    "pull_quote_missing_source": {
+      "confidence": 25
+    },
+    "bold_headings": {
+      "confidence": 78,
+      "action": "Replace **text** paragraph with #### text."
+    },
+    "strip_bare_sections": {
+      "confidence": 35
+    },
+    "et_al_italics": {
+      "confidence": 40
+    },
+    "apostrophe_consistency": {
+      "confidence": 35
+    }
+  }
+}
