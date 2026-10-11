@@ -347,19 +347,32 @@ def convert_table(block: str, footnotes: dict[str, str]) -> str:
     lines_out.append(f"  stroke: none,")
     lines_out.append(f"  inset: (x: 0.55em, y: 0.35em),")
 
-    # Header cells
+    # Header cells — wrapped in table.header() so they repeat when the
+    # table breaks across a page (default repeat: true).
+    lines_out.append(f"  table.header(")
     for i, hdr in enumerate(header_row):
         if i >= n_cols:
             break
         content = convert_inline(hdr, footnotes)
         lines_out.append(
-            f"  table.cell(fill: rgb(\"#1d4b7a\"), align: {aligns[i]})"
+            f"    table.cell(fill: rgb(\"#1d4b7a\"), align: {aligns[i]})"
             f"[#text(fill: white, weight: \"bold\")[{content}]],"
         )
+    lines_out.append(f"  ),")
 
     # Data rows with alternating fill
     for row_idx, row in enumerate(data_rows):
         fill = 'rgb("#e8eef4")' if row_idx % 2 == 1 else "white"
+        # Section-divider row: first cell has content, every other cell is blank.
+        # Render as a single full-width cell instead of n_cols separate cells.
+        rest_cells = [row[i] if i < len(row) else "" for i in range(1, n_cols)]
+        is_divider = n_cols > 1 and row[0].strip() and all(not c.strip() for c in rest_cells)
+        if is_divider:
+            content = convert_inline(row[0], footnotes)
+            lines_out.append(
+                f'  table.cell(colspan: {n_cols}, fill: rgb("#d8e0e8"), align: center)[{content}],'
+            )
+            continue
         for col_idx in range(n_cols):
             cell_content = row[col_idx] if col_idx < len(row) else ""
             content = convert_inline(cell_content, footnotes)

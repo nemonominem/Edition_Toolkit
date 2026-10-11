@@ -115,7 +115,7 @@
     set align(left)
     block(width: 100%, above: h1-above, below: h1-below)[
       #it.body
-      #v(3pt)
+      #v(1.5pt)
       #line(length: 100%, stroke: 2.5pt + navy)
     ]
   }
@@ -126,7 +126,7 @@
     set par(justify: false)
     align(left, block(width: 100%, above: h2-above, below: h2-below)[
       #it.body
-      #v(1pt)
+      #v(0.5pt)
       #line(length: 100%, stroke: 0.8pt + navy)
     ])
   }
