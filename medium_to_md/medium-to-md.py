@@ -3,13 +3,18 @@
 medium-to-md.py — Convert any Medium article to Markdown with embedded or local images.
 
 Usage:
-    python medium-to-md.py <url> [--dir output_dir] [--disk] [--debug] [--wait seconds]
+    python medium-to-md.py <url> [--dir output_dir] [--disk] [--debug] [--wait seconds] [--headed]
 
 Options:
     --dir       Output directory (default: current directory)
     --disk      Save images to disk instead of embedding as base64 in markdown (default: embed)
     --wait N    Wait N seconds for page to render (default: 4)
     --nodebug   Disable debug output (debug is ON by default)
+    --headed    Run a real (visible) browser window instead of headless. Medium's
+                Cloudflare protection fingerprints headless Chrome and serves an
+                "Attention Required!" hard challenge instead of the article; a
+                real window usually passes it with no interaction needed. Needs
+                a display (won't work over a headless/CI session).
 
 Requirements:
     conda install -c conda-forge playwright
@@ -90,7 +95,7 @@ async def save_image_to_disk(page, img_url: str, img_dir: Path, index: int) -> s
     return str(filepath)
 
 
-async def medium_to_markdown(url: str, output_dir: str = ".", embed_images: bool = True, debug: bool = False, wait_seconds: int = 4) -> str:
+async def medium_to_markdown(url: str, output_dir: str = ".", embed_images: bool = True, debug: bool = False, wait_seconds: int = 4, headless: bool = True) -> str:
     """
     Extract a Medium article to Markdown with images.
 
@@ -100,6 +105,10 @@ async def medium_to_markdown(url: str, output_dir: str = ".", embed_images: bool
         embed_images: If True, embed images as base64. If False, save to disk.
         debug: If True, print debug information during extraction
         wait_seconds: Seconds to wait for page rendering (default: 4)
+        headless: If False, run a real (visible) browser window. Medium's
+            Cloudflare protection fingerprints headless Chrome and serves an
+            "Attention Required!" hard challenge instead of the article; a
+            real window usually passes it with no interaction needed.
     """
     slug = url.rstrip("/").split("/")[-1] or "article"
     output_path = Path(output_dir)
@@ -117,10 +126,20 @@ async def medium_to_markdown(url: str, output_dir: str = ".", embed_images: bool
         print(f"Debug: ON | Wait time: {wait_seconds}s", file=sys.stderr)
 
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        browser = await p.chromium.launch(
+            headless=headless,
+            args=["--disable-blink-features=AutomationControlled"],
+        )
         context = await browser.new_context(
             viewport={"width": 1280, "height": 720},
             user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+        )
+        # A second, independent signal headless automation leaves behind
+        # even with --disable-blink-features above: navigator.webdriver.
+        # Clearing it before any page script runs is standard practice for
+        # sites that fingerprint on it (Cloudflare does); harmless otherwise.
+        await context.add_init_script(
+            "Object.defineProperty(navigator, 'webdriver', { get: () => undefined });"
         )
         page = await context.new_page()
 
@@ -465,6 +484,7 @@ if __name__ == "__main__":
     debug = True  # Debug enabled by default
     output_dir = "."
     wait_seconds = 4
+    headless = True
 
     # Parse arguments
     i = 2
@@ -474,6 +494,8 @@ if __name__ == "__main__":
             embed_images = False
         elif arg == "--nodebug":
             debug = False
+        elif arg == "--headed":
+            headless = False
         elif arg == "--dir":
             if i + 1 < len(sys.argv):
                 output_dir = sys.argv[i + 1]
@@ -497,5 +519,5 @@ if __name__ == "__main__":
             sys.exit(1)
         i += 1
 
-    result = asyncio.run(medium_to_markdown(url, output_dir, embed_images, debug, wait_seconds))
+    result = asyncio.run(medium_to_markdown(url, output_dir, embed_images, debug, wait_seconds, headless))
     print(result)

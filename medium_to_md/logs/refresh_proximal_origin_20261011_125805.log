@@ -1,0 +1,110 @@
+=== Refresh run started 2026-10-10T23:58:05Z ===
+Output dir: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin
+Log file:   /Users/gillesdemaneuf/Work/Edition/medium_to_md/logs/refresh_proximal_origin_20261011_125805.log
+
+Activated conda env: python_313x
+Ensuring the Playwright Chromium browser is installed...
+
+--- Summary: https://gillesdemaneuf.medium.com/summary-proximal-origin-a-tragicomedy-of-our-times-1ed5b4dae506
+    -> /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/summary-proximal-origin-a-tragicomedy-of-our-times-1ed5b4dae506.md
+Converting: https://gillesdemaneuf.medium.com/summary-proximal-origin-a-tragicomedy-of-our-times-1ed5b4dae506
+Output dir: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin
+Mode: Embedded (base64)
+Debug: ON | Wait time: 6s
+  Loading page...
+    Waiting for network to idle...
+    Waiting for article element...
+  [DEBUG] Warning: No <article> tag found (may still have content).
+    Waiting for article content to render...
+    Paragraphs not yet visible, proceeding anyway (content may still load)...
+  Waiting 6s for Medium page to fully load...
+  Extracting content...
+  [DEBUG] Checking page selectors...
+  [DEBUG] Page title: Just a moment...
+  [WARNING] Cloudflare security challenge detected
+  [TIP] Try again or increase --wait to 15-20 seconds for this article
+  [DEBUG] Has <article>: False
+  [DEBUG] Has <main>: False
+  [DEBUG] Body text length: 273
+  [DEBUG] Body preview: gillesdemaneuf.medium.com
+Performing security verification
+
+This website uses a security service to ...
+  [DEBUG] Extracted 0 blocks, 0 references
+  Saved: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/summary-proximal-origin-a-tragicomedy-of-our-times-1ed5b4dae506.md (0 chars, 0 images)
+/Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/summary-proximal-origin-a-tragicomedy-of-our-times-1ed5b4dae506.md
+    FAILED: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/summary-proximal-origin-a-tragicomedy-of-our-times-1ed5b4dae506.md is missing or empty.
+
+--- Part 1: https://gillesdemaneuf.medium.com/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p1-626c72cb05b1
+    -> /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p1-626c72cb05b1.md
+Converting: https://gillesdemaneuf.medium.com/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p1-626c72cb05b1
+Output dir: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin
+Mode: Embedded (base64)
+Debug: ON | Wait time: 6s
+  Loading page...
+    Waiting for network to idle...
+    Waiting for article element...
+  [DEBUG] Warning: No <article> tag found (may still have content).
+    Waiting for article content to render...
+    Paragraphs not yet visible, proceeding anyway (content may still load)...
+  Waiting 6s for Medium page to fully load...
+  Extracting content...
+  [DEBUG] Checking page selectors...
+  [DEBUG] Page title: Just a moment...
+  [WARNING] Cloudflare security challenge detected
+  [TIP] Try again or increase --wait to 15-20 seconds for this article
+  [DEBUG] Has <article>: False
+  [DEBUG] Has <main>: False
+  [DEBUG] Body text length: 273
+  [DEBUG] Body preview: gillesdemaneuf.medium.com
+Performing security verification
+
+This website uses a security service to ...
+  [DEBUG] Extracted 0 blocks, 0 references
+  Saved: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p1-626c72cb05b1.md (0 chars, 0 images)
+/Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p1-626c72cb05b1.md
+    FAILED: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p1-626c72cb05b1.md is missing or empty.
+
+--- Part 2: https://gillesdemaneuf.medium.com/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p2-39b90684bf01
+    -> /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p2-39b90684bf01.md
+Converting: https://gillesdemaneuf.medium.com/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p2-39b90684bf01
+Output dir: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin
+Mode: Embedded (base64)
+Debug: ON | Wait time: 6s
+  Loading page...
+    Waiting for network to idle...
+    Waiting for article element...
+  [DEBUG] Warning: No <article> tag found (may still have content).
+    Waiting for article content to render...
+    Paragraphs not yet visible, proceeding anyway (content may still load)...
+  Waiting 6s for Medium page to fully load...
+  Extracting content...
+  [DEBUG] Checking page selectors...
+  [DEBUG] Page title: Just a moment...
+  [WARNING] Cloudflare security challenge detected
+  [TIP] Try again or increase --wait to 15-20 seconds for this article
+  [DEBUG] Has <article>: False
+  [DEBUG] Has <main>: False
+  [DEBUG] Body text length: 273
+  [DEBUG] Body preview: gillesdemaneuf.medium.com
+Performing security verification
+
+This website uses a security service to ...
+  [DEBUG] Extracted 0 blocks, 0 references
+  Saved: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p2-39b90684bf01.md (0 chars, 0 images)
+/Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p2-39b90684bf01.md
+    FAILED: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p2-39b90684bf01.md is missing or empty.
+
+=== Summary ===
+FAILED (3): Summary Part 1 Part 2
+Re-run this script, or increase WAIT_SECONDS, e.g.: WAIT_SECONDS=15 ./refresh_proximal_origin.sh
+
+=== Still needed: the PDF twins (this tool has no PDF export) ===
+  - open https://gillesdemaneuf.medium.com/summary-proximal-origin-a-tragicomedy-of-our-times-1ed5b4dae506 in a browser,
+    Print -> Save as PDF, overwrite: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/summary-proximal-origin-a-tragicomedy-of-our-times-1ed5b4dae506.pdf
+  - open https://gillesdemaneuf.medium.com/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p1-626c72cb05b1 in a browser,
+    Print -> Save as PDF, overwrite: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p1-626c72cb05b1.pdf
+  - open https://gillesdemaneuf.medium.com/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p2-39b90684bf01 in a browser,
+    Print -> Save as PDF, overwrite: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p2-39b90684bf01.pdf
+
+=== Refresh run finished 2026-10-10T23:59:37Z ===

@@ -1,0 +1,131 @@
+=== Refresh run started 2026-10-11T00:09:55Z ===
+Output dir: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin
+Log file:   /Users/gillesdemaneuf/Work/Edition/medium_to_md/logs/refresh_proximal_origin_20261011_130955.log
+
+Activated conda env: python_313x
+Ensuring the Playwright Chromium browser is installed...
+
+--- Summary: https://gillesdemaneuf.medium.com/summary-proximal-origin-a-tragicomedy-of-our-times-1ed5b4dae506
+    -> /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/summary-proximal-origin-a-tragicomedy-of-our-times-1ed5b4dae506.md
+Converting: https://gillesdemaneuf.medium.com/summary-proximal-origin-a-tragicomedy-of-our-times-1ed5b4dae506
+Output dir: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin
+Mode: Embedded (base64)
+Debug: ON | Wait time: 30s
+  Loading page...
+    Waiting for network to idle...
+    Waiting for article element...
+    Waiting for article content to render...
+    Article paragraphs found.
+  Waiting 30s for Medium page to fully load...
+  Extracting content...
+  [DEBUG] Checking page selectors...
+  [DEBUG] Page title: Facebook
+  [DEBUG] Has <article>: False
+  [DEBUG] Has <main>: False
+  [DEBUG] Body text length: 504
+  [DEBUG] Extracted 0 blocks, 0 references
+  Saved: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/summary-proximal-origin-a-tragicomedy-of-our-times-1ed5b4dae506.md (0 chars, 0 images)
+/Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/summary-proximal-origin-a-tragicomedy-of-our-times-1ed5b4dae506.md
+    FAILED: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/summary-proximal-origin-a-tragicomedy-of-our-times-1ed5b4dae506.md is missing or empty.
+
+--- Part 1: https://gillesdemaneuf.medium.com/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p1-626c72cb05b1
+    -> /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p1-626c72cb05b1.md
+Converting: https://gillesdemaneuf.medium.com/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p1-626c72cb05b1
+Output dir: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin
+Mode: Embedded (base64)
+Debug: ON | Wait time: 30s
+  Loading page...
+    Waiting for network to idle...
+    Waiting for article element...
+  [DEBUG] Warning: No <article> tag found (may still have content).
+    Waiting for article content to render...
+    Paragraphs not yet visible, proceeding anyway (content may still load)...
+  Waiting 30s for Medium page to fully load...
+Traceback (most recent call last):
+  File "/Users/gillesdemaneuf/Work/Edition/medium_to_md/medium-to-md.py", line 522, in <module>
+    result = asyncio.run(medium_to_markdown(url, output_dir, embed_images, debug, wait_seconds, headless))
+  File "/opt/anaconda3/envs/python_313x/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/opt/anaconda3/envs/python_313x/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/anaconda3/envs/python_313x/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/Users/gillesdemaneuf/Work/Edition/medium_to_md/medium-to-md.py", line 212, in medium_to_markdown
+    await page.wait_for_timeout(wait_ms)
+  File "/opt/anaconda3/envs/python_313x/lib/python3.13/site-packages/playwright/async_api/_generated.py", line 11824, in wait_for_timeout
+    await self._impl_obj.wait_for_timeout(timeout=timeout)
+  File "/opt/anaconda3/envs/python_313x/lib/python3.13/site-packages/playwright/_impl/_page.py", line 1113, in wait_for_timeout
+    await self._main_frame.wait_for_timeout(timeout)
+  File "/opt/anaconda3/envs/python_313x/lib/python3.13/site-packages/playwright/_impl/_frame.py", line 862, in wait_for_timeout
+    await self._channel.send("waitForTimeout", None, {"waitTimeout": timeout})
+  File "/opt/anaconda3/envs/python_313x/lib/python3.13/site-packages/playwright/_impl/_connection.py", line 69, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/anaconda3/envs/python_313x/lib/python3.13/site-packages/playwright/_impl/_connection.py", line 559, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TargetClosedError: Page.wait_for_timeout: Target page, context or browser has been closed
+    FAILED: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p1-626c72cb05b1.md is missing or empty.
+
+--- Part 2: https://gillesdemaneuf.medium.com/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p2-39b90684bf01
+    -> /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p2-39b90684bf01.md
+Converting: https://gillesdemaneuf.medium.com/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p2-39b90684bf01
+Output dir: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin
+Mode: Embedded (base64)
+Debug: ON | Wait time: 30s
+  Loading page...
+    Waiting for network to idle...
+    Waiting for article element...
+  [DEBUG] Warning: No <article> tag found (may still have content).
+    Waiting for article content to render...
+    Paragraphs not yet visible, proceeding anyway (content may still load)...
+  Waiting 30s for Medium page to fully load...
+Traceback (most recent call last):
+  File "/Users/gillesdemaneuf/Work/Edition/medium_to_md/medium-to-md.py", line 522, in <module>
+    result = asyncio.run(medium_to_markdown(url, output_dir, embed_images, debug, wait_seconds, headless))
+  File "/opt/anaconda3/envs/python_313x/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/opt/anaconda3/envs/python_313x/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/anaconda3/envs/python_313x/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/Users/gillesdemaneuf/Work/Edition/medium_to_md/medium-to-md.py", line 212, in medium_to_markdown
+    await page.wait_for_timeout(wait_ms)
+  File "/opt/anaconda3/envs/python_313x/lib/python3.13/site-packages/playwright/async_api/_generated.py", line 11824, in wait_for_timeout
+    await self._impl_obj.wait_for_timeout(timeout=timeout)
+  File "/opt/anaconda3/envs/python_313x/lib/python3.13/site-packages/playwright/_impl/_page.py", line 1113, in wait_for_timeout
+    await self._main_frame.wait_for_timeout(timeout)
+  File "/opt/anaconda3/envs/python_313x/lib/python3.13/site-packages/playwright/_impl/_frame.py", line 862, in wait_for_timeout
+    await self._channel.send("waitForTimeout", None, {"waitTimeout": timeout})
+  File "/opt/anaconda3/envs/python_313x/lib/python3.13/site-packages/playwright/_impl/_connection.py", line 69, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/anaconda3/envs/python_313x/lib/python3.13/site-packages/playwright/_impl/_connection.py", line 559, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TargetClosedError: Page.wait_for_timeout: Target page, context or browser has been closed
+    FAILED: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p2-39b90684bf01.md is missing or empty.
+
+=== Summary ===
+FAILED (3): Summary Part 1 Part 2
+Re-run this script, or increase WAIT_SECONDS, e.g.: WAIT_SECONDS=15 ./refresh_proximal_origin.sh
+
+=== Still needed: the PDF twins (this tool has no PDF export) ===
+  - open https://gillesdemaneuf.medium.com/summary-proximal-origin-a-tragicomedy-of-our-times-1ed5b4dae506 in a browser,
+    Print -> Save as PDF, overwrite: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/summary-proximal-origin-a-tragicomedy-of-our-times-1ed5b4dae506.pdf
+  - open https://gillesdemaneuf.medium.com/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p1-626c72cb05b1 in a browser,
+    Print -> Save as PDF, overwrite: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p1-626c72cb05b1.pdf
+  - open https://gillesdemaneuf.medium.com/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p2-39b90684bf01 in a browser,
+    Print -> Save as PDF, overwrite: /Users/gillesdemaneuf/Work/Edition/medium_to_md/examples/proximal_origin/full-text-proximal-origin-a-tragicomedy-of-our-times-draft-p2-39b90684bf01.pdf
+
+=== Refresh run finished 2026-10-11T00:10:49Z ===
