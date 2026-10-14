@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "etk-foia-parser"
+version = "0.1.0"
+description = "Edition ToolKit — shared grammar for parsing FOIA'd, OCR'd email-correspondence PDFs into one entry per message"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = []
+
+[tool.setuptools]
+packages = ["foia_parser"]
