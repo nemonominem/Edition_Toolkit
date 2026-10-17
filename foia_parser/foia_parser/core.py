@@ -532,6 +532,25 @@ def strip_embedded_attachment(body, profile):
 
 # ── segmentation ──────────────────────────────────────────────────────────────
 
+_LITERAL_HEADER_NEXT = re.compile(r"^\s*(?:From|To|Cc|Subject)\s*:", re.I)
+
+
+def _opens_literal_header(lines, li):
+    """True when the Date:/Sent: line at lines[li] starts a whole nested header.
+
+    A quoted message printed inside another message's body is a Date:/Sent:
+    line followed at once by To:/From:/Cc:/Subject: lines. The reopen guard in
+    segment() (reopen_min_distance) exists so that a scan which ate the From:
+    line does not split a message in two; a complete nested header is not that
+    case, so it opens a message even when it sits close to the quote marker
+    that introduced it (e.g. "Maybe ... / Date: ... / To: ... / Subject: ...").
+    """
+    for nl in lines[li + 1:li + 4]:
+        if _LITERAL_HEADER_NEXT.match(nl):
+            return True
+    return False
+
+
 def segment(pages, profile):
     """Split the page stream into messages.
 
@@ -583,7 +602,8 @@ def segment(pages, profile):
                 pos += 1
                 continue
             if profile.hdr_date_re.match(line) and cur is not None and body_mode \
-                    and pos - cur_from_at > profile.reopen_min_distance:
+                    and (pos - cur_from_at > profile.reopen_min_distance
+                         or _opens_literal_header(lines, li)):
                 if cur.get("recovered_inline"):
                     quoting_msg = cur
                     cur = {"header_lines": [line], "body": [], "pages": [pageno]}
