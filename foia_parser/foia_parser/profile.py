@@ -131,6 +131,19 @@ class Profile:
     default_zone: str
     default_zone_why: str
     zone_overrides: dict = field(default_factory=dict)
+    # Zone chosen by the stamp's own date format, when no explicit offset is
+    # present: {stamp_status: (zone key, why)}, e.g. {"day-month-year":
+    # ("Europe/London", ...)}. A UK-locale client prints day-month-year on its
+    # own clock, so a frozen quote in that format is London time whoever
+    # sent it. Empty by default, so releases that don't set it are unaffected.
+    # DISABLED: no release sets this. Kept only so the option can be re-tested;
+    # see page_based/ZONE_AND_DATE_ANALYSIS.md, section 0c (P-a).
+    zone_by_stamp_format: dict = field(default_factory=dict)
+    # Named zone abbreviations that count as an explicit offset when a stamp
+    # carries one: {"AEDT": 11, ...} (hours from UTC). Empty by default. A
+    # stamp that names its zone is the strongest evidence there is, so it
+    # outranks the stamp-format and page-owner rules.
+    named_zone_offsets: dict = field(default_factory=dict)
     # A Congressional release can be a mash-up of several mailboxes' own
     # exports, each carrying its owner's Bates-style stamp in the bottom
     # corner of the page ("GARRY0000098", "LIP0003421", ...) -- a page is

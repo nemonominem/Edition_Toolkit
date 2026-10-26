@@ -243,6 +243,11 @@ def parse_stamp(text, profile):
             sign = 1 if bm.group(1) == "+" else -1
             off = timedelta(hours=sign * int(bm.group(2)), minutes=sign * int(bm.group(3)))
 
+    if off is None and profile.named_zone_offsets:
+        nz = re.search(r"\b(%s)\b" % "|".join(map(re.escape, profile.named_zone_offsets)), t)
+        if nz:
+            off = timedelta(hours=profile.named_zone_offsets[nz.group(1)])
+
     m = profile.stamp_us_re.search(t) if profile.stamp_us_re else None
     if m:
         mo, day, yr = int(m.group(1)), int(m.group(2)), int(m.group(3))
@@ -847,11 +852,21 @@ def build_entries(messages, profile):
             zone_source = "offset"
             dt_for_tz = dt
         else:
-            tzinfo, zone_why = zone_for(sender, subject, dt, profile)
+            # A 24-hour stamp only: a day-month-year stamp with am/pm is a US-style
+            # client on whatever clock its mailbox uses, so it falls through to
+            # the older rules (page owner, affiliation).
+            fmt_zone = profile.zone_by_stamp_format.get(how)
+            if fmt_zone and how == "day-month-year" and re.search(r"\b[ap]\.?m\.?\b", stamp, re.I):
+                fmt_zone = None
+            if fmt_zone:
+                tzinfo, zone_why = ZoneInfo(fmt_zone[0]), fmt_zone[1]
+                zone_source = "stamp-format"
+            else:
+                tzinfo, zone_why = zone_for(sender, subject, dt, profile)
+                zone_source = "affiliation"
             et, stamp_line = to_et(dt, tzinfo, zone_why)
             if how == "partial-no-time":
                 stamp_line += " (time not recovered)"
-            zone_source = "affiliation"
             dt_for_tz = dt
 
         entries.append({
