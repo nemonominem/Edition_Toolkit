@@ -34,11 +34,14 @@ Work in this order. Do not skip the evidence tests to get to a rule faster.
    project). Use it where the page or the message text fixes both the printed time
    and its clock, for example "It is 10pm now UK" beside a printed 5:23 PM. Never
    change the entry's identifier when you correct its time.
-4. **Quoted or forwarded copy takes the replier's zone.** A frozen block is on the
-   clock of the client that quoted it, where that link is known. This is *not*
-   always the quoting author's own zone, and it is not the zone of the quoting
-   message's own printed stamp (that stamp can be on yet another clock). Use it
-   as a default, and expect exceptions that only evidence can fix.
+4. **Freeze rule: a quoted or forwarded block is on the clock of the AUTHOR of
+   the message that quotes it.** A top-level stamp is on the clock of the mailbox
+   that holds it; a quoted block was frozen when its quoter wrote the reply. Never
+   overrides an explicit offset. The last message of a thread has nothing quoting it,
+   so the rule cannot apply to it (it is "dangling"). Full statement, examples and
+   the bracketing trick: `freeze-rule-and-tricks.md` in this folder. Library switch:
+   `Profile.freeze_rule_author_zone` (default True; needs `zone_by_affiliation` to
+   know the quoter's home zone, else the block is left as before).
 5. **Unzoned top-level stamp, from a sender's institution.** Use the sender's own
    zone, as a stated assumption, recorded in the output.
 6. **Unzoned top-level stamp, from a known exporting mailbox.** Use that owner's
@@ -97,10 +100,13 @@ each group's status separately.
   explicit offset, it overrides the sender.
 - **OCR-dropped stamps.** A stamp whose time was lost in OCR looks like a partial
   stamp. Read the time from the page image before deciding it has no time.
-- **"The quoted block is on the quoting author's zone."** Tried as a rule from the
-  author's institution. On one project it would have changed 59 of 150 quoted entries
-  and created 11 reply-order violations, with shifts as large as 19 hours. The clock a
-  block is frozen on depends on the client, not only on where the author lives.
+- **Applying the freeze rule with the wrong clock.** Two ways it failed in practice:
+  giving the page owner's clock priority over the quoter's (a Holmes quote on a
+  Pacific page was read as Pacific), and using the quoting entry's own stamp zone
+  (the mailbox clock) instead of the quoter author's home zone. Both are fixed in
+  `reconcile_zones`; a link whose quote is dated after its quoter on the wrong clock
+  was silently dropped by the parser's date-trust test, so check the explicit-link
+  count before and after (108 -> 144 on the PO release).
 
 ## 4. What to report
 
@@ -154,5 +160,8 @@ lessons are in the rules above.
 These are reference implementations written for the PO Slack JSON schema (entries
 with `stamp`, `stamp_status`, `zone_assumed`, `thread_key`, `replied_by`). Adapt the
 field names to a new release's schema before use.
+
+See `freeze-rule-and-tricks.md` for the freeze rule and the extra tricks (bracketing,
+page-code continuity, dangling last message).
 
 See also `foia-email-pdf` for OCR, segmentation and the zone grammar.

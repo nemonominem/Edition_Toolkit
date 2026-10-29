@@ -177,6 +177,9 @@ class Profile:
     # decides both how long a wrapped To:/Cc: list is trusted, and which
     # field ends the body's top-of-message field-recovery sweep.
     recipient_tokens: frozenset = DEFAULT_RECIPIENT_TOKENS
+    # Freeze rule: read a quoted/forwarded block on the clock of the author of
+    # the message that quotes it (see reconcile_zones() in core.py).
+    freeze_rule_author_zone: bool = True
     subject_fallback_re: "re.Pattern" = DEFAULT_SUBJECT_FALLBACK_RE
 
     # ── signature / quote / attachment cutting ───────────────────────────────

@@ -1354,6 +1354,16 @@ def dedupe_similar_entries(entries, close_minutes=10, max_compare_days=14,
 # instead inherit the zone of whoever quoted it. See THREADING_PLAN.md (the
 # P.O. Slack project) for the full reasoning and the evidence this was built
 # against.
+def _author_zone(sender, profile):
+    """(ZoneInfo, why) for a sender the affiliation table knows, else None
+    (zone_for() would fall back to the release's default zone, which is no
+    evidence about where this person is)."""
+    for rx, zone, why in profile.zone_by_affiliation:
+        if rx.search(sender or ""):
+            return ZoneInfo(zone), why
+    return None
+
+
 def reconcile_zones(entries, owner_by_page, profile):
     """Upgrade a message's zone from the default sender-affiliation guess
     when better evidence is available, preferred in order:
@@ -1411,6 +1421,36 @@ def reconcile_zones(entries, owner_by_page, profile):
         e["raw_date"] = "%s ET · %s" % (et.strftime("%H:%M"), e.get("subject") or "")
         e["zone_assumed"], e["stamp_line"] = why, stamp_line
         e["_tzinfo"], e["_zone_source"] = ZoneInfo(zone_key), "owner_code"
+
+    # Freeze rule: a quoted or forwarded block carries the clock of the person
+    # who replied or forwarded, i.e. the AUTHOR of the quoting message, not the
+    # clock of the mailbox the page belongs to and not the quoted author's
+    # own. Each block depends only on the author of the message directly above
+    # it, so nesting needs no iteration: A quoted by B quoted by C is read on
+    # B's author's clock, and B on C's author's. Applies over page-owner and
+    # affiliation guesses, never over an explicit zone in the stamp. The
+    # author's clock is the affiliation table's zone for the sender; a sender
+    # the table does not know leaves the block as it was (no guess).
+    if profile.freeze_rule_author_zone:
+        for e in entries:
+            tgt = e.get("_explicit_reply_to_entry")
+            if tgt is None or tgt is e or "_dt_naive" not in tgt:
+                continue
+            if tgt.get("_zone_source") not in ("affiliation", "owner_code"):
+                continue
+            az = _author_zone(e.get("sender"), profile)
+            if az is None:
+                continue
+            zone, why0 = az
+            why = "frozen in %s's clock (%s; quoted in their message)" % (
+                e.get("sender") or "the quoter", why0)
+            et, stamp_line = to_et(tgt["_dt_naive"], zone, why)
+            if tgt.get("stamp_status") == "partial-no-time":
+                stamp_line += " (time not recovered)"
+            tgt["date"], tgt["time"] = et.strftime("%Y-%m-%d"), et.strftime("%H%M")
+            tgt["raw_date"] = "%s ET · %s" % (et.strftime("%H:%M"), tgt.get("subject") or "")
+            tgt["zone_assumed"], tgt["stamp_line"] = why, stamp_line
+            tgt["_tzinfo"], tgt["_zone_source"] = zone, "quoter_author"
 
     # Quote-chain propagation: repeat until nothing changes. _explicit_reply
     # _to_entry is set on the QUOTING entry, pointing at the entry it
