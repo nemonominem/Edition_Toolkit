@@ -31,13 +31,18 @@ True chain: H1 at T, R1 = T+1h (reply), H2 = T+2h, R2 = T+3h.
 | H2 | T+2h | T+2h (Sydney) |
 | R2 | T+3h | T-5h (London) |
 
-What you actually see in the final message R2's mailbox (everything above is quoted):
-H1 is frozen on **Rambaut's** clock (he quoted it): T-9h... R1 is frozen on Holmes's
-clock: T+1h on Sydney = shown as written by Sydney; H2 is frozen on Rambaut's: T-7h on
-London; R2 depends on who quotes it, and if nobody does it is dangling. So a quoted
-Holmes message looks hours *earlier* than its parent and a naive reply-order test
-reports a reply "before" its parent. Read each stamp on the quoter's clock and the
-chain orders itself.
+What the stamps show once each is frozen by the message that quotes it (Rambaut
+quotes Holmes; Holmes quotes Rambaut; London is 9 h behind Sydney):
+
+- H1 is quoted by Rambaut: printed on London's clock, T-9h.
+- R1 is quoted by Holmes: printed on Sydney's clock, T+1h.
+- H2 is quoted by Rambaut: printed on London's clock, T-7h.
+- R2: depends on who quotes it; if nobody does, it is dangling.
+
+(With the 8 h gap used in the table above, subtract 8 instead of 9; the pattern is the
+same.) A quoted Holmes message therefore looks hours *earlier* than its parent, and a
+naive reply-order test reports a reply "before" its parent. Read each stamp on the
+quoter's clock and the chain orders itself.
 
 ## 2. Tricks
 
