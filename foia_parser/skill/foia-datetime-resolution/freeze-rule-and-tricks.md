@@ -20,7 +20,7 @@ Every printed stamp is a time on someone's clock. Which clock?
   or forward shows that a block exists inside another message.
 - An explicit zone/offset in the stamp always wins.
 
-### Example (Holmes in Sydney, Rambaut in London, 9 h apart)
+### Example (Holmes in Sydney, Rambaut in London; Sydney is 9 h ahead)
 
 True chain: H1 at T, R1 = T+1h (reply), H2 = T+2h, R2 = T+3h.
 
@@ -29,7 +29,7 @@ True chain: H1 at T, R1 = T+1h (reply), H2 = T+2h, R2 = T+3h.
 | H1 | T | T (Sydney) |
 | R1 | T+1h | T-8h (London) |
 | H2 | T+2h | T+2h (Sydney) |
-| R2 | T+3h | T-5h (London) |
+| R2 | T+3h | T-6h (London) |
 
 What the stamps show once each is frozen by the message that quotes it (Rambaut
 quotes Holmes; Holmes quotes Rambaut; London is 9 h behind Sydney):
@@ -39,8 +39,7 @@ quotes Holmes; Holmes quotes Rambaut; London is 9 h behind Sydney):
 - H2 is quoted by Rambaut: printed on London's clock, T-7h.
 - R2: depends on who quotes it; if nobody does, it is dangling.
 
-(With the 8 h gap used in the table above, subtract 8 instead of 9; the pattern is the
-same.) A quoted Holmes message therefore looks hours *earlier* than its parent, and a
+A quoted Holmes message therefore looks hours *earlier* than its parent, and a
 naive reply-order test reports a reply "before" its parent. Read each stamp on the
 quoter's clock and the chain orders itself.
 
