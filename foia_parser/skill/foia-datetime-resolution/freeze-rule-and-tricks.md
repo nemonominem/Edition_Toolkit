@@ -71,3 +71,17 @@ quoter's clock and the chain orders itself.
 Mark freeze-rule results **supported** (not settled) unless an explicit offset, exact
 copy or bracketing narrows the clock to one zone. Re-run the reply-order test, the
 explicit-link count and your audit file after every change to the rule.
+
+## 4. Practical notes from the PO project (2026-11)
+
+- **The rule needs the quoter's clock, which the documents rarely state.** The parser carries a lookup, name pattern to zone
+  (`zone_by_affiliation` in the profile). A quoter missing from it makes the rule skip the blocks that person quoted, silently.
+  Check the unsettled list for quoted blocks whose quoter is not in the lookup, and add where the person lives.
+  Give each frequent quoter their own group, so small senders do not borrow their reply-order support.
+- **Calendar and event anchors settle where the rule only supports.** A panel “2:00-3:30 pm ET” fixed two stamps (“waiting to be
+  connected” before it, “spectacular session” after it) that sender-institution had put on the wrong continents.
+- **Verified overrides can carry more than a time**: `body` (text the OCR lost), `sender` (corrected label), `reply_to` (the message it
+  answers; remove the entry from its old parent's reply list). Keep the page number beside each override, and after any rerun re-check
+  every override target by its page, not by its time: the keys contain the time and move when a clock changes.
+- **Cross-release check**: a message quoted in one release cannot be later than the message that quotes it in the other. Exclude
+  signature and disclaimer blocks, or they match everywhere.
