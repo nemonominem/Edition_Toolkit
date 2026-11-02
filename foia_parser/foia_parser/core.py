@@ -599,7 +599,9 @@ def segment(pages, profile):
                     cur = {"header_lines": [line], "body": [], "pages": [pageno]}
                     quoting_msg["quotes_msg"] = cur
                 elif (cur is not None and profile.top_level_stamp_re is not None
-                      and cur["pages"][-1] == pageno and cur["body"]
+                      and ((cur["pages"][-1] == pageno and cur["body"])
+                           or (pageno in profile.nested_page_starts
+                               and cur["pages"][-1] == pageno - 1))
                       and not profile.top_level_stamp_re.search(" ".join(lines[li:li + 8]))):
                     # Physical nesting on the same page: a quoted block (see
                     # Profile.top_level_stamp_re).

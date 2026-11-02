@@ -188,6 +188,10 @@ class Profile:
     # freeze rule applies). A header that opens a page is not linked (a page
     # break may be a different extract). Off unless top_level_stamp_re is given.
     top_level_stamp_re: "re.Pattern | None" = None
+    # Pages whose FIRST header is a quoted block continuing the previous page's
+    # last block (read from the page image by a reviewer: no top-level separator
+    # above it). Only used together with top_level_stamp_re.
+    nested_page_starts: frozenset = frozenset()
     subject_fallback_re: "re.Pattern" = DEFAULT_SUBJECT_FALLBACK_RE
 
     # ── signature / quote / attachment cutting ───────────────────────────────
