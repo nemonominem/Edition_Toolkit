@@ -180,6 +180,14 @@ class Profile:
     # Freeze rule: read a quoted/forwarded block on the clock of the author of
     # the message that quotes it (see reconcile_zones() in core.py).
     freeze_rule_author_zone: bool = True
+    # Physical nesting = quote. In a release where every top-level message
+    # carries a recognisable export stamp (top_level_stamp_re, e.g. one with an
+    # explicit +0000 offset), a literal From: header that is NOT such a stamp and
+    # sits on the SAME page as body text of the message above it is a quoted block
+    # inside that message: the message above quotes it (explicit link, so the
+    # freeze rule applies). A header that opens a page is not linked (a page
+    # break may be a different extract). Off unless top_level_stamp_re is given.
+    top_level_stamp_re: "re.Pattern | None" = None
     subject_fallback_re: "re.Pattern" = DEFAULT_SUBJECT_FALLBACK_RE
 
     # ── signature / quote / attachment cutting ───────────────────────────────

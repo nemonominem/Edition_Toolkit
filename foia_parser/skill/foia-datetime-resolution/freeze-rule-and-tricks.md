@@ -85,3 +85,11 @@ explicit-link count and your audit file after every change to the rule.
   every override target by its page, not by its time: the keys contain the time and move when a clock changes.
 - **Cross-release check**: a message quoted in one release cannot be later than the message that quotes it in the other. Exclude
   signature and disclaimer blocks, or they match everywhere.
+- **Physical nesting = quote (library switch `Profile.top_level_stamp_re`).** If every top-level message of a release prints a
+  recognisable export stamp (for example `Sent: Sat, 1 Feb 2020 22:06:26 +0000`), any other `From:` header that sits on the same page
+  as body text of the block above it is a quoted block inside that block, so the block above is its quoter. A header that opens a
+  page is not linked (a page break may be a different extract). Without this, the parser only links a quote when an
+  “On ... wrote:” marker proves it, and every nested block is left on a default guess. On the Farrar-Fauci release it reproduced
+  every hand correction of a 14-message chain and moved about 45 more times by ±5 h, with the reply-order test still clean.
+  Do not switch it on for a release whose top-level messages can carry attached documents (the Pope/NASEM case): physical order
+  alone links unrelated text there. Re-key any verified override afterwards: the keys contain the time and the rule moves times.
